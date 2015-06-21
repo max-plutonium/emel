@@ -63,7 +63,7 @@ BOOST_FUSION_ADAPT_STRUCT(
         (emel::ast::node, chain_call)
     );
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
 expressions::expressions()
 {
@@ -164,6 +164,8 @@ expressions::expressions()
     call.name("call");
     qi::on_error<qi::fail>(call, eh(_1, _3, _4));
 }
+
+} // namespace spirit_frontend
 
 } // namespace emel
 

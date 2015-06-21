@@ -22,7 +22,7 @@
 #include <boost/phoenix/phoenix.hpp>
 #include <boost/lexical_cast.hpp>
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
 static double get_double(pos_iter f, pos_iter l) {
     return boost::lexical_cast<double>(std::string(f, l));
@@ -63,5 +63,7 @@ values::values()
 
     bool_value.name("boolean");
 }
+
+} // namespace spirit_frontend
 
 } // namespace emel

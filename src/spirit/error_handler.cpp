@@ -21,7 +21,7 @@
 
 #include <iostream>
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
 void error_handler::operator ()(pos_iter pos1, pos_iter pos2,
                                 const boost::spirit::info &info) const
@@ -32,5 +32,7 @@ void error_handler::operator ()(pos_iter pos1, pos_iter pos2,
               << " Expecting " << info << " here: \""
               << std::string(pos1, pos2) << "\"" << std::endl;
 }
+
+} // namespace spirit_frontend
 
 } // namespace emel

@@ -20,11 +20,13 @@
 #ifndef ERROR_HANDLER_H
 #define ERROR_HANDLER_H
 
-#include "emel_global.h"
-
+#include <boost/spirit/include/classic_position_iterator.hpp>
 #include <boost/spirit/home/support/info.hpp>
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
+
+using source_iter = std::string::const_iterator;
+using pos_iter = boost::spirit::classic::position_iterator<source_iter>;
 
 class error_handler
 {
@@ -33,6 +35,8 @@ public:
 
     void operator ()(pos_iter pos1, pos_iter pos2, const boost::spirit::info &info) const;
 };
+
+} // namespace spirit_frontend
 
 } // namespace emel
 

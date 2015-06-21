@@ -20,13 +20,15 @@
 #ifndef LEX_H
 #define LEX_H
 
-#include "emel_global.h"
 #include "tokens.h"
 
+#include <boost/spirit/include/classic_position_iterator.hpp>
 #include <boost/spirit/include/lex_lexertl.hpp>
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
+using source_iter = std::string::const_iterator;
+using pos_iter = boost::spirit::classic::position_iterator<source_iter>;
 namespace lex = boost::spirit::lex;
 using boost::spirit::utf8_char;
 
@@ -69,6 +71,8 @@ public:
 public:
     lexer();
 };
+
+} // namespace spirit_frontend
 
 } // namespace emel
 

@@ -19,7 +19,7 @@
  */
 #include "skipper.h"
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
 skipper::skipper() : skipper::base_type(root)
 {
@@ -28,5 +28,7 @@ skipper::skipper() : skipper::base_type(root)
     line_comment = qi::lit("//") >> qi::no_skip[ *(qi::char_ - qi::eol) >> qi::eol ];
     emel_comment = qi::lit("\'") >> *(qi::char_ - "\'") >> "\'";
 }
+
+} // namespace spirit_frontend
 
 } // namespace emel

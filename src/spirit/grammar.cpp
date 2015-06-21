@@ -87,7 +87,7 @@ BOOST_FUSION_ADAPT_STRUCT(
         (emel::ast::node, e)
     );
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
 grammar::grammar() : grammar::base_type(root, "root")
 {
@@ -213,6 +213,8 @@ grammar::grammar() : grammar::base_type(root, "root")
     break_branch.name("break branch");
     return_branch.name("return branch");
 }
+
+} // namespace spirit_frontend
 
 } // namespace emel
 

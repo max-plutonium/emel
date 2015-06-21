@@ -23,17 +23,16 @@
 #include "ast.h"
 #include "keywords.h"
 #include "values.h"
-#include "skipper.h"
 #include "error_handler.h"
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/phoenix/function.hpp>
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
 class expressions : virtual public keywords, virtual public values
 {
-    using iterator_type = parser_iter;
+    using iterator_type = pos_iter;
 
 protected:
     qi::rule<iterator_type, ast::node(), skipper> expr;
@@ -52,6 +51,8 @@ protected:
 public:
     expressions();
 };
+
+} // namespace spirit_frontend
 
 } // namespace emel
 

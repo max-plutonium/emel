@@ -24,11 +24,11 @@
 #include "skipper.h"
 #include "keywords.h"
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
 class values : virtual public keywords
 {
-    using iterator_type = parser_iter;
+    using iterator_type = pos_iter;
 
 protected:
     qi::rule<iterator_type, ast::node(), skipper> value;
@@ -41,6 +41,8 @@ protected:
 public:
     values();
 };
+
+} // namespace spirit_frontend
 
 } // namespace emel
 

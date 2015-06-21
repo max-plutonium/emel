@@ -21,7 +21,7 @@
 
 #include <boost/spirit/repository/include/qi_distinct.hpp>
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
 keywords::keywords()
 {
@@ -138,5 +138,7 @@ keywords::keywords()
     right_bracket = lit(']');
     right_bracket.name("]");
 }
+
+} // namespace spirit_frontend
 
 } // namespace emel

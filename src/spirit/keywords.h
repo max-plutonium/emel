@@ -20,18 +20,20 @@
 #ifndef KEYWORDS_H
 #define KEYWORDS_H
 
-#include "emel_global.h"
 #include "skipper.h"
 
+#include <boost/spirit/include/classic_position_iterator.hpp>
 #include <boost/spirit/include/qi.hpp>
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
+using source_iter = std::string::const_iterator;
+using pos_iter = boost::spirit::classic::position_iterator<source_iter>;
 namespace qi = boost::spirit::qi;
 
 class keywords
 {
-    using iterator_type = parser_iter;
+    using iterator_type = pos_iter;
 
 protected:
     qi::rule<iterator_type, skipper> end, true_, false_,
@@ -54,6 +56,8 @@ protected:
 public:
     keywords();
 };
+
+} // namespace spirit_frontend
 
 } // namespace emel
 

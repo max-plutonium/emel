@@ -25,12 +25,13 @@
 #define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 #define BOOST_MPL_LIMIT_LIST_SIZE 30
 #define BOOST_MPL_LIMIT_VECTOR_SIZE 30
+
 #include <memory>
 #include <boost/variant/recursive_variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 #include <boost/variant/get.hpp>
 
-namespace emel { namespace ast {
+namespace emel EMEL_EXPORT { namespace ast EMEL_EXPORT {
 
 struct class_;
 struct param;

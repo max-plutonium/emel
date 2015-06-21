@@ -61,7 +61,7 @@ CONFIG(debug, debug|release) {
         -std=c++1y -pthread -funwind-tables \
         -Wno-write-strings -Wno-unused-local-typedefs \
         -Wunreachable-code -Woverloaded-virtual
-    QMAKE_CXXFLAGS_RELEASE += #-fvisibility=hidden -fvisibility-inlines-hidden
+    QMAKE_CXXFLAGS_RELEASE += -fvisibility=hidden -fvisibility-inlines-hidden
 
     win32 {
         LIBS += -lpthread
@@ -96,22 +96,3 @@ SOURCES += \
     spirit/values.cpp \
     spirit/error_handler.cpp \
     spirit/expressions.cpp
-
-LEXFILES += \
-    gnu/tok.lex
-
-YACCFILES += \
-    gnu/grammar.yy
-
-flex.name = flex
-flex.input = LEXFILES
-flex.output = gnu/${QMAKE_FILE_BASE}.yy.cpp
-flex.commands = flex -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
-flex.variable_out = SOURCES
-
-yacc.name = yacc
-yacc.input = YACCFILES
-yacc.output = gnu/gnu_parser.cpp
-yacc.commands = bison -L c++ -o ${QMAKE_FILE_OUT} -d ${QMAKE_FILE_IN}
-yacc.variable_out = SOURCES
-QMAKE_EXTRA_COMPILERS += yacc flex

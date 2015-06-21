@@ -22,7 +22,7 @@
 #include <boost/phoenix/object/construct.hpp>
 #include <boost/phoenix/bind/bind_function.hpp>
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
 using boost::phoenix::construct;
 
@@ -111,5 +111,7 @@ lexer::lexer()
             | ws[ lex::_pass = lex::pass_flags::pass_ignore ]
             | comment[ lex::_pass = lex::pass_flags::pass_ignore ];
 }
+
+} // namespace spirit_frontend
 
 } // namespace emel

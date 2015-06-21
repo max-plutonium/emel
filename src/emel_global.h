@@ -22,18 +22,4 @@
 
 #define EMEL_EXPORT __attribute__((visibility ("default")))
 
-#include <string>
-#include <boost/spirit/include/classic_position_iterator.hpp>
-#include <boost/range/iterator_range.hpp>
-
-namespace emel {
-
-// TODO убрать с глаз долой
-using source_iter = std::string::const_iterator;
-using pos_iter = boost::spirit::classic::position_iterator<source_iter>;
-using pos_range = boost::iterator_range<pos_iter>;
-using parser_iter = pos_iter;
-
-} // namespace emel
-
 #endif // EMEL_GLOBAL_H

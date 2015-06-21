@@ -22,12 +22,12 @@
 
 #include "expressions.h"
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
-class grammar : public qi::grammar<parser_iter, ast::node(), skipper>
+class grammar : public qi::grammar<pos_iter, ast::node(), skipper>
     , virtual public keywords, virtual public values, virtual public expressions
 {
-    using iterator_type = parser_iter;
+    using iterator_type = pos_iter;
 
     qi::rule<iterator_type, ast::node(), skipper> root;
     qi::rule<iterator_type, ast::class_(), skipper> class_def;
@@ -48,6 +48,8 @@ class grammar : public qi::grammar<parser_iter, ast::node(), skipper>
 public:
     grammar();
 };
+
+} // namespace spirit_frontend
 
 } // namespace emel
 

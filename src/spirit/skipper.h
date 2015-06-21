@@ -20,23 +20,26 @@
 #ifndef SKIPPER_H
 #define SKIPPER_H
 
-#include "emel_global.h"
-
+#include <boost/spirit/include/classic_position_iterator.hpp>
 #include <boost/spirit/include/qi.hpp>
 
-namespace emel {
+namespace emel { namespace spirit_frontend {
 
+using source_iter = std::string::const_iterator;
+using pos_iter = boost::spirit::classic::position_iterator<source_iter>;
 namespace qi = boost::spirit::qi;
 
-class skipper : public qi::grammar<parser_iter>
+class skipper : public qi::grammar<pos_iter>
 {
-    using iterator_type = parser_iter;
+    using iterator_type = pos_iter;
     qi::rule<iterator_type> root;
     qi::rule<iterator_type> block_comment, line_comment, emel_comment;
 
 public:
     skipper();
 };
+
+} // namespace spirit_frontend
 
 } // namespace emel
 

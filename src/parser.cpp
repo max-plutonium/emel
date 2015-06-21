@@ -18,22 +18,11 @@
  * <http://www.gnu.org/licenses/>.
  */
 #include "parser.h"
-
-#include <FlexLexer.h>
-#include <functional>
-
-#define YYSTYPE emel::ast::node
-#include "gnu/gnu_parser.hpp"
-
 #include "spirit/grammar.h"
 
+#include <functional>
 #include <fstream>
 #include <boost/spirit/home/qi/parse.hpp>
-
-emel::ast::node *yylval = 0;
-yy::location *yylloc = 0;
-std::string *current_file = 0;
-emel::ast::node root_nodes;
 
 namespace emel {
 
@@ -42,33 +31,6 @@ class spirit_parser : public parser
 public:
     virtual bool parse(source_iter first, source_iter last,
         std::string file_name, ast::node &ret) override;
-};
-
-class gnu_parser : public parser, public yy::parser
-{
-    using yylex_type = std::function<int (emel::ast::node *, yy::location *)>;
-
-    yyFlexLexer lexer;
-    yylex_type parse_func = [this](ast::node *n, yy::location *loc) {
-        yylval = n;
-        yylloc = loc;
-        return lexer.yylex();
-    };
-
-public:
-    gnu_parser() : yy::parser(parse_func) { }
-
-    virtual bool parse(source_iter first, source_iter last,
-        std::string file_name, ast::node &ret) override;
-
-    // parser interface
-private:
-    virtual void error(const location_type &loc, const std::string &msg)
-    {
-        std::cerr << *loc.begin.filename << ":"
-                  << loc.begin.line << ":" << loc.begin.column
-                  << " : " << msg << std::endl;
-    }
 };
 
 /*static*/
@@ -110,15 +72,15 @@ bool parser::parse_string(const std::string &content, ast::node &ret)
 bool spirit_parser::parse(source_iter first, source_iter last,
     std::string file_name, ast::node &ret)
 {
-    pos_iter pos_begin(first, last, file_name);
-    pos_iter pos_end;
-    grammar g;
-    skipper s;
+    spirit_frontend::pos_iter pos_begin(first, last, file_name);
+    spirit_frontend::pos_iter pos_end;
+    spirit_frontend::grammar g;
+    spirit_frontend::skipper s;
 
     bool r = false;
 
     try {
-        r = qi::phrase_parse(pos_begin, pos_end, g, s, ret);
+        r = spirit_frontend::qi::phrase_parse(pos_begin, pos_end, g, s, ret);
 
     } catch(const std::runtime_error &e) {
         std::string rest(pos_begin, pos_end);
@@ -135,25 +97,6 @@ bool spirit_parser::parse(source_iter first, source_iter last,
     }
 
     return r;
-}
-
-bool gnu_parser::parse(source_iter first, source_iter last,
-    std::string file_name, ast::node &ret)
-{
-    std::string str(first, last);
-    std::istringstream is(str);
-    std::ostringstream os;
-    lexer.switch_streams(&is, &os);
-
-//    set_debug_level(3);
-
-    current_file = &file_name;
-    const bool res = !yy::parser::parse();
-    yylval = 0;
-    yylloc = 0;
-    current_file = 0;
-    ret = std::move(root_nodes);
-    return res;
 }
 
 } // namespace emel

@@ -25,7 +25,9 @@
 
 namespace emel EMEL_EXPORT {
 
-class EMEL_EXPORT parser
+using source_iter = std::string::const_iterator;
+
+class parser
 {
 protected:
     static std::string read_from_file(const std::string &file_name);

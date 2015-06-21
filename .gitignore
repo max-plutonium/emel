@@ -1,0 +1,7 @@
+*.[oa]
+*~
+*.so
+*.pro.user
+*.cpp.orig
+Makefile*
+bin/

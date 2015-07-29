@@ -1,7 +1,7 @@
 *.[oa]
 *~
 *.so
-*.pro.user
+*.qbs.user
 *.cpp.orig
 Makefile*
 bin/

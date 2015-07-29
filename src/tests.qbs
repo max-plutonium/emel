@@ -52,8 +52,8 @@ CppApplication {
     }
 
     files: [
-        "main.cpp",
-        "test_parser.cpp",
+        "tests/main.cpp",
+        "tests/test_parser.cpp",
         gmockPath + '/gmock-gtest-all.cc'
     ]
 }

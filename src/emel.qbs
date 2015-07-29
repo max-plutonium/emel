@@ -47,20 +47,20 @@ DynamicLibrary {
     Group {
         name: 'public headers'
         qbs.install: true
-        qbs.installDir: 'include'
+        qbs.installDir: 'emel'
 
         files: [
-            'emel_global.h',
-            'ast.h',
-            'parser.h'
+            'emel/emel_global.h',
+            'emel/ast.h',
+            'emel/parser.h'
         ]
     }
 
     files: [
-        'ast.cpp',
-        'parser.cpp',
-        'tokens.cpp',
-        'tokens.h'
+        'emel/ast.cpp',
+        'emel/parser.cpp',
+        'emel/tokens.cpp',
+        'emel/tokens.h'
     ]
 
     Group {
@@ -72,20 +72,20 @@ DynamicLibrary {
     Group {
         name: 'spirit frontend'
         files: [
-            'spirit/error_handler.cpp',
-            'spirit/error_handler.h',
-            'spirit/expressions.cpp',
-            'spirit/expressions.h',
-            'spirit/grammar.cpp',
-            'spirit/grammar.h',
-            'spirit/keywords.cpp',
-            'spirit/keywords.h',
-            'spirit/lex.cpp',
-            'spirit/lex.h',
-            'spirit/skipper.cpp',
-            'spirit/skipper.h',
-            'spirit/values.cpp',
-            'spirit/values.h'
+            'emel/spirit/error_handler.cpp',
+            'emel/spirit/error_handler.h',
+            'emel/spirit/expressions.cpp',
+            'emel/spirit/expressions.h',
+            'emel/spirit/grammar.cpp',
+            'emel/spirit/grammar.h',
+            'emel/spirit/keywords.cpp',
+            'emel/spirit/keywords.h',
+            'emel/spirit/lex.cpp',
+            'emel/spirit/lex.h',
+            'emel/spirit/skipper.cpp',
+            'emel/spirit/skipper.h',
+            'emel/spirit/values.cpp',
+            'emel/spirit/values.h'
         ]
     }
 }

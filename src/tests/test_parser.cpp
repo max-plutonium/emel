@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 #include <gmock/gmock.h>
-#include "../src/parser.h"
+#include "../emel/parser.h"
 
 using namespace emel;
 

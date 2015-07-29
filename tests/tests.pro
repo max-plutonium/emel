@@ -26,14 +26,14 @@ QMAKE_CXXFLAGS += -std=gnu++14
 QMAKE_CXXFLAGS_RELEASE += -Ofast
 CONFIG -= qt
 
-BOOST_PATH = $$absolute_path($$PWD)/../../boost_1_57_0
+BOOST_PATH = $$absolute_path($$PWD)/../../boost_1_58_0
 BOOST_LIB_PATH = $$BOOST_PATH/stage/lib
 INCLUDEPATH += $$BOOST_PATH
 
 GTEST_PATH = $$absolute_path($$PWD)/../../gmock-1.7.0/fused-src
 INCLUDEPATH += $$GTEST_PATH
 
-LIBS += -lpthread -lgomp -lgccjit
+LIBS += -lpthread -lgomp -lgccjit -L$$BOOST_LIB_PATH -lboost_serialization
 
 BUILDROOT = ../bin
 

@@ -53,7 +53,7 @@ std::string parser::read_from_file(const std::string &file_name)
 /*static*/
 std::unique_ptr<parser> parser::create()
 {
-    return std::unique_ptr<parser> { new spirit_parser };
+    return std::make_unique<spirit_parser>();
 }
 
 bool parser::parse_file(const std::string &file_name, ast::node &ret)

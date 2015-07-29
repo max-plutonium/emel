@@ -23,10 +23,10 @@ TARGET = emel
 DEFINES += EMEL_SHARED
 VERSION = 0.0.0
 QMAKE_CXXFLAGS += -std=gnu++14
-QMAKE_CXXFLAGS_RELEASE += -Ofast
+QMAKE_CXXFLAGS_RELEASE += -Ofast -fvisibility=hidden -fvisibility-inlines-hidden
 CONFIG -= qt
 
-BOOST_PATH = $$absolute_path($$PWD)/../../boost_1_57_0
+BOOST_PATH = $$absolute_path($$PWD)/../../boost_1_58_0
 BOOST_LIB_PATH = $$BOOST_PATH/stage/lib
 INCLUDEPATH += $$BOOST_PATH
 
@@ -51,22 +51,6 @@ CONFIG(debug, debug|release) {
    g++*: QMAKE_POST_LINK += \
         $$QMAKE_OBJCOPY --strip-unneeded \
             $$DESTDIR/$(TARGET) $$escape_expand(\\n\\t)
-}
-
-
-### Compiler settings ###
-
-*g++*|*clang {
-    QMAKE_CXXFLAGS += \
-        -std=c++1y -pthread -funwind-tables \
-        -Wno-write-strings -Wno-unused-local-typedefs \
-        -Wunreachable-code -Woverloaded-virtual
-    QMAKE_CXXFLAGS_RELEASE += -fvisibility=hidden -fvisibility-inlines-hidden
-
-    win32 {
-        LIBS += -lpthread
-        DEFINES += _GLIBCXX_HAS_GTHREADS
-    }
 }
 
 

@@ -20,7 +20,7 @@
 #ifndef VALUES_H
 #define VALUES_H
 
-#include "ast.h"
+#include "../ast.h"
 #include "skipper.h"
 #include "keywords.h"
 

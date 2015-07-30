@@ -20,7 +20,6 @@
 import qbs
 
 CppApplication {
-    type: ['application', 'autotest']
     name : 'emel-tests'
     Depends { name: 'emel' }
 
@@ -30,6 +29,7 @@ CppApplication {
     cpp.systemIncludePaths: [project.boostPath, gmockPath]
     cpp.libraryPaths: [project.boostLibsPath]
     cpp.dynamicLibraries: ['pthread', 'boost_serialization']
+    cpp.defines: ['EMEL_EXPORT=__attribute__((visibility ("default")))']
     cpp.objcopyPath: project.objcopyPath
     cpp.stripPath: project.stripPath
 
@@ -48,12 +48,12 @@ CppApplication {
     Group {
         fileTagsFilter: product.type
         qbs.install: true
-        qbs.installDir: "bin"
+        qbs.installDir: 'bin'
     }
 
     files: [
-        "tests/main.cpp",
-        "tests/test_parser.cpp",
+        'tests/main.cpp',
+        'tests/test_parser.cpp',
         gmockPath + '/gmock-gtest-all.cc'
     ]
 }

@@ -20,17 +20,16 @@
 import qbs
 
 DynamicLibrary {
-    name: 'emel'
+    name: 'emel-frontend-spirit'
     version: '0.0.0'
     Depends { name: 'cpp' }
+    Depends { name: 'emel' }
 
     cpp.cxxLanguageVersion: 'c++14'
     cpp.systemIncludePaths: [project.boostPath]
-    cpp.libraryPaths: [project.boostLibsPath]
-    cpp.dynamicLibraries: ['boost_system', 'boost_filesystem', 'dl']
     cpp.defines: [
         'EMEL_EXPORT=__attribute__((visibility ("default")))',
-        'EMEL_VERSION="' + version + '"'
+        'EMEL_FRONTEND_VERSION="' + version + '"'
     ]
     cpp.objcopyPath: project.objcopyPath
     cpp.stripPath: project.stripPath
@@ -55,23 +54,22 @@ DynamicLibrary {
         qbs.installDir: 'lib'
     }
 
-    Group {
-        name: 'public headers'
-        qbs.install: true
-        qbs.installDir: 'emel'
-
-        files: [
-            'emel/ast.h',
-            'emel/parser.h',
-            'emel/plugins.h'
-        ]
-    }
-
     files: [
-        'emel/ast.cpp',
-        'emel/parser.cpp',
-        'emel/plugins.cpp',
-        'emel/tokens.cpp',
-        'emel/tokens.h'
+        'frontend-spirit/spirit_parser.cpp',
+        'frontend-spirit/spirit_parser.h',
+        'frontend-spirit/error_handler.cpp',
+        'frontend-spirit/error_handler.h',
+        'frontend-spirit/expressions.cpp',
+        'frontend-spirit/expressions.h',
+        'frontend-spirit/grammar.cpp',
+        'frontend-spirit/grammar.h',
+        'frontend-spirit/keywords.cpp',
+        'frontend-spirit/keywords.h',
+        'frontend-spirit/lex.cpp',
+        'frontend-spirit/lex.h',
+        'frontend-spirit/skipper.cpp',
+        'frontend-spirit/skipper.h',
+        'frontend-spirit/values.cpp',
+        'frontend-spirit/values.h',
     ]
 }

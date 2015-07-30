@@ -17,9 +17,33 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef EMEL_GLOBAL_H
-#define EMEL_GLOBAL_H
+#ifndef VALUES_H
+#define VALUES_H
 
-#define EMEL_EXPORT __attribute__((visibility ("default")))
+#include "../emel/ast.h"
+#include "skipper.h"
+#include "keywords.h"
 
-#endif // EMEL_GLOBAL_H
+namespace emel { namespace spirit_frontend {
+
+class values : virtual public keywords
+{
+    using iterator_type = pos_iter;
+
+protected:
+    qi::rule<iterator_type, ast::node(), skipper> value;
+    qi::rule<iterator_type, char()> escaped;
+    qi::rule<iterator_type, std::string(), skipper> id;
+    qi::rule<iterator_type, std::string()> text_content, text_value;
+    qi::rule<iterator_type, double(), skipper> number_value;
+    qi::rule<iterator_type, bool(), skipper> bool_value;
+
+public:
+    values();
+};
+
+} // namespace spirit_frontend
+
+} // namespace emel
+
+#endif // VALUES_H

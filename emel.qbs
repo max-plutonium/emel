@@ -22,10 +22,9 @@ import qbs
 Project {
     references: [
         'src/emel.qbs',
+        'src/frontend-spirit.qbs',
         'src/tests.qbs'
     ]
-
-    AutotestRunner { }
 
     property path boostPath: '../../boost_1_58_0'
     readonly property path boostLibsPath: boostPath + '/stage/lib'

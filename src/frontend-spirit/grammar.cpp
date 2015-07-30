@@ -217,4 +217,3 @@ grammar::grammar() : grammar::base_type(root, "root")
 } // namespace spirit_frontend
 
 } // namespace emel
-

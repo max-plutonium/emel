@@ -20,7 +20,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "emel_global.h"
 #include "ast.h"
 
 namespace emel EMEL_EXPORT {
@@ -34,12 +33,12 @@ protected:
 
 public:
     virtual ~parser() = default;
-    static std::unique_ptr<parser> create();
-    bool parse_file(const std::string &file_name, ast::node &ret);
-    bool parse_string(const std::string &content, ast::node &ret);
+    static parser *instance(const std::string &name = std::string());
+    bool parse_file(const std::string &file_name, ast::node &ret) const;
+    bool parse_string(const std::string &content, ast::node &ret) const;
 
     virtual bool parse(source_iter first, source_iter last,
-                       std::string file_name, ast::node &ret) = 0;
+        std::string file_name, ast::node &ret) const = 0;
 };
 
 } // namespace emel

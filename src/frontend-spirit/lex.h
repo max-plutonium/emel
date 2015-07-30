@@ -20,7 +20,7 @@
 #ifndef LEX_H
 #define LEX_H
 
-#include "../tokens.h"
+#include "../emel/tokens.h"
 
 #include <boost/spirit/include/classic_position_iterator.hpp>
 #include <boost/spirit/include/lex_lexertl.hpp>

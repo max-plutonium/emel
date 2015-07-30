@@ -17,33 +17,22 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef VALUES_H
-#define VALUES_H
+#ifndef SPIRIT_PARSER_H
+#define SPIRIT_PARSER_H
 
-#include "../ast.h"
-#include "skipper.h"
-#include "keywords.h"
+#include "../emel/parser.h"
 
 namespace emel { namespace spirit_frontend {
 
-class values : virtual public keywords
+class spirit_parser : public parser
 {
-    using iterator_type = pos_iter;
-
-protected:
-    qi::rule<iterator_type, ast::node(), skipper> value;
-    qi::rule<iterator_type, char()> escaped;
-    qi::rule<iterator_type, std::string(), skipper> id;
-    qi::rule<iterator_type, std::string()> text_content, text_value;
-    qi::rule<iterator_type, double(), skipper> number_value;
-    qi::rule<iterator_type, bool(), skipper> bool_value;
-
 public:
-    values();
+    virtual bool parse(source_iter first, source_iter last,
+        std::string file_name, ast::node &ret) const override;
 };
 
 } // namespace spirit_frontend
 
 } // namespace emel
 
-#endif // VALUES_H
+#endif // SPIRIT_PARSER_H

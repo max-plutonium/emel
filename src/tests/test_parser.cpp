@@ -133,7 +133,7 @@ public:
 };
 
 struct mock_parser : public parser {
-    MOCK_METHOD4(parse, bool(source_iter, source_iter, std::string, ast::node &));
+    MOCK_CONST_METHOD4(parse, bool(source_iter, source_iter, std::string, ast::node &));
 };
 
 using testing::_;
@@ -190,7 +190,7 @@ TEST(Parser, ParseEmptyClass)
         "class name \n\n\t\t end\n\n\t\t class\n\n\t\t ",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -221,7 +221,7 @@ TEST(Parser, ParseEmptyClassWithBaseClass)
         " \n\n\t\tclass name :\n\n\t\t base\n\n\t\t end class \n\n\t\t",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -244,7 +244,7 @@ TEST(Parser, ParseStrings)
         " \"hello\"; \"wo\\\"rl\\\"d\";"
         "end class";
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     EXPECT_TRUE(prsr->parse_string(str, ret));
@@ -274,7 +274,7 @@ TEST(Parser, ParseNumbers)
         "end class ",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -308,7 +308,7 @@ TEST(Parser, ParseBooleans)
     const std::string str =
         "class name : base true; false; TRUE; FALSE; True; False;end class";
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     EXPECT_TRUE(prsr->parse_string(str, ret));
@@ -344,7 +344,7 @@ TEST(Parser, ParseAssignExpr)
         "class name : base \n\n\t\ta \n\n\t\tbyval= \n\n\t\t1\n\n\t\t;b \n\n\t\tasExternal\n\n\t\t =-1\n\n\t\t; endclass",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -394,7 +394,7 @@ TEST(Parser, ParseUnaryOpOnVariable)
         "class name : base  \n- \na \n; \n ~ \nb \n; \n - \nrefof \n c \n; \n ~ \nvalof \n d \n; \n endclass",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -477,7 +477,7 @@ TEST(Parser, ParseBinaryOp)
         ast::op_kind::and_, ast::op_kind::xor_, ast::op_kind::or_
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -534,7 +534,7 @@ TEST(Parser, ParseTernaryOp)
         "endclass",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -619,7 +619,7 @@ TEST(Parser, OpPrecedence)
         ast::op_kind::and_, ast::op_kind::xor_, ast::op_kind::or_
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     EXPECT_TRUE(prsr->parse_string(str, ret));
@@ -681,7 +681,7 @@ TEST(Parser, ParseCall)
         "endclass",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -885,7 +885,7 @@ TEST(Parser, ParseTryBlock)
         "endclass",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -950,7 +950,7 @@ TEST(Parser, ParseSwitchBlock)
         "endclass",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -1053,7 +1053,7 @@ TEST(Parser, ParseIfBlock)
         "endclass",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -1127,7 +1127,7 @@ TEST(Parser, ParseForLoop)
         "endclass",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -1240,7 +1240,7 @@ TEST(Parser, ParseWhileLoop)
         "endclass",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -1284,7 +1284,7 @@ TEST(Parser, ParseBranches)
         "endclass",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)
@@ -1316,7 +1316,7 @@ TEST(Parser, ParseMethodDef)
         "endclass",
     };
 
-    auto prsr = parser::create();
+    auto prsr = parser::instance();
     ast::node ret;
 
     for(auto &str : str_vec)

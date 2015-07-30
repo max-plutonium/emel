@@ -168,4 +168,3 @@ expressions::expressions()
 } // namespace spirit_frontend
 
 } // namespace emel
-

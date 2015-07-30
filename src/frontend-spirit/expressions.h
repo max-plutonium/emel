@@ -20,7 +20,7 @@
 #ifndef EXPRESSIONS_H
 #define EXPRESSIONS_H
 
-#include "../ast.h"
+#include "../emel/ast.h"
 #include "keywords.h"
 #include "values.h"
 #include "error_handler.h"

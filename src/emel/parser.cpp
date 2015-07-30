@@ -18,20 +18,12 @@
  * <http://www.gnu.org/licenses/>.
  */
 #include "parser.h"
-#include "spirit/grammar.h"
+#include "plugins.h"
 
-#include <functional>
+#include <iostream>
 #include <fstream>
-#include <boost/spirit/home/qi/parse.hpp>
 
 namespace emel {
-
-class spirit_parser : public parser
-{
-public:
-    virtual bool parse(source_iter first, source_iter last,
-        std::string file_name, ast::node &ret) override;
-};
 
 /*static*/
 std::string parser::read_from_file(const std::string &file_name)
@@ -51,52 +43,29 @@ std::string parser::read_from_file(const std::string &file_name)
 }
 
 /*static*/
-std::unique_ptr<parser> parser::create()
+parser *parser::instance(const std::string &name)
 {
-    return std::make_unique<spirit_parser>();
+    if(name.empty()) {
+        auto versions = frontend.versions();
+        if(versions.empty())
+            return  nullptr;
+        return frontend.load_version(versions.back()).second;
+    }
+
+    return frontend.load_name(name).second;
 }
 
-bool parser::parse_file(const std::string &file_name, ast::node &ret)
+bool parser::parse_file(const std::string &file_name, ast::node &ret) const
 {
     const std::string content = read_from_file(file_name);
     if(content.empty()) return false;
     return parse(content.cbegin(), content.cend(), file_name, ret);
 }
 
-bool parser::parse_string(const std::string &content, ast::node &ret)
+bool parser::parse_string(const std::string &content, ast::node &ret) const
 {
     if(content.empty()) return false;
     return parse(content.cbegin(), content.cend(), "fake.emel", ret);
-}
-
-bool spirit_parser::parse(source_iter first, source_iter last,
-    std::string file_name, ast::node &ret)
-{
-    spirit_frontend::pos_iter pos_begin(first, last, file_name);
-    spirit_frontend::pos_iter pos_end;
-    spirit_frontend::grammar g;
-    spirit_frontend::skipper s;
-
-    bool r = false;
-
-    try {
-        r = spirit_frontend::qi::phrase_parse(pos_begin, pos_end, g, s, ret);
-
-    } catch(const std::runtime_error &e) {
-        std::string rest(pos_begin, pos_end);
-// TODO        std::cerr << "Parsing failed\n" << "stopped at: \""
-//                  << rest << "\"\n";
-        return false;
-    }
-
-    if(pos_begin != pos_end) {
-        std::string rest(pos_begin, pos_end);
-// TODO        std::cerr << "Parsing failed\n" << "stopped at: \""
-//                  << rest << "\"\n";
-        return false;
-    }
-
-    return r;
 }
 
 } // namespace emel

@@ -62,12 +62,14 @@ DynamicLibrary {
 
         files: [
             'emel/ast.h',
+            'emel/opcodes.h',
             'emel/parser.h',
             'emel/plugins.h'
         ]
     }
 
     files: [
+        'emel/opcodes.cpp',
         'emel/ast.cpp',
         'emel/parser.cpp',
         'emel/plugins.cpp',

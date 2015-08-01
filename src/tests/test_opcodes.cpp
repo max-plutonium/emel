@@ -24,7 +24,7 @@ using namespace emel;
 
 TEST(OpCodes, EncodeDecode)
 {
-    opcode op = opcode::halt;
+    opcode op = opcode::debug_break;
     opcode op2 = opcode::push_const;
     auto encoded_op = emel_insn_encode(op, 123);
     auto encoded_op2 = emel_insn_encode(op2, 65535);

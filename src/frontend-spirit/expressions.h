@@ -38,7 +38,7 @@ protected:
     qi::rule<iterator_type, ast::node(), skipper> expr;
     qi::rule<iterator_type, ast::assign(), skipper> assignment;
     qi::rule<iterator_type, ast::node(), qi::locals<ast::node>, skipper> ternary;
-    qi::rule<iterator_type, ast::node(), qi::locals<ast::op_kind>, skipper> log_or,
+    qi::rule<iterator_type, ast::node(), qi::locals<op_kind>, skipper> log_or,
             log_xor, log_and, rel_eq, rel_order, addition, multiplication;
 
     qi::rule<iterator_type, ast::node(), skipper> factor;

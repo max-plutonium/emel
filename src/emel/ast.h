@@ -29,7 +29,14 @@
 #include <boost/variant/recursive_wrapper.hpp>
 #include <boost/variant/get.hpp>
 
-namespace emel EMEL_EXPORT { namespace ast EMEL_EXPORT {
+namespace emel EMEL_EXPORT {
+
+enum class op_kind {
+    or_ = 201, xor_, and_, eq, ne, lt, gt, lte, gte, add, sub, mul, div,
+    not_ = 101, neg
+};
+
+namespace ast EMEL_EXPORT {
 
 struct class_;
 struct param;
@@ -49,11 +56,6 @@ struct bin_op;
 struct variable;
 struct un_op;
 struct call;
-
-enum class op_kind {
-    or_ = 201, xor_, and_, eq, ne, lt, gt, lte, gte, add, sub, mul, div,
-    not_ = 101, neg
-};
 
 using node = boost::make_recursive_variant<
         std::string, double, bool,
@@ -98,6 +100,12 @@ struct method
     std::string name;
     std::vector<param> params;
     std::vector<node> exprs;
+
+    method() = default;
+
+    method(std::string name, std::vector<param> params, std::vector<node> exprs)
+        : name(name), params(std::move(params)), exprs(std::move(exprs))
+    { }
 };
 
 struct while_

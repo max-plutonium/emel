@@ -28,15 +28,14 @@ namespace emel {
 extern "C" {
 
 EMEL_EXPORT void
-emel_insn_decode(std::uint32_t insn, emel::opcode *op, std::uint32_t *idx)
+emel_insn_decode(emel::insn_type insn, emel::opcode *op, std::uint32_t *idx)
 {
-    assert(op);
-    assert(idx);
+    assert(op); assert(idx);
     *op = static_cast<emel::opcode>(insn & 0x1F);
     *idx = insn >> 5;
 }
 
-EMEL_EXPORT std::uint32_t
+EMEL_EXPORT emel::insn_type
 emel_insn_encode(emel::opcode op, std::uint32_t idx)
 {
     return (idx << 5) + static_cast<std::uint32_t>(op);

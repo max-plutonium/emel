@@ -25,113 +25,6 @@ using namespace emel;
 // TODO нужно тестировать обработку ошибок
 // TODO test for id parsing
 
-#include <cassert>
-
-struct visitor : boost::static_visitor<void>
-{
-
-    // node_visitor interface
-public:
-    void operator()(const std::string &value)
-    {
-    }
-
-    void operator()(double value)
-    {
-    }
-
-    void operator()(bool value)
-    {
-    }
-
-    void operator()(ast::class_ &n)
-    {
-    }
-
-    void operator()(ast::param &)
-    {
-        assert(false);
-    }
-
-    void operator()(std::vector<ast::param> )
-    {
-        assert(false);
-    }
-
-    void operator()(ast::method &n)
-    {
-    }
-
-    void operator()(std::vector<ast::method> &)
-    {
-        assert(false);
-    }
-
-    void operator()(ast::while_ &n)
-    {
-    }
-
-    void operator()(ast::for_ &n)
-    {
-    }
-
-    void operator()(ast::if_ &n)
-    {
-    }
-
-    void operator()(ast::case_ &n)
-    {
-    }
-
-    void operator()(ast::switch_ &n)
-    {
-    }
-
-    void operator()(ast::continue_ &)
-    {
-    }
-
-    void operator()(ast::break_ &)
-    {
-    }
-
-    void operator()(ast::return_ &n)
-    {
-    }
-
-    void operator()(ast::try_ &n)
-    {
-    }
-
-    void operator()(ast::assign &n)
-    {
-    }
-
-    void operator()(ast::ternary &n)
-    {
-    }
-
-    void operator()(ast::bin_op &n)
-    {
-    }
-
-    void operator()(ast::variable &n)
-    {
-    }
-
-    void operator()(ast::un_op &n)
-    {
-    }
-
-    void operator()(ast::call &n)
-    {
-    }
-
-    void operator()(std::vector<ast::node> &n)
-    {
-    }
-};
-
 struct mock_parser : public parser {
     MOCK_CONST_METHOD4(parse, bool(source_iter, source_iter, std::string, ast::node &));
 };
@@ -411,7 +304,7 @@ TEST(Parser, ParseUnaryOpOnVariable)
         {
             ASSERT_EQ(typeid(ast::un_op), c.exprs.at(0).type());
             ast::un_op op = boost::get<ast::un_op>(c.exprs.at(0));
-            EXPECT_EQ(ast::op_kind::neg, op.k);
+            EXPECT_EQ(op_kind::neg, op.k);
             ASSERT_EQ(typeid(ast::variable), op.rhs.type());
             ast::variable var = boost::get<ast::variable>(op.rhs);
             EXPECT_EQ("a", var.name);
@@ -422,7 +315,7 @@ TEST(Parser, ParseUnaryOpOnVariable)
         {
             ASSERT_EQ(typeid(ast::un_op), c.exprs.at(1).type());
             ast::un_op op = boost::get<ast::un_op>(c.exprs.at(1));
-            EXPECT_EQ(ast::op_kind::not_, op.k);
+            EXPECT_EQ(op_kind::not_, op.k);
             ASSERT_EQ(typeid(ast::variable), op.rhs.type());
             ast::variable var2 = boost::get<ast::variable>(op.rhs);
             EXPECT_EQ("b", var2.name);
@@ -433,7 +326,7 @@ TEST(Parser, ParseUnaryOpOnVariable)
         {
             ASSERT_EQ(typeid(ast::un_op), c.exprs.at(2).type());
             ast::un_op op = boost::get<ast::un_op>(c.exprs.at(2));
-            EXPECT_EQ(ast::op_kind::neg, op.k);
+            EXPECT_EQ(op_kind::neg, op.k);
             ASSERT_EQ(typeid(ast::variable), op.rhs.type());
             ast::variable var3 = boost::get<ast::variable>(op.rhs);
             EXPECT_EQ("c", var3.name);
@@ -444,7 +337,7 @@ TEST(Parser, ParseUnaryOpOnVariable)
         {
             ASSERT_EQ(typeid(ast::un_op), c.exprs.at(3).type());
             ast::un_op op = boost::get<ast::un_op>(c.exprs.at(3));
-            EXPECT_EQ(ast::op_kind::not_, op.k);
+            EXPECT_EQ(op_kind::not_, op.k);
             ASSERT_EQ(typeid(ast::variable), op.rhs.type());
             ast::variable var4 = boost::get<ast::variable>(op.rhs);
             EXPECT_EQ("d", var4.name);
@@ -468,13 +361,13 @@ TEST(Parser, ParseBinaryOp)
         "11\n\n\t\t & \n\n\t\t11; 12\n\n\t\t^ \n\n\t\t12; 13 | 13; endclass",
     };
 
-    const std::vector<ast::op_kind> op_kind_vec {
-        ast::op_kind::add, ast::op_kind::sub,
-        ast::op_kind::mul, ast::op_kind::div,
-        ast::op_kind::lte, ast::op_kind::gte,
-        ast::op_kind::lt, ast::op_kind::gt,
-        ast::op_kind::eq, ast::op_kind::ne,
-        ast::op_kind::and_, ast::op_kind::xor_, ast::op_kind::or_
+    const std::vector<op_kind> op_kind_vec {
+        op_kind::add, op_kind::sub,
+        op_kind::mul, op_kind::div,
+        op_kind::lte, op_kind::gte,
+        op_kind::lt, op_kind::gt,
+        op_kind::eq, op_kind::ne,
+        op_kind::and_, op_kind::xor_, op_kind::or_
     };
 
     auto prsr = parser::instance();
@@ -609,14 +502,14 @@ TEST(Parser, OpPrecedence)
         "(1&2^3!=(5<6>7==8))|(9-(10+11)<=12>=13/(-14*~15));"
         "endclass";
 
-    std::vector<ast::op_kind> op_kind_vec {
-        ast::op_kind::neg, ast::op_kind::not_,
-        ast::op_kind::mul, ast::op_kind::div,
-        ast::op_kind::add, ast::op_kind::sub,
-        ast::op_kind::lte, ast::op_kind::gte,
-        ast::op_kind::lt, ast::op_kind::gt,
-        ast::op_kind::eq, ast::op_kind::ne,
-        ast::op_kind::and_, ast::op_kind::xor_, ast::op_kind::or_
+    std::vector<op_kind> op_kind_vec {
+        op_kind::neg, op_kind::not_,
+        op_kind::mul, op_kind::div,
+        op_kind::add, op_kind::sub,
+        op_kind::lte, op_kind::gte,
+        op_kind::lt, op_kind::gt,
+        op_kind::eq, op_kind::ne,
+        op_kind::and_, op_kind::xor_, op_kind::or_
     };
 
     auto prsr = parser::instance();
@@ -631,7 +524,7 @@ TEST(Parser, OpPrecedence)
         ASSERT_EQ(typeid(ast::bin_op), expr_node.type());
         ast::bin_op op = boost::get<ast::bin_op>(expr_node);
 
-        std::stack<ast::op_kind, decltype(op_kind_vec)>
+        std::stack<op_kind, decltype(op_kind_vec)>
                 op_kind_stack(op_kind_vec);
 
         std::function<void (const ast::node &)> dfs;

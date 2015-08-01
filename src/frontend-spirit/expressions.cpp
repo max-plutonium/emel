@@ -38,7 +38,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::bin_op,
-        (emel::ast::op_kind, k)
+        (emel::op_kind, k)
         (emel::ast::node, lhs)
         (emel::ast::node, rhs)
     );
@@ -52,7 +52,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::un_op,
-        (emel::ast::op_kind, k)
+        (emel::op_kind, k)
         (emel::ast::node, rhs)
     );
 
@@ -94,29 +94,29 @@ expressions::expressions()
     qi::on_error<qi::fail>(ternary, eh(_1, _3, _4));
 
     log_or = log_xor[ _val = std::move(_1) ] >> *(or_ > log_xor
-        [ _val = construct<ast::bin_op>(ast::op_kind::or_, std::move(_val), std::move(_1)) ]);
+        [ _val = construct<ast::bin_op>(op_kind::or_, std::move(_val), std::move(_1)) ]);
 
     log_xor = log_and[ _val = std::move(_1) ] >> *(xor_ > log_and
-        [ _val = construct<ast::bin_op>(ast::op_kind::xor_, std::move(_val), std::move(_1)) ]);
+        [ _val = construct<ast::bin_op>(op_kind::xor_, std::move(_val), std::move(_1)) ]);
 
     log_and = rel_eq[ _val = std::move(_1) ] >> *(and_ > rel_eq
-        [ _val = construct<ast::bin_op>(ast::op_kind::and_, std::move(_val), std::move(_1)) ]);
+        [ _val = construct<ast::bin_op>(op_kind::and_, std::move(_val), std::move(_1)) ]);
 
     rel_eq = rel_order[ _val = std::move(_1) ]
-        >> *((eq[ _a = ast::op_kind::eq ] | ne[ _a = ast::op_kind::ne ])
+        >> *((eq[ _a = op_kind::eq ] | ne[ _a = op_kind::ne ])
            > rel_order[ _val = construct<ast::bin_op>(_a, std::move(_val), std::move(_1)) ]);
 
     rel_order = addition[ _val = std::move(_1) ]
-        >> *((lte[ _a = ast::op_kind::lte ] | gte[ _a = ast::op_kind::gte ]
-              | lt[ _a = ast::op_kind::lt ] | gt[ _a = ast::op_kind::gt ])
+        >> *((lte[ _a = op_kind::lte ] | gte[ _a = op_kind::gte ]
+              | lt[ _a = op_kind::lt ] | gt[ _a = op_kind::gt ])
            > addition[ _val = construct<ast::bin_op>(_a, std::move(_val), std::move(_1)) ]);
 
     addition = multiplication[ _val = std::move(_1) ]
-        >> *((plus[ _a = ast::op_kind::add ] | minus[ _a = ast::op_kind::sub ])
+        >> *((plus[ _a = op_kind::add ] | minus[ _a = op_kind::sub ])
            > multiplication[ _val = construct<ast::bin_op>(_a, std::move(_val), std::move(_1)) ]);
 
     multiplication = factor[ _val = std::move(_1) ]
-        >> *((mul[ _a = ast::op_kind::mul ] | div[ _a = ast::op_kind::div ])
+        >> *((mul[ _a = op_kind::mul ] | div[ _a = op_kind::div ])
            > factor[ _val = construct<ast::bin_op>(_a, std::move(_val), std::move(_1)) ]);
 
     log_or.name("log or");
@@ -146,8 +146,8 @@ expressions::expressions()
     var_ref.name("var ref");
     qi::on_error<qi::fail>(var_ref, eh(_1, _3, _4));
 
-    unary = (not_[ at_c<0>(_val) = ast::op_kind::not_ ]
-        | minus[ at_c<0>(_val) = ast::op_kind::neg ])
+    unary = (not_[ at_c<0>(_val) = op_kind::not_ ]
+        | minus[ at_c<0>(_val) = op_kind::neg ])
             > factor[ at_c<1>(_val) = std::move(_1) ];
 
     unary.name("unary op");

@@ -118,9 +118,9 @@ grammar::grammar() : grammar::base_type(root, "root")
     param_def.name("param def");
     qi::on_error<qi::fail>(param_def, eh(_1, _3, _4));
 
-    method_def = id[ at_c<0>(_val) = std::move(_1) ]
+    method_def = (id[ at_c<0>(_val) = std::move(_1) ]
         >> left_paren
-        >> -(param_def % comma)[ at_c<1>(_val) = std::move(_1) ]
+        >> -(param_def % comma)[ at_c<1>(_val) = std::move(_1) ])
         > right_paren > left_brace
         >> -exprs[ at_c<2>(_val) = std::move(_1) ]
         > right_brace;

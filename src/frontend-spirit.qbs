@@ -27,6 +27,7 @@ DynamicLibrary {
 
     cpp.cxxLanguageVersion: 'c++14'
     cpp.systemIncludePaths: [project.boostPath]
+    cpp.cxxStandardLibrary: 'libstdc++'
     cpp.defines: [
         'EMEL_EXPORT=__attribute__((visibility ("default")))',
         'EMEL_FRONTEND_VERSION="' + version + '"'

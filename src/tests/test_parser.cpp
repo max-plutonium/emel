@@ -26,7 +26,8 @@ using namespace emel;
 // TODO test for id parsing
 
 struct mock_parser : public parser {
-    MOCK_CONST_METHOD4(parse, bool(source_iter, source_iter, std::string, ast::node &));
+    MOCK_CONST_METHOD4(parse, bool(source_iter,
+        source_iter, const std::string &, ast::node &));
 };
 
 using testing::_;

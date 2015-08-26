@@ -55,11 +55,14 @@ public:
 
 protected:
     const char *instance_sym, *name_sym, *version_sym;
+    std::string default_dir;
     std::multimap<version, library_ptr, version_compare> instances;
     std::unordered_multimap<std::string, library_ptr> names_map;
 
 public:
-    plugin(const char *instance_sym, const char *name_sym, const char *version_sym);
+    plugin(const char *instance_sym, const char *name_sym,
+           const char *version_sym, const std::string &default_dir = std::string());
+
     std::size_t load_dir(const std::string &dir_name = std::string());
 
     std::pair<version, void *> load_name(const std::string &name) const;
@@ -76,9 +79,9 @@ class typed_plugin : public plugin
 {
 public:
     typed_plugin(const char *instance_sym, const char *name_sym,
-                 const char *version_sym, const std::string &dir_name = std::string())
-        : plugin(instance_sym, name_sym, version_sym)
-    { load_dir(dir_name); }
+                 const char *version_sym, const std::string &default_dir = std::string())
+        : plugin(instance_sym, name_sym, version_sym, default_dir)
+    { }
 
     std::pair<version, Tp *> load_name(const std::string &name) const
     {

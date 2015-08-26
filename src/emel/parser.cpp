@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <mutex>
 
 namespace emel {
 
@@ -42,13 +43,17 @@ std::string parser::read_from_file(const std::string &file_name)
         );
 }
 
+static std::once_flag once_flag;
+
 /*static*/
 parser *parser::instance(const std::string &name)
 {
+    std::call_once(once_flag, &plugin::load_dir, &frontend, "");
+
     if(name.empty()) {
         auto versions = frontend.versions();
         if(versions.empty())
-            return  nullptr;
+            return nullptr;
         return frontend.load_version(versions.back()).second;
     }
 

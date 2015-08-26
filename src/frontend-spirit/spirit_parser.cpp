@@ -23,7 +23,7 @@
 namespace emel { namespace spirit_frontend {
 
 bool spirit_parser::parse(source_iter first, source_iter last,
-    std::string file_name, ast::node &ret) const
+    const std::string &file_name, ast::node &ret) const
 {
     pos_iter pos_begin(first, last, file_name);
     pos_iter pos_end;

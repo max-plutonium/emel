@@ -31,7 +31,7 @@ namespace bfs = boost::filesystem;
 
 void plugin::library_deleter::operator()(plugin::library *ptr)
 {
-    if(ptr->handle)
+    if(ptr && ptr->handle)
         ::dlclose(ptr->handle);
     delete ptr;
 }
@@ -69,9 +69,9 @@ static std::vector<bfs::directory_entry> find_libs(
         const std::string &path, const char *ext = ".so")
 {
     std::vector<bfs::directory_entry> files;
-    bfs::directory_iterator rdib(path), rdie;
+    bfs::directory_iterator dir_begin(path), dir_end;
 
-    std::copy_if(rdib, rdie, std::back_inserter(files),
+    std::copy_if(dir_begin, dir_end, std::back_inserter(files),
         [ext](const bfs::directory_entry &entry) {
             return entry.path().filename().string().rfind(ext)
                 != std::string::npos;
@@ -112,8 +112,10 @@ static plugin::version parse_version(const std::string &str)
     return ret;
 }
 
-plugin::plugin(const char *instance_sym, const char *name_sym, const char *version_sym)
-    : instance_sym(instance_sym), name_sym(name_sym), version_sym(version_sym)
+plugin::plugin(const char *instance_sym, const char *name_sym,
+               const char *version_sym, const std::string &default_dir)
+    : instance_sym(instance_sym), name_sym(name_sym)
+    , version_sym(version_sym), default_dir(default_dir)
 {
 }
 

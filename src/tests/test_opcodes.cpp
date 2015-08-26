@@ -24,16 +24,14 @@ using namespace emel;
 
 TEST(OpCodes, EncodeDecode)
 {
-    opcode op = opcode::debug_break;
+    opcode op = opcode::spec;
     opcode op2 = opcode::push_const;
-    auto encoded_op = emel_insn_encode(op, 123);
-    auto encoded_op2 = emel_insn_encode(op2, 65535);
-    opcode tmp;
-    decltype(encoded_op) idx;
-    emel_insn_decode(encoded_op, &tmp, &idx);
-    EXPECT_EQ(op, tmp);
-    EXPECT_EQ(idx, 123);
-    emel_insn_decode(encoded_op2, &tmp, &idx);
-    EXPECT_EQ(op2, tmp);
-    EXPECT_EQ(idx, 65535);
+    auto encoded_op = insn_encode(op, 123);
+    auto encoded_op2 = insn_encode(op2, 65535);
+    auto pair = insn_decode(encoded_op);
+    EXPECT_EQ(op, pair.first);
+    EXPECT_EQ(123, pair.second);
+    pair = insn_decode(encoded_op2);
+    EXPECT_EQ(op2, pair.first);
+    EXPECT_EQ(65535, pair.second);
 }

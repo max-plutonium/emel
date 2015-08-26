@@ -28,7 +28,7 @@ class spirit_parser : public parser
 {
 public:
     virtual bool parse(source_iter first, source_iter last,
-        std::string file_name, ast::node &ret) const override;
+        const std::string &file_name, ast::node &ret) const override;
 };
 
 } // namespace spirit_frontend

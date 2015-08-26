@@ -38,7 +38,7 @@ public:
     bool parse_string(const std::string &content, ast::node &ret) const;
 
     virtual bool parse(source_iter first, source_iter last,
-        std::string file_name, ast::node &ret) const = 0;
+        const std::string &file_name, ast::node &ret) const = 0;
 };
 
 } // namespace emel

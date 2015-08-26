@@ -19,26 +19,16 @@
  */
 #include "opcodes.h"
 
-#include <cassert>
-
 namespace emel {
 
-} // namespace emel
-
-extern "C" {
-
-EMEL_EXPORT void
-emel_insn_decode(emel::insn_type insn, emel::opcode *op, std::uint32_t *idx)
+std::pair<opcode, std::uint32_t> insn_decode(insn_type insn)
 {
-    assert(op); assert(idx);
-    *op = static_cast<emel::opcode>(insn & 0x1F);
-    *idx = insn >> 5;
+    return std::make_pair(static_cast<opcode>(insn & 0x1F), insn >> 5);
 }
 
-EMEL_EXPORT emel::insn_type
-emel_insn_encode(emel::opcode op, std::uint32_t idx)
+insn_type insn_encode(opcode op, std::uint32_t idx)
 {
     return (idx << 5) + static_cast<std::uint32_t>(op);
 }
 
-} // extern "C"
+} // namespace emel

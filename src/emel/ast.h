@@ -20,6 +20,8 @@
 #ifndef AST_H
 #define AST_H
 
+#include "opcodes.h"
+
 #define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 #define BOOST_MPL_LIMIT_LIST_SIZE 30
 #define BOOST_MPL_LIMIT_VECTOR_SIZE 30
@@ -30,11 +32,6 @@
 #include <boost/variant/get.hpp>
 
 namespace emel EMEL_EXPORT {
-
-enum class op_kind {
-    or_ = 201, xor_, and_, eq, ne, lt, gt, lte, gte, add, sub, mul, div,
-    not_ = 101, neg
-};
 
 namespace ast EMEL_EXPORT {
 

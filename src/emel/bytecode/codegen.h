@@ -55,9 +55,7 @@ public:
 
     void operator()(ast::method &node);
 
-    void operator()(ast::while_ &)
-    {
-    }
+    void operator()(ast::while_ &node);
 
     void operator()(ast::for_ &)
     {

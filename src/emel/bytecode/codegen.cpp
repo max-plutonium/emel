@@ -165,30 +165,30 @@ void codegen::operator()(ast::assign &node)
 void codegen::operator()(ast::ternary &node)
 {
     node.cond.apply_visitor(*this);
-    auto start = emit_insn(opcode::br_false);
+    auto start = emit_insn(opcode::brf_false);
     node.first.apply_visitor(*this);
-    auto end = emit_insn(opcode::br);
+    auto end = emit_insn(opcode::brf);
     auto offset = end - start;
-    edit_insn(start, opcode::br_false, offset);
+    edit_insn(start, opcode::brf_false, offset);
     start = end;
     node.second.apply_visitor(*this);
     end = last_insn_index();
     offset = end - start;
-    edit_insn(start, opcode::br, offset);
+    edit_insn(start, opcode::brf, offset);
 }
 
 void codegen::operator()(ast::if_ &node)
 {
     node.cond.apply_visitor(*this);
-    auto start = emit_insn(opcode::br_false);
+    auto start = emit_insn(opcode::brf_false);
 
     for(auto &then : node.then_exprs)
         then.apply_visitor(*this);
 
     auto end = node.else_exprs.empty()
-            ? last_insn_index() : emit_insn(opcode::br);
+            ? last_insn_index() : emit_insn(opcode::brf);
     auto offset = end - start;
-    edit_insn(start, opcode::br_false, offset);
+    edit_insn(start, opcode::brf_false, offset);
 
     for(auto &else_ : node.else_exprs)
         else_.apply_visitor(*this);
@@ -197,8 +197,33 @@ void codegen::operator()(ast::if_ &node)
         start = end;
         end = last_insn_index();
         offset = end - start;
-        edit_insn(start, opcode::br, offset);
+        edit_insn(start, opcode::brf, offset);
     }
+}
+
+void codegen::operator()(ast::while_ &node)
+{
+    auto start = last_insn_index();
+    std::size_t br_idx = 0;
+
+    // Для упрощения "вечного" цикла
+    const bool forever_loop = typeid(bool) == node.cond.type()
+        && boost::get<bool>(node.cond) != 0.0;
+
+    if(!forever_loop) {
+        node.cond.apply_visitor(*this);
+        br_idx = emit_insn(opcode::brf_false);
+    }
+
+    for(auto &then : node.exprs)
+        then.apply_visitor(*this);
+
+    auto end = last_insn_index();
+    auto offset = end - start;
+    emit_insn(opcode::brb, offset);
+
+    if(!forever_loop)
+        edit_insn(br_idx, opcode::brf_false, offset - 1);
 }
 
 void codegen::operator()(ast::bin_op &node)

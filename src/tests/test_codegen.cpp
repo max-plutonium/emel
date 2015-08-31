@@ -486,22 +486,22 @@ TEST(Codegen, TernaryOp)
     EXPECT_THAT(cf.methods.front().code, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
         insn_encode(opcode::push_const, 3),
-        insn_encode(opcode::br_false, 2),
+        insn_encode(opcode::brf_false, 2),
         insn_encode(opcode::push_const, 4),
-        insn_encode(opcode::br, 1),
+        insn_encode(opcode::brf, 1),
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::push_const, 7),
         insn_encode(opcode::call_op, static_cast<std::uint32_t>(op_kind::gte)),
-        insn_encode(opcode::br_false, 4),
+        insn_encode(opcode::brf_false, 4),
         insn_encode(opcode::push_const, 3),
         insn_encode(opcode::push_const, 7),
         insn_encode(opcode::call_op, static_cast<std::uint32_t>(op_kind::mul)),
-        insn_encode(opcode::br, 5),
+        insn_encode(opcode::brf, 5),
         insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::br_false, 2),
+        insn_encode(opcode::brf_false, 2),
         insn_encode(opcode::push_const, 3),
-        insn_encode(opcode::br, 1),
+        insn_encode(opcode::brf, 1),
         insn_encode(opcode::push_const, 7),
         insn_encode(opcode::drop_frame, 1)
     }));
@@ -557,19 +557,72 @@ TEST(Codegen, IfBlock)
     EXPECT_THAT(cf.methods.front().code, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
         insn_encode(opcode::push_const, 3),
-        insn_encode(opcode::br_false, 1),
+        insn_encode(opcode::brf_false, 1),
         insn_encode(opcode::push_const, 4),
         insn_encode(opcode::push_const, 5),
-        insn_encode(opcode::br_false, 2),
+        insn_encode(opcode::brf_false, 2),
         insn_encode(opcode::push_const, 4),
-        insn_encode(opcode::br, 1),
+        insn_encode(opcode::brf, 1),
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::drop_frame, 1)
     }));
 }
 
 // TODO ForLoop
-// TODO WhileLoop
+
+TEST(Codegen, WhileLoop)
+{
+    ast::class_ class_;
+    class_.name = "Object";
+    class_.exprs.emplace_back(ast::while_ {
+        false, { -1.23 }
+    });
+    class_.exprs.emplace_back(ast::while_ {
+        true, { -1.23 }
+    });
+    bytecode::symbols syms;
+    bytecode::codegen c(syms);
+    bytecode::class_info cf = c.generate(class_);
+
+    EXPECT_THAT(cf.const_pool, SizeIs(5));
+    EXPECT_THAT(boost::get<std::string>(cf.const_pool[1]), Eq("Object"));
+    EXPECT_THAT(boost::get<std::string>(cf.const_pool[2]), Eq("~init/0"));
+    EXPECT_THAT(boost::get<double>(cf.const_pool[3]), Eq(0.0));
+    EXPECT_THAT(boost::get<double>(cf.const_pool[4]), Eq(-1.23));
+
+    EXPECT_THAT(cf.base_name_index, Eq(0));
+    EXPECT_THAT(cf.name_index, Eq(1));
+    EXPECT_THAT(cf.vsb, Eq(bytecode::visibility::public_));
+    EXPECT_FALSE(cf.is_abstract);
+    EXPECT_FALSE(cf.is_interface);
+
+    EXPECT_THAT(cf.fields, IsEmpty());
+    EXPECT_THAT(cf.static_fields, IsEmpty());
+    EXPECT_THAT(cf.static_methods, IsEmpty());
+
+    EXPECT_THAT(cf.methods, SizeIs(1));
+    EXPECT_THAT(cf.methods.front().class_name_index, Eq(1));
+    EXPECT_THAT(cf.methods.front().name_index, Eq(2));
+    EXPECT_THAT(cf.methods.front().nr_args, Eq(0));
+    EXPECT_THAT(cf.methods.front().vsb, Eq(bytecode::visibility::public_));
+    EXPECT_FALSE(cf.methods.front().is_native);
+    EXPECT_FALSE(cf.methods.front().is_static);
+    EXPECT_FALSE(cf.methods.front().is_virtual);
+    EXPECT_FALSE(cf.methods.front().is_pure);
+
+    // constructor
+    EXPECT_THAT(cf.methods.front().code, ElementsAreArray({
+        insn_encode(opcode::push_frame, 1),
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::brb, 3),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::brb, 1),
+        insn_encode(opcode::drop_frame, 1)
+    }));
+}
+
 // TODO Branches
 // TODO MethodDef
 // TODO Assigns

@@ -57,10 +57,7 @@ struct call;
 using node = boost::make_recursive_variant<
         std::string, double, bool,
         boost::recursive_wrapper<class_>,
-        boost::recursive_wrapper<param>,
-        boost::recursive_wrapper<std::vector<param>>,
         boost::recursive_wrapper<method>,
-        boost::recursive_wrapper<std::vector<method>>,
         boost::recursive_wrapper<while_>,
         boost::recursive_wrapper<for_>,
         boost::recursive_wrapper<if_>,
@@ -75,8 +72,7 @@ using node = boost::make_recursive_variant<
         boost::recursive_wrapper<bin_op>,
         boost::recursive_wrapper<variable>,
         boost::recursive_wrapper<un_op>,
-        boost::recursive_wrapper<call>,
-        boost::recursive_wrapper<std::vector<boost::recursive_variant_>>
+        boost::recursive_wrapper<call>
     >::type;
 
 struct class_

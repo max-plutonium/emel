@@ -73,8 +73,9 @@ static std::vector<bfs::directory_entry> find_libs(
 
     std::copy_if(dir_begin, dir_end, std::back_inserter(files),
         [ext](const bfs::directory_entry &entry) {
-            return entry.path().filename().string().rfind(ext)
-                != std::string::npos;
+            const auto fname = entry.path().filename().string();
+            return (fname.find("libemel") != std::string::npos)
+                && (fname.rfind(ext) != std::string::npos);
         });
 
     return files;

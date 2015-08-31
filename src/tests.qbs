@@ -28,7 +28,8 @@ CppApplication {
     cpp.cxxLanguageVersion: 'c++14'
     cpp.systemIncludePaths: [project.boostPath, gmockPath]
     cpp.libraryPaths: [project.boostLibsPath]
-    cpp.dynamicLibraries: ['pthread', 'boost_serialization']
+    cpp.cxxStandardLibrary: 'libstdc++'
+    cpp.dynamicLibraries: ['pthread']
     cpp.defines: ['EMEL_EXPORT=__attribute__((visibility ("default")))']
     cpp.objcopyPath: project.objcopyPath
     cpp.stripPath: project.stripPath
@@ -53,6 +54,7 @@ CppApplication {
 
     files: [
         'tests/main.cpp',
+        'tests/test_codegen.cpp',
         'tests/test_opcodes.cpp',
         'tests/test_parser.cpp',
         gmockPath + '/gmock-gtest-all.cc'

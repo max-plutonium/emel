@@ -63,15 +63,25 @@ DynamicLibrary {
 
         files: [
             'emel/ast.h',
-            'emel/opcodes.h',
             'emel/parser.h',
             'emel/plugins.h'
         ]
     }
 
     files: [
-        'emel/opcodes.cpp',
         'emel/ast.cpp',
+        'emel/bytecode/bytecode.cpp',
+        'emel/bytecode/bytecode.h',
+        'emel/bytecode/codegen.cpp',
+        'emel/bytecode/codegen.h',
+        'emel/bytecode/const_pool_manager.cpp',
+        'emel/bytecode/const_pool_manager.h',
+        'emel/bytecode/insns_manager.cpp',
+        'emel/bytecode/insns_manager.h',
+        'emel/bytecode/symbols_manager.cpp',
+        'emel/bytecode/symbols_manager.h',
+        'emel/opcodes.cpp',
+        'emel/opcodes.h',
         'emel/parser.cpp',
         'emel/plugins.cpp',
         'emel/tokens.cpp',

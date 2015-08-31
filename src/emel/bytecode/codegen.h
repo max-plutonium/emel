@@ -63,9 +63,7 @@ public:
     {
     }
 
-    void operator()(ast::if_ &)
-    {
-    }
+    void operator()(ast::if_ &node);
 
     void operator()(ast::case_ &)
     {

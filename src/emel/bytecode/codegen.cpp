@@ -177,6 +177,30 @@ void codegen::operator()(ast::ternary &node)
     edit_insn(start, opcode::br, offset);
 }
 
+void codegen::operator()(ast::if_ &node)
+{
+    node.cond.apply_visitor(*this);
+    auto start = emit_insn(opcode::br_false);
+
+    for(auto &then : node.then_exprs)
+        then.apply_visitor(*this);
+
+    auto end = node.else_exprs.empty()
+            ? last_insn_index() : emit_insn(opcode::br);
+    auto offset = end - start;
+    edit_insn(start, opcode::br_false, offset);
+
+    for(auto &else_ : node.else_exprs)
+        else_.apply_visitor(*this);
+
+    if(!node.else_exprs.empty()) {
+        start = end;
+        end = last_insn_index();
+        offset = end - start;
+        edit_insn(start, opcode::br, offset);
+    }
+}
+
 void codegen::operator()(ast::bin_op &node)
 {
     node.rhs.apply_visitor(*this);

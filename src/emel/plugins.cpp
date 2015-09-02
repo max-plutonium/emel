@@ -51,7 +51,7 @@ static std::vector<std::string> get_paths(const std::string &dir_name)
     if(dir_name.empty()) {
         paths.push_back(bfs::current_path().string());
 
-        std::string lp(std::getenv("LD_LIBRARY_PATH"));
+        const std::string lp(std::getenv("LD_LIBRARY_PATH"));
 
         std::size_t idx = lp.find(':'), prev_idx = 0;
         while(idx != std::string::npos) {

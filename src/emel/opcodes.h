@@ -21,7 +21,9 @@
 #define OPCODES_H
 
 #include <cstdint>
+#include <deque>
 #include <utility>
+#include <boost/variant.hpp>
 
 namespace emel {
 
@@ -57,6 +59,9 @@ enum class opcode : unsigned char {
         brb_false, // Переход назад, если на вершине стека false
         ret, // Возврат значения из функции
 };
+
+using insn_array = std::deque<insn_type>;
+using value_type = boost::variant<std::string, double, bool>;
 
 enum class op_kind {
     or_ = 201, xor_, and_, eq, ne, lt, gt, lte, gte, add, sub, mul, div,

@@ -37,10 +37,13 @@ std::string parser::read_from_file(const std::string &file_name)
     }
 
     is.unsetf(std::ios::skipws);
-    return std::string(
-            std::istreambuf_iterator<char>(is.rdbuf()),
-            std::istreambuf_iterator<char>()
-        );
+
+    std::string ret {
+        std::istreambuf_iterator<char>(is.rdbuf()),
+        std::istreambuf_iterator<char>() };
+
+    is.close();
+    return ret;
 }
 
 static std::once_flag once_flag;

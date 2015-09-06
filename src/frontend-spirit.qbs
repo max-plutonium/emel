@@ -71,6 +71,6 @@ DynamicLibrary {
         'frontend-spirit/skipper.cpp',
         'frontend-spirit/skipper.h',
         'frontend-spirit/values.cpp',
-        'frontend-spirit/values.h',
+        'frontend-spirit/values.h'
     ]
 }

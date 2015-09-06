@@ -44,20 +44,25 @@ bool plugin::version_compare::operator()(
     return false;
 }
 
-static std::vector<std::string> get_paths(const std::string &dir_name)
+static std::vector<std::string> get_paths(const std::string &dir_name, char sep = ':')
 {
     std::vector<std::string> paths;
 
     if(dir_name.empty()) {
         paths.push_back(bfs::current_path().string());
 
-        const std::string lp(std::getenv("LD_LIBRARY_PATH"));
-
-        std::size_t idx = lp.find(':'), prev_idx = 0;
-        while(idx != std::string::npos) {
-            paths.push_back(lp.substr(prev_idx, idx - prev_idx));
-            prev_idx = idx + 1;
-            idx = lp.find(':', prev_idx);
+        if(const char *env = std::getenv("LD_LIBRARY_PATH")) {
+            const std::string lp(env);
+            std::size_t idx = lp.find(sep), prev_idx = 0;
+            do {
+                if(std::string::npos == idx)
+                    idx = lp.size();
+                paths.push_back(lp.substr(prev_idx, idx - prev_idx));
+                prev_idx = idx + 1;
+                if(prev_idx > lp.length())
+                    break;
+                idx = lp.find(sep, prev_idx);
+            } while(true);
         }
     } else
         paths.push_back(bfs::absolute(dir_name).string());

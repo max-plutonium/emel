@@ -35,6 +35,8 @@ public:
     std::size_t scan_dir(const std::string &dir_name = std::string());
     std::string get_path_for(const std::string &class_name) const;
     std::vector<std::string> names() const;
+    std::string read_source(const std::string &class_name,
+        const char *locale = "ru_RU.utf-8") const;
 };
 
 } // namespace emel

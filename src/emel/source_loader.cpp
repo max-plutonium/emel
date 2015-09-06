@@ -22,6 +22,8 @@
 #include <set>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <fstream>
+#include <iostream>
 
 namespace emel {
 
@@ -130,6 +132,34 @@ std::vector<std::string> source_loader::names() const
     std::vector<std::string> ret;
     ret.reserve(set.size());
     std::copy(set.begin(), set.end(), std::back_inserter(ret));
+    return ret;
+}
+
+std::string source_loader::read_source(const std::string &class_name, const char *locale) const
+{
+    std::locale loc(locale);
+
+    const auto path = get_path_for(class_name);
+    if(path.empty()) {
+        std::cerr << "Path for class " << class_name << " doesn't exists." << std::endl;
+        return std::string();
+    }
+
+    std::ifstream is(path.c_str());
+
+    if(!is.is_open()) {
+        std::cerr << "Could not open file " << path << std::endl;
+        return std::string();
+    }
+
+    is.imbue(loc);
+    is.unsetf(std::ios::skipws);
+
+    std::string ret {
+        std::istreambuf_iterator<char>(is.rdbuf()),
+        std::istreambuf_iterator<char>() };
+
+    is.close();
     return ret;
 }
 

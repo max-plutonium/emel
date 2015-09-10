@@ -28,7 +28,10 @@ DynamicLibrary {
     cpp.systemIncludePaths: [project.boostPath]
     cpp.libraryPaths: [project.boostLibsPath]
     cpp.cxxStandardLibrary: 'libstdc++'
-    cpp.dynamicLibraries: ['boost_system', 'boost_filesystem', 'dl']
+    cpp.dynamicLibraries: [
+        'dl', 'boost_system', 'boost_filesystem',
+        'boost_locale'
+    ]
     cpp.defines: [
         'EMEL_EXPORT=__attribute__((visibility ("default")))',
         'EMEL_VERSION="' + version + '"'

@@ -80,6 +80,7 @@ DynamicLibrary {
         'emel/opcodes.h',
         'emel/parser.cpp',
         'emel/plugins.cpp',
+        'emel/semantic.cpp',
         'emel/semantic.h',
         'emel/source_loader.cpp',
         'emel/source_loader.h',

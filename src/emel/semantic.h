@@ -22,21 +22,9 @@
 
 #include "opcodes.h"
 
-#include <boost/graph/adjacency_list.hpp>
+#include <boost/pending/container_traits.hpp>
 
 namespace boost {
-    struct dequeS { };
-
-  template <typename Tp>
-    struct container_gen<dequeS, Tp> {
-        using type = std::deque<Tp>;
-    };
-
-  template <>
-    struct parallel_edge_traits<dequeS> {
-        using type = allow_parallel_edge_tag;
-    };
-
     struct deque_tag :
         virtual public graph_detail::random_access_container_tag,
         virtual public graph_detail::back_insertion_sequence_tag
@@ -54,12 +42,33 @@ namespace boost {
 
     namespace graph_detail {
       template <typename Tp, typename Alloc>
-        struct container_traits<std::deque<Tp, Alloc>> {
-            using category = deque_tag;
-            using iterator_stability = unstable_tag;
-        };
+        unstable_tag iterator_stability(const std::deque<Tp, Alloc> &)
+          { return unstable_tag(); }
+
+//      template <typename Tp, typename Alloc>
+//        struct container_traits<std::deque<Tp, Alloc>> {
+//            using category = deque_tag;
+//            using iterator_stability = unstable_tag;
+//        };
 
     } // namespace graph_detail
+
+} // namespace boost
+
+#include <boost/graph/adjacency_list.hpp>
+
+namespace boost {
+    struct dequeS { };
+
+  template <typename Tp>
+    struct container_gen<dequeS, Tp> {
+        using type = std::deque<Tp>;
+    };
+
+  template <>
+    struct parallel_edge_traits<dequeS> {
+        using type = allow_parallel_edge_tag;
+    };
 
     namespace detail {
       template <>
@@ -137,7 +146,9 @@ struct node {
 
 enum edge_kind {
     inheritance,
-    content, usage
+    content, usage, condition,
+    branch_true, branch_false,
+    start, finish, sequel, branch
 };
 
 using vertex_property =
@@ -195,6 +206,29 @@ using vertex_iterator =
 
 using edge_iterator =
     boost::graph_traits<graph_type>::edge_iterator;
+
+vertex_descriptor create_module(const std::string &name, graph_type &graph);
+
+vertex_descriptor create_class(const std::string &name,
+    node::visibility vis, graph_type &graph);
+
+vertex_descriptor create_field(const std::string &name,
+    node::visibility vis, graph_type &graph);
+
+vertex_descriptor create_method(const std::string &name,
+    node::visibility vis, std::size_t num_args, graph_type &graph);
+
+vertex_descriptor create_param(const std::string &name,
+    bool is_ref, graph_type &graph);
+
+vertex_descriptor create_variable(const std::string &name,
+    bool is_ref, graph_type &graph);
+
+vertex_descriptor create_expr(op_kind op, graph_type &graph);
+
+vertex_descriptor create_value(value_type value, graph_type &graph);
+
+vertex_descriptor create_block(graph_type &graph);
 
 } // namespace semantic
 

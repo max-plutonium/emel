@@ -35,7 +35,7 @@ template <typename Tp, typename Enum, std::size_t Size,
 class basic_symbol_table;
 
 template <typename Tp, typename Enum, std::size_t Size>
-class basic_symbol_table<true>
+class basic_symbol_table<Tp, Enum, Size, true>
 {
 public:
     using value_type = Tp;
@@ -47,7 +47,7 @@ protected:
     struct entry {
         std::unordered_multimap<std::string, value_type> table;
         std::deque<decltype(table)::iterator> index_list;
-    }
+    };
 
     std::array<entry, max_size> entries;
 

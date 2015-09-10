@@ -36,7 +36,7 @@ public:
     std::string get_path_for(const std::string &class_name) const;
     std::vector<std::string> names() const;
     std::string read_source(const std::string &class_name,
-        const char *locale = "ru_RU.utf-8") const;
+        const char *locale_name = "ru_RU.utf-8") const;
 };
 
 } // namespace emel

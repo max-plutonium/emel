@@ -24,6 +24,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <fstream>
 #include <iostream>
+#include <boost/locale.hpp>
 
 namespace emel {
 
@@ -135,9 +136,10 @@ std::vector<std::string> source_loader::names() const
     return ret;
 }
 
-std::string source_loader::read_source(const std::string &class_name, const char *locale) const
+std::string source_loader::read_source(const std::string &class_name, const char *locale_name) const
 {
-    std::locale loc(locale);
+    boost::locale::generator generator;
+    std::locale loc = generator(locale_name);
 
     const auto path = get_path_for(class_name);
     if(path.empty()) {
@@ -152,7 +154,6 @@ std::string source_loader::read_source(const std::string &class_name, const char
         return std::string();
     }
 
-    is.imbue(loc);
     is.unsetf(std::ios::skipws);
 
     std::string ret {
@@ -160,7 +161,7 @@ std::string source_loader::read_source(const std::string &class_name, const char
         std::istreambuf_iterator<char>() };
 
     is.close();
-    return ret;
+    return boost::locale::conv::to_utf<char>(ret, loc);
 }
 
 } // namespace emel

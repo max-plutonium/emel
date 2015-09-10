@@ -18,6 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 #include <gmock/gmock.h>
+
 #include "../emel/parser.h"
 
 using namespace emel;
@@ -32,6 +33,7 @@ struct mock_parser : public parser {
 
 using testing::_;
 using testing::Eq;
+using testing::EndsWith;
 using testing::Return;
 using testing::Ref;
 using testing::IsEmpty;
@@ -47,14 +49,14 @@ TEST(Parser, ParseEmptyString)
     EXPECT_FALSE(prsr.parse_string(str, ret));
 }
 
-TEST(Parser, ParseNonExistingFile)
+TEST(Parser, ParseDir)
 {
-    const std::string str = "dfsgehtethetjtjn";
     mock_parser prsr;
-    ast::node ret;
+    std::vector<ast::node> ret;
 
-    EXPECT_CALL(prsr, parse(_, _, _, _)).Times(0);
-    EXPECT_FALSE(prsr.parse_file(str, ret));
+    EXPECT_CALL(prsr, parse(_, _, EndsWith(".emel"), _)).WillRepeatedly(Return(true));
+    ret = prsr.parse_dir("../../../../emel/bin/");
+    EXPECT_FALSE(ret.empty());
 }
 
 TEST(Parser, InvokeParserViaParseString)

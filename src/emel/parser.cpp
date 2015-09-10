@@ -20,32 +20,10 @@
 #include "parser.h"
 #include "plugins.h"
 
-#include <iostream>
-#include <fstream>
 #include <mutex>
 #include <iostream>
 
 namespace emel {
-
-/*static*/
-std::string parser::read_from_file(const std::string &file_name)
-{
-    std::ifstream is(file_name.c_str());
-
-    if(!is.is_open()) {
-        std::cerr << "Could not open file: " << file_name << std::endl;
-        return std::string();
-    }
-
-    is.unsetf(std::ios::skipws);
-
-    std::string ret {
-        std::istreambuf_iterator<char>(is.rdbuf()),
-        std::istreambuf_iterator<char>() };
-
-    is.close();
-    return ret;
-}
 
 static std::once_flag once_flag;
 
@@ -64,17 +42,30 @@ parser *parser::instance(const std::string &name)
     return frontend.load_name(name).second;
 }
 
-bool parser::parse_file(const std::string &file_name, ast::node &ret) const
-{
-    const std::string content = read_from_file(file_name);
-    if(content.empty()) return false;
-    return parse(content.cbegin(), content.cend(), file_name, ret);
-}
-
 bool parser::parse_string(const std::string &content, ast::node &ret) const
 {
     if(content.empty()) return false;
     return parse(content.cbegin(), content.cend(), "fake.emel", ret);
+}
+
+std::vector<ast::node> parser::parse_dir(const std::string &dir_name)
+{
+    ast::node node;
+    std::vector<ast::node> ret;
+
+    loader.scan_dir(dir_name);
+    const auto class_names = loader.names();
+
+    for(auto &name : class_names) {
+        const auto content = loader.read_source(name);
+        if(!parse(content.cbegin(), content.cend(),
+                  loader.get_path_for(name), node))
+            std::cerr << "Parsing class " << name << " failed" << std::endl;
+        else
+            ret.push_back(std::move(node));
+    }
+
+    return ret;
 }
 
 } // namespace emel

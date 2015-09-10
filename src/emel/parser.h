@@ -21,6 +21,7 @@
 #define PARSER_H
 
 #include "ast.h"
+#include "source_loader.h"
 
 namespace emel EMEL_EXPORT {
 
@@ -28,17 +29,17 @@ using source_iter = std::string::const_iterator;
 
 class parser
 {
-protected:
-    static std::string read_from_file(const std::string &file_name);
+    source_loader loader;
 
 public:
     virtual ~parser() = default;
     static parser *instance(const std::string &name = std::string());
-    bool parse_file(const std::string &file_name, ast::node &ret) const;
     bool parse_string(const std::string &content, ast::node &ret) const;
 
     virtual bool parse(source_iter first, source_iter last,
         const std::string &file_name, ast::node &ret) const = 0;
+
+    std::vector<ast::node> parse_dir(const std::string &dir_name = std::string());
 };
 
 } // namespace emel

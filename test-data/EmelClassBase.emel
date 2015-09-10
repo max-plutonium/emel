@@ -1,0 +1,6 @@
+Class EmelClassBase
+
+integer;
+string = "123";
+
+EndClass

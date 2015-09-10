@@ -1,0 +1,7 @@
+Class EmelClass
+
+integer;
+string = "123";
+boolean = true;
+
+EndClass

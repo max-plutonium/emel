@@ -20,7 +20,7 @@
 #ifndef CONST_POOL_MANAGER_H
 #define CONST_POOL_MANAGER_H
 
-#include "bytecode.h"
+#include "../opcodes.h"
 
 #include <unordered_map>
 #include <string>
@@ -33,6 +33,8 @@ class const_pool_manager
     std::unordered_map<std::string, std::size_t> string_pool;
     std::unordered_map<double, std::size_t> number_pool;
     std::size_t pool_index;
+
+protected:
     std::vector<value_type> &const_pool;
 
 public:

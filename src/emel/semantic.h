@@ -55,6 +55,7 @@ namespace boost {
 
 } // namespace boost
 
+#include <memory>
 #include <boost/graph/adjacency_list.hpp>
 
 namespace boost {
@@ -82,16 +83,7 @@ namespace boost {
     enum vertex_semantic_t { vertex_semantic = 1000 };
     BOOST_INSTALL_PROPERTY(vertex, semantic);
 
-    enum vertex_insns_t { vertex_insns = 1001 };
-    BOOST_INSTALL_PROPERTY(vertex, insns);
-
-    enum vertex_value_t { vertex_value = 1002 };
-    BOOST_INSTALL_PROPERTY(vertex, value);
-
-    enum vertex_op_t { vertex_op = 1003 };
-    BOOST_INSTALL_PROPERTY(vertex, op);
-
-    enum edge_content_t { edge_content = 1004 };
+    enum edge_content_t { edge_content = 1001 };
     BOOST_INSTALL_PROPERTY(edge, content);
 
 } // namespace boost
@@ -102,11 +94,8 @@ struct node {
     enum type {
         is_module,
         is_class,
-        is_interface,
         is_field,
         is_function,
-        is_block,
-        is_expr,
         is_variable,
         is_value
     };
@@ -135,28 +124,80 @@ struct node {
         vis_private
     };
 
-    type t = is_value;
-    kind k = is_regular;
-    attribute a = is_local;
-    visibility v = vis_private;
-    std::uint32_t nr_slots = 0;
+    const type t = is_value;
+    const kind k = is_regular;
+    const attribute a = is_local;
+    const visibility v = vis_private;
+    std::uint32_t index = 0;
+    insn_array insns;
+    std::deque<std::shared_ptr<node>> slots;
     std::uint32_t nr_stack = 0;
     std::uint32_t nr_args = 0;
+
+    explicit node(type t = is_value, unsigned k = is_regular,
+        attribute a = is_local, visibility v = vis_private, std::uint32_t nr_args = 0)
+        : t(t), k(static_cast<kind>(k)), a(a), v(v), nr_args(nr_args)
+    { }
+
+    virtual ~node() = default;
 };
+
+using node_ptr = std::shared_ptr<node>;
 
 enum edge_kind {
     inheritance,
-    content, usage, condition,
-    branch_true, branch_false,
-    start, finish, sequel, branch
+    content, usage
+};
+
+struct variable : node {
+    explicit variable(unsigned kind = is_regular)
+    : node(is_variable, kind, is_local, vis_private) { }
+};
+
+struct function : node {
+    std::size_t name_index = 0;
+    std::pair<std::size_t, std::size_t> code_range { 0, 0 };
+
+    function(visibility vis, std::uint32_t nr_args)
+        : node(is_function, is_regular, is_local, vis, nr_args)
+    { }
+
+protected:
+    function(visibility vis, std::uint32_t nr_args, type t)
+        : node(t, is_regular, is_local, vis, nr_args)
+    { }
+};
+
+struct field : node {
+    std::size_t name_index = 0;
+
+    explicit field(visibility vis)
+        : node(is_field, is_regular, is_local, vis)
+    { }
+};
+
+struct class_ : function {
+    std::size_t base_name_index = 0;
+    std::size_t fields_offset = 0;
+    std::size_t methods_offset = 0;
+    std::vector<std::shared_ptr<field>> fields;
+    std::vector<std::shared_ptr<function>> methods;
+
+    explicit class_(visibility vis, std::uint32_t nr_args)
+        : function(vis, nr_args, is_class) { }
+};
+
+struct module : node {
+    std::size_t name_index = 0;
+    std::vector<std::shared_ptr<semantic::class_>> classes;
+
+    module() : node(is_module, is_regular, is_global, vis_public)
+    { }
 };
 
 using vertex_property =
     boost::property<boost::vertex_name_t, std::string,
-        boost::property<boost::vertex_semantic_t, node,
-            boost::property<boost::vertex_insns_t, insn_array,
-                boost::property<boost::vertex_value_t, value_type,
-                    boost::property<boost::vertex_op_t, op_kind>>>>>;
+        boost::property<boost::vertex_semantic_t, std::shared_ptr<node>>>;
 
 using edge_property =
     boost::property<boost::edge_content_t, edge_kind>;
@@ -170,15 +211,6 @@ using names_map_type =
 
 using nodes_map_type =
     boost::property_map<graph_type, boost::vertex_semantic_t>::type;
-
-using insns_map_type =
-    boost::property_map<graph_type, boost::vertex_insns_t>::type;
-
-using values_map_type =
-    boost::property_map<graph_type, boost::vertex_value_t>::type;
-
-using ops_map_type =
-    boost::property_map<graph_type, boost::vertex_op_t>::type;
 
 using edge_content_map_type =
     boost::property_map<graph_type, boost::edge_content_t>::type;
@@ -207,28 +239,13 @@ using vertex_iterator =
 using edge_iterator =
     boost::graph_traits<graph_type>::edge_iterator;
 
-vertex_descriptor create_module(const std::string &name, graph_type &graph);
+using vertex_pair =
+    std::pair<vertex_descriptor, vertex_descriptor>;
 
-vertex_descriptor create_class(const std::string &name,
-    node::visibility vis, graph_type &graph);
+vertex_descriptor add_vertex(const std::string &name,
+    std::shared_ptr<node> n, graph_type &graph);
 
-vertex_descriptor create_field(const std::string &name,
-    node::visibility vis, graph_type &graph);
-
-vertex_descriptor create_method(const std::string &name,
-    node::visibility vis, std::size_t num_args, graph_type &graph);
-
-vertex_descriptor create_param(const std::string &name,
-    bool is_ref, graph_type &graph);
-
-vertex_descriptor create_variable(const std::string &name,
-    bool is_ref, graph_type &graph);
-
-vertex_descriptor create_expr(op_kind op, graph_type &graph);
-
-vertex_descriptor create_value(value_type value, graph_type &graph);
-
-vertex_descriptor create_block(graph_type &graph);
+vertex_descriptor add_vertex(std::shared_ptr<node> n, graph_type &graph);
 
 } // namespace semantic
 

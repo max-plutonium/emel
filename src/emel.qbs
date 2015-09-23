@@ -75,6 +75,8 @@ DynamicLibrary {
         'emel/ast.cpp',
         'emel/bytecode/const_pool_manager.cpp',
         'emel/bytecode/const_pool_manager.h',
+        'emel/compiler.cpp',
+        'emel/compiler.h',
         'emel/opcodes.cpp',
         'emel/opcodes.h',
         'emel/parser.cpp',

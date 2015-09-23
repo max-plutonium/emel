@@ -110,10 +110,10 @@ public:
     {
         std::vector<std::pair<value_type *, enum_type>> ret;
 
-        for(enum_type type = 0; type < max_size; ++type) {
-            auto pair = find_symbol(name, type);
+        for(std::size_t type = 0; type < max_size; ++type) {
+            auto pair = find_symbol(name, static_cast<enum_type>(type));
             if(pair.second)
-                ret.push_back(std::make_pair(pair.first, type));
+                ret.push_back(std::make_pair(pair.first, static_cast<enum_type>(type)));
         }
 
         return ret;
@@ -124,10 +124,10 @@ public:
     {
         std::vector<std::pair<const value_type *, enum_type>> ret;
 
-        for(enum_type type = 0; type < max_size; ++type) {
-            auto pair = find_symbol(name, type);
+        for(std::size_t type = 0; type < max_size; ++type) {
+            auto pair = find_symbol(name, static_cast<enum_type>(type));
             if(pair.second)
-                ret.push_back(std::make_pair(pair.first, type));
+                ret.push_back(std::make_pair(pair.first, static_cast<enum_type>(type)));
         }
 
         return ret;

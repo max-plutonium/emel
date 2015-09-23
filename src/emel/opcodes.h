@@ -72,6 +72,10 @@ std::pair<opcode, std::uint32_t> insn_decode(insn_type insn);
 
 insn_type insn_encode(opcode op, std::uint32_t idx = 0);
 
+const char *opcode_name(opcode op);
+
+std::string insn_to_string(insn_type insn);
+
 } // namespace emel
 
 #endif // OPCODES_H

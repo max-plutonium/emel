@@ -827,12 +827,10 @@ TEST(Compiler, WhileLoop)
 {
     ast::class_ class_;
     class_.name = "Object";
-    class_.exprs.emplace_back(ast::while_ {
-        false, { -1.23 }
-    });
-    class_.exprs.emplace_back(ast::while_ {
-        true, { -1.23 }
-    });
+    class_.exprs.emplace_back(ast::while_ { 1.23, { } });
+    class_.exprs.emplace_back(ast::while_ { 1.23, { -1.23 } });
+    class_.exprs.emplace_back(ast::while_ { true, { } });
+    class_.exprs.emplace_back(ast::while_ { true, { -1.23 } });
 
     auto module = std::make_shared<semantic::module>();
     symbol_table syms;
@@ -841,11 +839,12 @@ TEST(Compiler, WhileLoop)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(5));
+    ASSERT_THAT(const_pool, SizeIs(6));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
     EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
-    EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(-1.23));
+    EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(1.23));
+    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(-1.23));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -856,7 +855,7 @@ TEST(Compiler, WhileLoop)
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
-    EXPECT_THAT(module->classes.back()->code_range.second, Eq(8));
+    EXPECT_THAT(module->classes.back()->code_range.second, Eq(12));
     EXPECT_THAT(module->classes.back()->base_name_index, Eq(0));
     EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
@@ -870,17 +869,30 @@ TEST(Compiler, WhileLoop)
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(8));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(12));
 
-    ASSERT_THAT(module->insns, SizeIs(8));
+    ASSERT_THAT(module->insns, SizeIs(12));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
-        insn_encode(opcode::push_const, 0),
+
+        // while(1.23) { }
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::brb, 2),
+
+        // while(1.23) { -1.23 }
+        insn_encode(opcode::push_const, 4),
         insn_encode(opcode::brf_false, 3),
-        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::brb, 3),
-        insn_encode(opcode::push_const, 4),
+
+        // while(true) { }
+        insn_encode(opcode::brb, 0),
+
+        // while(true) { -1.23 }
+        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::brb, 1),
+
         insn_encode(opcode::drop_frame, 1)
     }));
 }

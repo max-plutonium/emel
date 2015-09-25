@@ -591,10 +591,6 @@ TEST(Compiler, TernaryOp)
     }));
 }
 
-// TODO Call
-// TODO TryBlock
-// TODO SwitchBlock
-
 TEST(Compiler, IfBlock)
 {
     ast::class_ class_;
@@ -652,16 +648,180 @@ TEST(Compiler, IfBlock)
         insn_encode(opcode::push_const, 4),
         insn_encode(opcode::brf_false, 2),
         insn_encode(opcode::push_const, 5),
-        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 0),
         insn_encode(opcode::brf_false, 3),
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::brf, 2),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::drop_frame, 1)
     }));
 }
 
-// TODO ForLoop
+TEST(Compiler, ForLoop)
+{
+    ast::class_ class_;
+    class_.name = "Object";
+
+    class_.exprs.emplace_back(ast::for_ { });
+    class_.exprs.emplace_back(ast::for_ { empty_value, empty_value, empty_value, { 1.23 } });
+
+    class_.exprs.emplace_back(ast::for_ { 999.2, empty_value, empty_value, { } });
+    class_.exprs.emplace_back(ast::for_ { 999.2, empty_value, empty_value, { 1.23 } });
+
+    class_.exprs.emplace_back(ast::for_ { empty_value, 152.0, empty_value, { } });
+    class_.exprs.emplace_back(ast::for_ { empty_value, 152.0, empty_value, { 1.23 } });
+
+    class_.exprs.emplace_back(ast::for_ { 999.2, 152.0, empty_value, { } });
+    class_.exprs.emplace_back(ast::for_ { 999.2, 152.0, empty_value, { 1.23 } });
+
+    class_.exprs.emplace_back(ast::for_ { empty_value, empty_value, 229.7, { } });
+    class_.exprs.emplace_back(ast::for_ { empty_value, empty_value, 229.7, { 1.23 } });
+
+    class_.exprs.emplace_back(ast::for_ { 999.2, empty_value, 229.7, { } });
+    class_.exprs.emplace_back(ast::for_ { 999.2, empty_value, 229.7, { 1.23 } });
+
+    class_.exprs.emplace_back(ast::for_ { empty_value, 152.0, 229.7, { } });
+    class_.exprs.emplace_back(ast::for_ { empty_value, 152.0, 229.7, { 1.23 } });
+
+    class_.exprs.emplace_back(ast::for_ { 999.2, 152.0, 229.7, { } });
+    class_.exprs.emplace_back(ast::for_ { 999.2, 152.0, 229.7, { 1.23 } });
+
+    auto module = std::make_shared<semantic::module>();
+    symbol_table syms;
+    semantic::graph_type graph;
+    std::vector<value_type> const_pool;
+    codegen c("test", module, syms, graph, const_pool);
+    codegen_result cr = c(class_);
+
+    ASSERT_THAT(const_pool, SizeIs(8));
+    EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
+    EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(1.23));
+    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(999.2));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(152.0));
+    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(229.7));
+
+    EXPECT_THAT(module->name_index, Eq(1));
+    ASSERT_THAT(module->classes, SizeIs(1));
+    EXPECT_THAT(module->classes.back()->index, Eq(0));
+    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
+    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
+    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
+    EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
+    EXPECT_THAT(module->classes.back()->name_index, Eq(2));
+    EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
+    EXPECT_THAT(module->classes.back()->code_range.second, Eq(58));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(0));
+    EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
+    EXPECT_THAT(module->classes.back()->fields, IsEmpty());
+    ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
+
+    EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
+    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(32));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(58));
+
+    ASSERT_THAT(module->insns, SizeIs(58));
+    EXPECT_THAT(module->insns, ElementsAreArray({
+        insn_encode(opcode::push_frame, 1),
+
+        // for(;;) { }
+        insn_encode(opcode::brb, 0),
+
+        // for(;;) { 1.23 }
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::brb, 1),
+
+        // for(999.2;;) { }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::brb, 0),
+
+        // for(999.2;;) { 1.23 }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::brb, 1),
+
+        // for(; 152.0;) { }
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::brb, 2),
+
+        // for(; 152.0;) { 1.23 }
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::brb, 3),
+
+        // for(999.2; 152.0;) { }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::brb, 2),
+
+        // for(999.2; 152.0;) { 1.23 }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::brb, 3),
+
+        // for(;; 229.7) { }
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brb, 1),
+
+        // for(;; 229.7) { 1.23 }
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brb, 2),
+
+        // for(999.2;; 229.7) { }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brb, 1),
+
+        // for(999.2;; 229.7) { 1.23 }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brb, 2),
+
+        // for(; 152.0; 229.7) { }
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brb, 3),
+
+        // for(; 152.0; 229.7) { 1.23 }
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf_false, 4),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brb, 4),
+
+        // for(999.2; 152.0; 229.7) { }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brb, 3),
+
+        // for(999.2; 152.0; 229.7) { 1.23 }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf_false, 4),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brb, 4),
+
+        insn_encode(opcode::drop_frame, 1)
+    }));
+}
 
 TEST(Compiler, WhileLoop)
 {
@@ -725,6 +885,9 @@ TEST(Compiler, WhileLoop)
     }));
 }
 
+// TODO Call
+// TODO TryBlock
+// TODO SwitchBlock
 // TODO Branches
 // TODO MethodDef
 // TODO Assigns

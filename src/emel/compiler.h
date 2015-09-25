@@ -373,8 +373,89 @@ public:
     {
     }
 
-    codegen_result operator()(ast::for_ &)
+    codegen_result operator()(ast::for_ &node)
     {
+        semantic::node_ptr n = std::make_shared<semantic::node>();
+
+        const bool init_empty = node.init.which() == 0;
+        const bool cond_empty = node.cond.which() == 0;
+        const bool step_empty = node.step.which() == 0;
+
+        if(!init_empty) {
+            semantic::node_ptr init = nodes_map[node.init.apply_visitor(*this)];
+
+            for(auto &insn : init->insns)
+                n->insns.push_back(insn);
+            init->insns.clear();
+
+            for(auto &slot : init->slots)
+                n->slots.push_back(std::move(slot));
+            init->slots.clear();
+
+            n->nr_stack += init->nr_stack;
+            init->nr_stack = 0;
+        }
+
+        std::size_t cond_idx = n->insns.size();
+
+        if(!cond_empty) {
+            semantic::node_ptr cond = nodes_map[node.cond.apply_visitor(*this)];
+
+            for(auto &insn : cond->insns)
+                n->insns.push_back(insn);
+            cond->insns.clear();
+
+            for(auto &slot : cond->slots)
+                n->slots.push_back(std::move(slot));
+            cond->slots.clear();
+
+            n->nr_stack += cond->nr_stack;
+            cond->nr_stack = 0;
+        }
+
+        std::size_t br_idx = n->insns.size();
+
+        if(!cond_empty)
+            n->insns.push_back(insn_encode(opcode::brf_false));
+
+        for(auto &expr : node.exprs) {
+            semantic::node_ptr then_node = nodes_map[expr.apply_visitor(*this)];
+
+            for(auto &insn : then_node->insns)
+                n->insns.push_back(insn);
+            then_node->insns.clear();
+
+            for(auto &slot : then_node->slots)
+                n->slots.push_back(std::move(slot));
+            then_node->slots.clear();
+
+            n->nr_stack += then_node->nr_stack;
+            then_node->nr_stack = 0;
+        }
+
+        if(!step_empty) {
+            semantic::node_ptr step = nodes_map[node.step.apply_visitor(*this)];
+
+            for(auto &insn : step->insns)
+                n->insns.push_back(insn);
+            step->insns.clear();
+
+            for(auto &slot : step->slots)
+                n->slots.push_back(std::move(slot));
+            step->slots.clear();
+
+            n->nr_stack += step->nr_stack;
+            step->nr_stack = 0;
+        }
+
+        auto end_idx = n->insns.size();
+        auto offset = end_idx - cond_idx;
+        n->insns.push_back(insn_encode(opcode::brb, offset));
+
+        if(!cond_empty)
+            n->insns[br_idx] = insn_encode(opcode::brf_false, offset);
+
+        return semantic::add_vertex(std::move(n), graph);
     }
 
     codegen_result operator()(ast::ternary &node)
@@ -545,8 +626,7 @@ public:
             then_node->nr_stack = 0;
         }
 
-        auto end_idx = n->insns.size();
-        auto offset = end_idx/* - start_idx*/;
+        auto offset = n->insns.size();
         n->insns.push_back(insn_encode(opcode::brb, offset));
 
         if(!forever_loop)

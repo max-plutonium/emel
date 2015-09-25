@@ -35,6 +35,11 @@ insn_type insn_encode(opcode op, std::uint32_t idx)
     return (idx << 5) + static_cast<std::uint32_t>(op);
 }
 
+insn_type insn_encode(opcode op, op_kind k)
+{
+    return (static_cast<std::uint32_t>(k) << 5) + static_cast<std::uint32_t>(op);
+}
+
 const char *opcode_name(opcode op)
 {
     const char *result = "undefined-opcode";

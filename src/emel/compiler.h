@@ -664,7 +664,7 @@ public:
         n->nr_stack += lhs->nr_stack;
         lhs->nr_stack = 0;
 
-        n->insns.push_back(insn_encode(opcode::call_op, static_cast<std::uint32_t>(node.k)));
+        n->insns.push_back(insn_encode(opcode::call_op, node.k));
         return semantic::add_vertex(std::move(n), graph);
     }
 
@@ -672,7 +672,7 @@ public:
     {
         const auto vertex = node.rhs.apply_visitor(*this);
         semantic::node_ptr n = nodes_map[vertex];
-        n->insns.push_back(insn_encode(opcode::call_op, static_cast<std::uint32_t>(node.k)));
+        n->insns.push_back(insn_encode(opcode::call_op, node.k));
         return vertex;
     }
 

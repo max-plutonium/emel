@@ -445,9 +445,9 @@ TEST(Compiler, UnaryOp)
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
         insn_encode(opcode::push_const, 4),
-        insn_encode(opcode::call_op, static_cast<std::uint32_t>(op_kind::not_)),
+        insn_encode(opcode::call_op, op_kind::not_),
         insn_encode(opcode::push_const, 4),
-        insn_encode(opcode::call_op, static_cast<std::uint32_t>(op_kind::neg)),
+        insn_encode(opcode::call_op, op_kind::neg),
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -505,11 +505,11 @@ TEST(Compiler, BinaryOp)
         insn_encode(opcode::push_frame, 1),
         insn_encode(opcode::push_const, 4),
         insn_encode(opcode::push_const, 5),
-        insn_encode(opcode::call_op, static_cast<std::uint32_t>(op_kind::add)),
+        insn_encode(opcode::call_op, op_kind::add),
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::push_const, 5),
-        insn_encode(opcode::call_op, static_cast<std::uint32_t>(op_kind::sub)),
-        insn_encode(opcode::call_op, static_cast<std::uint32_t>(op_kind::div)),
+        insn_encode(opcode::call_op, op_kind::sub),
+        insn_encode(opcode::call_op, op_kind::div),
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -576,11 +576,11 @@ TEST(Compiler, TernaryOp)
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::push_const, 0),
         insn_encode(opcode::push_const, 7),
-        insn_encode(opcode::call_op, static_cast<std::uint32_t>(op_kind::gte)),
+        insn_encode(opcode::call_op, op_kind::gte),
         insn_encode(opcode::brf_false, 5),
         insn_encode(opcode::push_const, 4),
         insn_encode(opcode::push_const, 7),
-        insn_encode(opcode::call_op, static_cast<std::uint32_t>(op_kind::mul)),
+        insn_encode(opcode::call_op, op_kind::mul),
         insn_encode(opcode::brf, 6),
         insn_encode(opcode::push_const, 0),
         insn_encode(opcode::brf_false, 3),

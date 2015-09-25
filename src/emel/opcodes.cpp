@@ -23,6 +23,8 @@
 
 namespace emel {
 
+empty_value_type empty_value;
+
 std::pair<opcode, std::uint32_t> insn_decode(insn_type insn)
 {
     return std::make_pair(static_cast<opcode>(insn & 0x1F), insn >> 5);
@@ -85,6 +87,11 @@ std::string insn_to_string(insn_type insn)
     std::ostringstream oss;
     oss << opcode_name(pair.first) << ' ' << pair.second;
     return oss.str();
+}
+
+std::ostream &operator <<(std::ostream &os, empty_value_type)
+{
+    return os << "empty-value";
 }
 
 } // namespace emel

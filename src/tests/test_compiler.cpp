@@ -268,14 +268,13 @@ TEST(Compiler, Constants)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(8));
+    ASSERT_THAT(const_pool, SizeIs(7));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
     EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
     EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("hello world!"));
     EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(12.3));
     EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(1));
-    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(0));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -308,7 +307,7 @@ TEST(Compiler, Constants)
         insn_encode(opcode::push_const, 4),
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 0),
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -533,15 +532,14 @@ TEST(Compiler, TernaryOp)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(9));
+    ASSERT_THAT(const_pool, SizeIs(8));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
     EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
     EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(1.0));
     EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
     EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(-20.3));
-    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(0.0));
-    EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(-1.0));
+    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(-1.0));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -576,19 +574,19 @@ TEST(Compiler, TernaryOp)
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::brf, 2),
         insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 0),
         insn_encode(opcode::push_const, 7),
-        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::call_op, static_cast<std::uint32_t>(op_kind::gte)),
         insn_encode(opcode::brf_false, 5),
         insn_encode(opcode::push_const, 4),
-        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::call_op, static_cast<std::uint32_t>(op_kind::mul)),
         insn_encode(opcode::brf, 6),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 0),
         insn_encode(opcode::brf_false, 3),
         insn_encode(opcode::push_const, 4),
         insn_encode(opcode::brf, 2),
-        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -615,14 +613,13 @@ TEST(Compiler, IfBlock)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(8));
+    ASSERT_THAT(const_pool, SizeIs(7));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
     EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
     EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(1.0));
     EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(-1.23));
-    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(0.0));
-    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(456.0));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(456.0));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -684,12 +681,11 @@ TEST(Compiler, WhileLoop)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(6));
+    ASSERT_THAT(const_pool, SizeIs(5));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
     EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
-    EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(0.0));
-    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(-1.23));
+    EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(-1.23));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -719,11 +715,11 @@ TEST(Compiler, WhileLoop)
     ASSERT_THAT(module->insns, SizeIs(8));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
-        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 0),
         insn_encode(opcode::brf_false, 3),
-        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 4),
         insn_encode(opcode::brb, 3),
-        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 4),
         insn_encode(opcode::brb, 1),
         insn_encode(opcode::drop_frame, 1)
     }));

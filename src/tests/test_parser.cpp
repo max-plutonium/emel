@@ -69,7 +69,7 @@ TEST(Parser, InvokeParserViaParseString)
                             Eq("fake.emel"), Ref(ret))).WillOnce(Return(true));
     EXPECT_TRUE(prsr.parse_string(str, ret));
     EXPECT_EQ(0, ret.which());
-    EXPECT_EQ(typeid(std::string), ret.type());
+    EXPECT_EQ(typeid(empty_value_type), ret.type());
 }
 
 TEST(Parser, ParseEmptyClass)

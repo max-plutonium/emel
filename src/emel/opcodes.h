@@ -23,6 +23,11 @@
 #include <cstdint>
 #include <deque>
 #include <utility>
+
+#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
+#define BOOST_MPL_LIMIT_LIST_SIZE 30
+#define BOOST_MPL_LIMIT_VECTOR_SIZE 30
+
 #include <boost/variant.hpp>
 
 namespace emel {
@@ -61,7 +66,8 @@ enum class opcode : unsigned char {
 };
 
 using insn_array = std::deque<insn_type>;
-using value_type = boost::variant<std::string, double, bool>;
+extern struct empty_value_type {} empty_value;
+using value_type = boost::variant<empty_value_type, std::string, double, bool>;
 
 enum class op_kind {
     or_ = 201, xor_, and_, eq, ne, lt, gt, lte, gte, add, sub, mul, div,
@@ -75,6 +81,8 @@ insn_type insn_encode(opcode op, std::uint32_t idx = 0);
 const char *opcode_name(opcode op);
 
 std::string insn_to_string(insn_type insn);
+
+std::ostream &operator <<(std::ostream &os, empty_value_type);
 
 } // namespace emel
 

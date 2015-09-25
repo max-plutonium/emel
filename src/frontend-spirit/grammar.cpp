@@ -139,7 +139,9 @@ grammar::grammar() : grammar::base_type(root, "root")
     block_expr.name("block of expression");
     qi::on_error<qi::fail>(block_expr, eh(_1, _3, _4));
 
-    branch_expr %= (continue_branch | break_branch | return_branch) > semicolon;
+    branch_expr = (continue_branch[ _val = std::move(_1) ]
+        | break_branch[ _val = std::move(_1) ]
+        | return_branch[ _val = std::move(_1) ]) > semicolon;
 
     branch_expr.name("branch expression");
     qi::on_error<qi::fail>(branch_expr, eh(_1, _3, _4));

@@ -39,29 +39,31 @@ enum class opcode : unsigned char {
         pop, // Снять значение с вершины стека
         dup, // Дублировать значение на вершине стека
         swap, // Обменять значения на вершине стека и значение под ней
-        push_const, // Загрузить константу из пула в стек
- /*5*/  push_local, // Положить в стек локальную переменную
+        push, // Положить в стек целое число
+ /*5*/  push_const, // Загрузить константу из пула в стек
+        push_local, // Положить в стек локальную переменную
         push_field, // Положить в стек значение поля объекта
         push_static, // Положить в стек значение статического поля объекта
         load_local, // Загрузить значение из стека в локальную переменную
-        load_field, // Загрузить значение из стека в поле объекта
- /*10*/ load_static, // Загрузить значение из стека в статическое поле объекта
+ /*10*/ load_field, // Загрузить значение из стека в поле объекта
+        load_static, // Загрузить значение из стека в статическое поле объекта
         push_frame, // Создать новый кадр
         drop_frame, // Выйти из текущего кадра
         throw_, // Бросить исключение
-        try_, // Начало блока try
- /*15*/ end_try, // Конец блока try
+ /*15*/ try_, // Начало блока try
+        end_try, // Конец блока try
         call_op, // Вызов встроенной операции
         call, // Вызов функции по имени
         fcall, // Вызов функции по номеру
-        call_static, // Вызов статической функции по имени
- /*20*/ fcall_static, // Вызов статической функции по номеру
+ /*20*/ call_static, // Вызов статической функции по имени
+        fcall_static, // Вызов статической функции по номеру
         brf, // Безусловный переход вперед
         brb, // Безусловный переход назад
         brf_true, // Переход вперед, если на вершине стека true
-        brf_false, // Переход вперед, если на вершине стека false
- /*25*/ brb_true, // Переход назад, если на вершине стека true
+ /*25*/ brf_false, // Переход вперед, если на вершине стека false
+        brb_true, // Переход назад, если на вершине стека true
         brb_false, // Переход назад, если на вершине стека false
+        br_table, // Создать таблицу переходов
         ret, // Возврат значения из функции
 };
 
@@ -70,15 +72,17 @@ extern struct empty_value_type {} empty_value;
 using value_type = boost::variant<empty_value_type, std::string, double, bool>;
 
 enum class op_kind {
-    or_ = 201, xor_, and_, eq, ne, lt, gt, lte, gte, add, sub, mul, div,
-    not_ = 101, neg
+    not_ = 101, neg,
+    or_ = 201, xor_, and_, eq, ne, lt, gt, lte, gte, add, sub, mul, div
 };
 
 std::pair<opcode, std::uint32_t> insn_decode(insn_type insn);
 
 insn_type insn_encode(opcode op, std::uint32_t idx = 0);
+insn_type insn_encode(opcode op, op_kind k);
 
 const char *opcode_name(opcode op);
+const char *opkind_name(op_kind op);
 
 std::string insn_to_string(insn_type insn);
 

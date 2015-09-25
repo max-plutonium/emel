@@ -52,6 +52,7 @@ const char *opcode_name(opcode op)
         OPCODE_NAME(opcode::pop, "pop")
         OPCODE_NAME(opcode::dup, "dup")
         OPCODE_NAME(opcode::swap, "swap")
+        OPCODE_NAME(opcode::push, "push")
         OPCODE_NAME(opcode::push_const, "push-const")
         OPCODE_NAME(opcode::push_local, "push-local")
         OPCODE_NAME(opcode::push_field, "push-field")
@@ -75,6 +76,7 @@ const char *opcode_name(opcode op)
         OPCODE_NAME(opcode::brf_false, "brf-false")
         OPCODE_NAME(opcode::brb_true, "brb-true")
         OPCODE_NAME(opcode::brb_false, "brb-false")
+        OPCODE_NAME(opcode::br_table, "branch-table")
         OPCODE_NAME(opcode::ret, "ret")
 
         default:
@@ -86,11 +88,48 @@ const char *opcode_name(opcode op)
     return result;
 }
 
+const char *opkind_name(op_kind op)
+{
+    const char *result = "undefined-op";
+
+# define OP_NAME(OP, STR) \
+    case OP: result = STR; break;
+
+    switch (op) {
+        OP_NAME(op_kind::or_, "or")
+        OP_NAME(op_kind::xor_, "xor")
+        OP_NAME(op_kind::and_, "and")
+        OP_NAME(op_kind::eq, "equals")
+        OP_NAME(op_kind::ne, "not-equals")
+        OP_NAME(op_kind::lt, "less-than")
+        OP_NAME(op_kind::gt, "greater-than")
+        OP_NAME(op_kind::lte, "less-or-equals")
+        OP_NAME(op_kind::gte, "greater-or-equals")
+        OP_NAME(op_kind::add, "add")
+        OP_NAME(op_kind::sub, "sub")
+        OP_NAME(op_kind::mul, "mul")
+        OP_NAME(op_kind::div, "div")
+        OP_NAME(op_kind::not_, "logical-not")
+        OP_NAME(op_kind::neg, "neg")
+
+        default:
+            break;
+    }
+
+# undef OP_NAME
+
+    return result;
+}
+
 std::string insn_to_string(insn_type insn)
 {
     auto pair = insn_decode(insn);
     std::ostringstream oss;
-    oss << opcode_name(pair.first) << ' ' << pair.second;
+    oss << opcode_name(pair.first) << ' ';
+    if(opcode::call_op == pair.first)
+        oss << opkind_name(static_cast<op_kind>(pair.second));
+    else
+        oss << pair.second;
     return oss.str();
 }
 

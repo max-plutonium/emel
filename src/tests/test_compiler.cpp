@@ -892,21 +892,21 @@ TEST(Compiler, WhileLoop)
         insn_encode(opcode::push_frame, 1),
 
         // while(1.23) { }
-        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::brf_false, 2),
         insn_encode(opcode::brb, 2),
 
         // while(1.23) { -1.23 }
-        insn_encode(opcode::push_const, 4),
-        insn_encode(opcode::brf_false, 3),
         insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::brb, 3),
 
         // while(true) { }
         insn_encode(opcode::brb, 0),
 
         // while(true) { -1.23 }
-        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::brb, 1),
 
         insn_encode(opcode::drop_frame, 1)

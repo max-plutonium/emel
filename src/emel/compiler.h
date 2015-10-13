@@ -409,18 +409,18 @@ public:
             n->insns.push_back(insn_encode(opcode::brf_false));
 
         for(auto &expr : node.exprs) {
-            semantic::node_ptr then_node = nodes_map[expr.apply_visitor(*this)];
+            semantic::node_ptr expr_node = nodes_map[expr.apply_visitor(*this)];
 
-            for(auto &insn : then_node->insns)
+            for(auto &insn : expr_node->insns)
                 n->insns.push_back(insn);
-            then_node->insns.clear();
+            expr_node->insns.clear();
 
-            for(auto &slot : then_node->slots)
+            for(auto &slot : expr_node->slots)
                 n->slots.push_back(std::move(slot));
-            then_node->slots.clear();
+            expr_node->slots.clear();
 
-            n->nr_stack += then_node->nr_stack;
-            then_node->nr_stack = 0;
+            n->nr_stack += expr_node->nr_stack;
+            expr_node->nr_stack = 0;
         }
 
         if(!step_empty) {

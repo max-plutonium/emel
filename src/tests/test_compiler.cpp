@@ -79,10 +79,11 @@ TEST(Compiler, EmptyObjectClass)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(4));
+    ASSERT_THAT(const_pool, SizeIs(5));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -94,7 +95,7 @@ TEST(Compiler, EmptyObjectClass)
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->code_range.second, Eq(2));
-    EXPECT_THAT(module->classes.back()->base_name_index, Eq(0));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
     EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->fields, IsEmpty());
@@ -105,7 +106,7 @@ TEST(Compiler, EmptyObjectClass)
     EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(2));
 
@@ -142,11 +143,12 @@ TEST(Compiler, EmptyClass)
     c(obj_class_);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(5));
+    ASSERT_THAT(const_pool, SizeIs(6));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("Name"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[5]), Eq("Name"));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(2));
@@ -155,7 +157,7 @@ TEST(Compiler, EmptyClass)
     EXPECT_THAT(module->classes.back()->slots, IsEmpty());
     EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
-    EXPECT_THAT(module->classes.back()->name_index, Eq(4));
+    EXPECT_THAT(module->classes.back()->name_index, Eq(5));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.second, Eq(6));
     EXPECT_THAT(module->classes.back()->base_name_index, Eq(2));
@@ -169,7 +171,7 @@ TEST(Compiler, EmptyClass)
     EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(2));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(6));
 
@@ -205,12 +207,13 @@ TEST(Compiler, EmptyClassWithBaseClass)
     c(base_class_);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(6));
+    ASSERT_THAT(const_pool, SizeIs(7));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("BaseName"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[5]), Eq("Name"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[5]), Eq("BaseName"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[6]), Eq("Name"));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(3));
@@ -219,10 +222,10 @@ TEST(Compiler, EmptyClassWithBaseClass)
     EXPECT_THAT(module->classes.back()->slots, IsEmpty());
     EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
-    EXPECT_THAT(module->classes.back()->name_index, Eq(5));
+    EXPECT_THAT(module->classes.back()->name_index, Eq(6));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(6));
     EXPECT_THAT(module->classes.back()->code_range.second, Eq(10));
-    EXPECT_THAT(module->classes.back()->base_name_index, Eq(4));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(5));
     EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->methods_offset, Eq(2));
     EXPECT_THAT(module->classes.back()->fields, IsEmpty());
@@ -233,7 +236,7 @@ TEST(Compiler, EmptyClassWithBaseClass)
     EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(6));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(10));
 
@@ -268,13 +271,15 @@ TEST(Compiler, Constants)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(7));
+    ASSERT_THAT(const_pool, SizeIs(9));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("hello world!"));
-    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(12.3));
-    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(1));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[5]), Eq("hello world!"));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(12.3));
+    EXPECT_TRUE(boost::get<bool>(const_pool[7]));
+    EXPECT_FALSE(boost::get<bool>(const_pool[8]));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -286,7 +291,7 @@ TEST(Compiler, Constants)
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->code_range.second, Eq(6));
-    EXPECT_THAT(module->classes.back()->base_name_index, Eq(0));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
     EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->fields, IsEmpty());
@@ -297,17 +302,17 @@ TEST(Compiler, Constants)
     EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(6));
 
     ASSERT_THAT(module->insns, SizeIs(6));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
-        insn_encode(opcode::push_const, 4),
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::push_const, 0),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -329,15 +334,16 @@ TEST(Compiler, AssignsInCtor)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(9));
+    ASSERT_THAT(const_pool, SizeIs(10));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("VarName"));
-    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
-    EXPECT_THAT(boost::get<std::string>(const_pool[6]), Eq("ReusedName"));
-    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(5.0));
-    EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(15.0));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[5]), Eq("VarName"));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(1.23));
+    EXPECT_THAT(boost::get<std::string>(const_pool[7]), Eq("ReusedName"));
+    EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(5.0));
+    EXPECT_THAT(boost::get<double>(const_pool[9]),      Eq(15.0));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -349,7 +355,7 @@ TEST(Compiler, AssignsInCtor)
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->code_range.second, Eq(11));
-    EXPECT_THAT(module->classes.back()->base_name_index, Eq(0));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
     EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
     ASSERT_THAT(module->classes.back()->fields, SizeIs(2));
@@ -361,7 +367,7 @@ TEST(Compiler, AssignsInCtor)
     EXPECT_THAT(field->slots, IsEmpty());
     EXPECT_THAT(field->nr_stack, Eq(0));
     EXPECT_THAT(field->nr_args, Eq(0));
-    EXPECT_THAT(field->name_index, Eq(4));
+    EXPECT_THAT(field->name_index, Eq(5));
 
     field = module->classes.back()->fields[1];
     EXPECT_THAT(field->index, Eq(1));
@@ -369,27 +375,27 @@ TEST(Compiler, AssignsInCtor)
     EXPECT_THAT(field->slots, IsEmpty());
     EXPECT_THAT(field->nr_stack, Eq(0));
     EXPECT_THAT(field->nr_args, Eq(0));
-    EXPECT_THAT(field->name_index, Eq(6));
+    EXPECT_THAT(field->name_index, Eq(7));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
     EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(6));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(11));
 
     ASSERT_THAT(module->insns, SizeIs(11));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
-        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::push_local, 0),
         insn_encode(opcode::load_field, 0),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::push_local, 0),
         insn_encode(opcode::load_field, 1),
-        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 9),
         insn_encode(opcode::push_local, 0),
         insn_encode(opcode::load_field, 1),
         insn_encode(opcode::drop_frame, 1)
@@ -410,11 +416,12 @@ TEST(Compiler, UnaryOp)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(5));
+    ASSERT_THAT(const_pool, SizeIs(6));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
-    EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(1.23));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -426,7 +433,7 @@ TEST(Compiler, UnaryOp)
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->code_range.second, Eq(6));
-    EXPECT_THAT(module->classes.back()->base_name_index, Eq(0));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
     EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->fields, IsEmpty());
@@ -437,16 +444,16 @@ TEST(Compiler, UnaryOp)
     EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(2));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(6));
 
     ASSERT_THAT(module->insns, SizeIs(6));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
-        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::call_op, op_kind::not_),
-        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::call_op, op_kind::neg),
         insn_encode(opcode::drop_frame, 1)
     }));
@@ -467,13 +474,14 @@ TEST(Compiler, BinaryOp)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(7));
+    ASSERT_THAT(const_pool, SizeIs(8));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
-    EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(-20.3));
-    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
-    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(2.0));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(-20.3));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(1.23));
+    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(2.0));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -485,7 +493,7 @@ TEST(Compiler, BinaryOp)
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->code_range.second, Eq(9));
-    EXPECT_THAT(module->classes.back()->base_name_index, Eq(0));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
     EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->fields, IsEmpty());
@@ -496,18 +504,18 @@ TEST(Compiler, BinaryOp)
     EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(9));
 
     ASSERT_THAT(module->insns, SizeIs(9));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
-        insn_encode(opcode::push_const, 4),
         insn_encode(opcode::push_const, 5),
-        insn_encode(opcode::call_op, op_kind::add),
         insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::call_op, op_kind::add),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::call_op, op_kind::sub),
         insn_encode(opcode::call_op, op_kind::div),
         insn_encode(opcode::drop_frame, 1)
@@ -532,14 +540,18 @@ TEST(Compiler, TernaryOp)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(8));
+    ASSERT_THAT(const_pool, SizeIs(12));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
-    EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(1.0));
-    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
-    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(-20.3));
-    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(-1.0));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_TRUE(boost::get<bool>(const_pool[5]));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(1.23));
+    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(-20.3));
+    EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(0.0));
+    EXPECT_THAT(boost::get<double>(const_pool[9]),      Eq(-1.0));
+    EXPECT_THAT(boost::get<double>(const_pool[10]),     Eq(1.0));
+    EXPECT_FALSE(boost::get<bool>(const_pool[11]));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -551,7 +563,7 @@ TEST(Compiler, TernaryOp)
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->code_range.second, Eq(20));
-    EXPECT_THAT(module->classes.back()->base_name_index, Eq(0));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
     EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->fields, IsEmpty());
@@ -562,31 +574,31 @@ TEST(Compiler, TernaryOp)
     EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(10));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(20));
 
     ASSERT_THAT(module->insns, SizeIs(20));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
-        insn_encode(opcode::push_const, 4),
-        insn_encode(opcode::brf_false, 3),
         insn_encode(opcode::push_const, 5),
-        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::brf_false, 3),
         insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::push_const, 0),
+        insn_encode(opcode::brf, 2),
         insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 9),
         insn_encode(opcode::call_op, op_kind::gte),
         insn_encode(opcode::brf_false, 5),
-        insn_encode(opcode::push_const, 4),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 10),
+        insn_encode(opcode::push_const, 9),
         insn_encode(opcode::call_op, op_kind::mul),
         insn_encode(opcode::brf, 6),
-        insn_encode(opcode::push_const, 0),
+        insn_encode(opcode::push_const, 11),
         insn_encode(opcode::brf_false, 3),
-        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 10),
         insn_encode(opcode::brf, 2),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 9),
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -609,13 +621,15 @@ TEST(Compiler, IfBlock)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(7));
+    ASSERT_THAT(const_pool, SizeIs(9));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
-    EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(1.0));
-    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(-1.23));
-    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(456.0));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_TRUE(boost::get<bool>(const_pool[5]));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(-1.23));
+    EXPECT_FALSE(boost::get<bool>(const_pool[7]));
+    EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(456.0));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -627,7 +641,7 @@ TEST(Compiler, IfBlock)
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->code_range.second, Eq(10));
-    EXPECT_THAT(module->classes.back()->base_name_index, Eq(0));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
     EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->fields, IsEmpty());
@@ -638,21 +652,21 @@ TEST(Compiler, IfBlock)
     EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(5));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(10));
 
     ASSERT_THAT(module->insns, SizeIs(10));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
-        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::brf_false, 2),
-        insn_encode(opcode::push_const, 5),
-        insn_encode(opcode::push_const, 0),
-        insn_encode(opcode::brf_false, 3),
-        insn_encode(opcode::push_const, 5),
-        insn_encode(opcode::brf, 2),
         insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -693,14 +707,15 @@ TEST(Compiler, ForLoop)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(8));
+    ASSERT_THAT(const_pool, SizeIs(9));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
-    EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(1.23));
-    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(999.2));
-    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(152.0));
-    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(229.7));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(999.2));
+    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(152.0));
+    EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(229.7));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -712,7 +727,7 @@ TEST(Compiler, ForLoop)
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->code_range.second, Eq(58));
-    EXPECT_THAT(module->classes.back()->base_name_index, Eq(0));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
     EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->fields, IsEmpty());
@@ -723,7 +738,7 @@ TEST(Compiler, ForLoop)
     EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(32));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(58));
 
@@ -735,88 +750,88 @@ TEST(Compiler, ForLoop)
         insn_encode(opcode::brb, 0),
 
         // for(;;) { 1.23 }
-        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::brb, 1),
 
         // for(999.2;;) { }
-        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::brb, 0),
 
         // for(999.2;;) { 1.23 }
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::push_const, 5),
-        insn_encode(opcode::push_const, 4),
         insn_encode(opcode::brb, 1),
 
         // for(; 152.0;) { }
-        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::brf_false, 2),
         insn_encode(opcode::brb, 2),
 
         // for(; 152.0;) { 1.23 }
-        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::brf_false, 3),
-        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::brb, 3),
 
         // for(999.2; 152.0;) { }
-        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::brf_false, 2),
         insn_encode(opcode::brb, 2),
 
         // for(999.2; 152.0;) { 1.23 }
-        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::brf_false, 3),
-        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::brb, 3),
 
         // for(;; 229.7) { }
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::brb, 1),
 
         // for(;; 229.7) { 1.23 }
-        insn_encode(opcode::push_const, 4),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::brb, 2),
 
         // for(999.2;; 229.7) { }
-        insn_encode(opcode::push_const, 5),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::brb, 1),
 
         // for(999.2;; 229.7) { 1.23 }
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::push_const, 5),
-        insn_encode(opcode::push_const, 4),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::brb, 2),
 
         // for(; 152.0; 229.7) { }
-        insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::brf_false, 3),
         insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::brb, 3),
 
         // for(; 152.0; 229.7) { 1.23 }
-        insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::brf_false, 4),
-        insn_encode(opcode::push_const, 4),
         insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf_false, 4),
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::brb, 4),
 
         // for(999.2; 152.0; 229.7) { }
-        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::brf_false, 3),
         insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::brb, 3),
 
         // for(999.2; 152.0; 229.7) { 1.23 }
-        insn_encode(opcode::push_const, 5),
         insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::brf_false, 4),
-        insn_encode(opcode::push_const, 4),
         insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf_false, 4),
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::brb, 4),
 
         insn_encode(opcode::drop_frame, 1)
@@ -839,12 +854,13 @@ TEST(Compiler, WhileLoop)
     codegen c("test", module, syms, graph, const_pool);
     codegen_result cr = c(class_);
 
-    ASSERT_THAT(const_pool, SizeIs(6));
+    ASSERT_THAT(const_pool, SizeIs(7));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
-    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq("~init"));
-    EXPECT_THAT(boost::get<double>(const_pool[4]),      Eq(1.23));
-    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(-1.23));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(-1.23));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -856,7 +872,7 @@ TEST(Compiler, WhileLoop)
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->code_range.second, Eq(12));
-    EXPECT_THAT(module->classes.back()->base_name_index, Eq(0));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
     EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->fields, IsEmpty());
@@ -865,9 +881,9 @@ TEST(Compiler, WhileLoop)
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
     EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(12));
 

@@ -22,8 +22,9 @@
 namespace emel { namespace bytecode {
 
 const_pool_manager::const_pool_manager(std::vector<value_type> &cp)
-    : pool_index(0), const_pool(cp)
+    : pool_index(1), const_pool(cp)
 {
+    const_pool.emplace_back(empty_value);
 }
 
 std::size_t const_pool_manager::store_const(const std::string &value)
@@ -36,6 +37,11 @@ std::size_t const_pool_manager::store_const(const std::string &value)
     return index;
 }
 
+std::size_t const_pool_manager::store_const(const char *value)
+{
+    return store_const(std::string(value));
+}
+
 std::size_t const_pool_manager::store_const(double value)
 {
     auto pair = number_pool.emplace(value, pool_index);
@@ -44,6 +50,16 @@ std::size_t const_pool_manager::store_const(double value)
     if(pair.second)
         const_pool.emplace_back(value);
     return index;
+}
+
+std::size_t const_pool_manager::store_const(bool value)
+{
+    auto &opt = value ? opt_true : opt_false;
+    if(!opt) {
+        opt = std::experimental::make_optional(pool_index++);
+        const_pool.emplace_back(value);
+    }
+    return opt.value();
 }
 
 } // namespace bytecode

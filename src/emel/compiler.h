@@ -73,7 +73,6 @@ public:
         , names_map(boost::get(boost::vertex_name, graph))
         , nodes_map(boost::get(boost::vertex_semantic, graph))
     {
-        store_const("");
         module->name_index = store_const(module_name);
         auto v = semantic::add_vertex(module_name, module, graph);
         sym_table.add_symbol(module_name, v, symbol_kind::module);
@@ -90,9 +89,6 @@ public:
 
     codegen_result operator()(const std::string &value)
     {
-        if(value.empty())
-            return operator ()(empty_value);
-
         semantic::node_ptr n = std::make_shared<semantic::node>();
         n->index = store_const(value);
         ++n->nr_stack;
@@ -102,9 +98,6 @@ public:
 
     codegen_result operator()(double value)
     {
-        if(value == 0.0)
-            return operator ()(empty_value);
-
         semantic::node_ptr n = std::make_shared<semantic::node>();
         n->index = store_const(value);
         ++n->nr_stack;
@@ -114,11 +107,8 @@ public:
 
     codegen_result operator()(bool value)
     {
-        if(!value)
-            return operator ()(empty_value);
-
         semantic::node_ptr n = std::make_shared<semantic::node>();
-        n->index = store_const(1);
+        n->index = store_const(value);
         ++n->nr_stack;
         n->insns.push_back(insn_encode(opcode::push_const, n->index));
         return semantic::add_vertex(std::move(n), graph);

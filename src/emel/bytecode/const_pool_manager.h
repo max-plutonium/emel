@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <experimental/optional>
 
 namespace emel { namespace bytecode {
 
@@ -32,6 +33,7 @@ class const_pool_manager
 {
     std::unordered_map<std::string, std::size_t> string_pool;
     std::unordered_map<double, std::size_t> number_pool;
+    std::experimental::optional<std::size_t> opt_true, opt_false;
     std::size_t pool_index;
 
 protected:
@@ -40,7 +42,9 @@ protected:
 public:
     explicit const_pool_manager(std::vector<value_type> &cp);
     std::size_t store_const(const std::string &value);
+    std::size_t store_const(const char *value);
     std::size_t store_const(double value);
+    std::size_t store_const(bool value);
 };
 
 } // namespace bytecode

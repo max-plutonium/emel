@@ -138,4 +138,11 @@ std::ostream &operator <<(std::ostream &os, empty_value_type)
     return os << "empty-value";
 }
 
+std::ostream &operator <<(std::ostream &os, const insn_array &insns)
+{
+    for(auto insn : insns)
+        os << insn_to_string(insn) << std::endl;
+    return os;
+}
+
 } // namespace emel

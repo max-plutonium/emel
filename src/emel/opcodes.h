@@ -87,6 +87,7 @@ const char *opkind_name(op_kind op);
 std::string insn_to_string(insn_type insn);
 
 std::ostream &operator <<(std::ostream &os, empty_value_type);
+std::ostream &operator <<(std::ostream &os, const insn_array &);
 
 } // namespace emel
 

@@ -77,7 +77,7 @@ TEST(Compiler, EmptyObjectClass)
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
-    codegen_result cr = c(class_);
+    c(class_);
 
     ASSERT_THAT(const_pool, SizeIs(5));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -141,7 +141,7 @@ TEST(Compiler, EmptyClass)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(obj_class_);
-    codegen_result cr = c(class_);
+    c(class_);
 
     ASSERT_THAT(const_pool, SizeIs(6));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -205,7 +205,7 @@ TEST(Compiler, EmptyClassWithBaseClass)
     codegen c("test", module, syms, graph, const_pool);
     c(obj_class_);
     c(base_class_);
-    codegen_result cr = c(class_);
+    c(class_);
 
     ASSERT_THAT(const_pool, SizeIs(7));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -269,7 +269,7 @@ TEST(Compiler, Constants)
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
-    codegen_result cr = c(class_);
+    c(class_);
 
     ASSERT_THAT(const_pool, SizeIs(9));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -332,7 +332,7 @@ TEST(Compiler, AssignsInCtor)
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
-    codegen_result cr = c(class_);
+    c(class_);
 
     ASSERT_THAT(const_pool, SizeIs(10));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -414,7 +414,7 @@ TEST(Compiler, UnaryOp)
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
-    codegen_result cr = c(class_);
+    c(class_);
 
     ASSERT_THAT(const_pool, SizeIs(6));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -472,7 +472,7 @@ TEST(Compiler, BinaryOp)
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
-    codegen_result cr = c(class_);
+    c(class_);
 
     ASSERT_THAT(const_pool, SizeIs(8));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -538,7 +538,7 @@ TEST(Compiler, TernaryOp)
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
-    codegen_result cr = c(class_);
+    c(class_);
 
     ASSERT_THAT(const_pool, SizeIs(12));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -619,7 +619,7 @@ TEST(Compiler, IfBlock)
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
-    codegen_result cr = c(class_);
+    c(class_);
 
     ASSERT_THAT(const_pool, SizeIs(9));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -659,14 +659,20 @@ TEST(Compiler, IfBlock)
     ASSERT_THAT(module->insns, SizeIs(10));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
+
+        // if(true) -1.23
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::brf_false, 2),
         insn_encode(opcode::push_const, 6),
+
+        // if(false) -1.23
+        // else 456.0
         insn_encode(opcode::push_const, 7),
         insn_encode(opcode::brf_false, 3),
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::brf, 2),
         insn_encode(opcode::push_const, 8),
+
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -705,7 +711,7 @@ TEST(Compiler, ForLoop)
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
-    codegen_result cr = c(class_);
+    c(class_);
 
     ASSERT_THAT(const_pool, SizeIs(9));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -852,7 +858,7 @@ TEST(Compiler, WhileLoop)
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
-    codegen_result cr = c(class_);
+    c(class_);
 
     ASSERT_THAT(const_pool, SizeIs(7));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));

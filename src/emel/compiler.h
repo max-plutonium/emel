@@ -542,12 +542,11 @@ public:
             then_node->nr_stack = 0;
         }
 
-        if(!node.else_exprs.empty())
+        if(!node.else_exprs.empty() && !node.then_exprs.empty())
             n->insns.push_back(insn_encode(opcode::brf));
 
         auto end_idx = n->insns.size();
-        auto offset = end_idx - start_idx;
-        n->insns[start_idx] = insn_encode(opcode::brf_false, offset);
+        n->insns[start_idx] = insn_encode(opcode::brf_false, end_idx - start_idx);
 
         for(auto &else_ : node.else_exprs) {
             semantic::node_ptr else_node = nodes_map[else_.apply_visitor(*this)];
@@ -564,11 +563,10 @@ public:
             else_node->nr_stack = 0;
         }
 
-        if(!node.else_exprs.empty()) {
+        if(!node.else_exprs.empty() && !node.then_exprs.empty()) {
             start_idx = end_idx - 1;
             end_idx = n->insns.size();
-            offset = end_idx - start_idx;
-            n->insns[start_idx] = insn_encode(opcode::brf, offset);
+            n->insns[start_idx] = insn_encode(opcode::brf, end_idx - start_idx);
         }
 
         return semantic::add_vertex(std::move(n), graph);

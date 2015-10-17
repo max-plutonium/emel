@@ -22,6 +22,7 @@
 #include "../emel/compiler.h"
 
 using namespace emel;
+using namespace std::literals;
 
 using testing::SizeIs;
 using testing::Eq;
@@ -267,7 +268,8 @@ TEST(Compiler, Constants)
 {
     ast::class_ class_;
     class_.name = "Object";
-    class_.exprs.emplace_back(std::string("hello world!"));
+
+    class_.exprs.emplace_back("hello world!"s);
     class_.exprs.emplace_back(12.3);
     class_.exprs.emplace_back(true);
     class_.exprs.emplace_back(false);

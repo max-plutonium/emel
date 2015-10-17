@@ -355,8 +355,373 @@ public:
     {
     }
 
-    codegen_result operator()(ast::switch_ &)
+    codegen_result operator()(ast::switch_ &node)
     {
+        semantic::node_ptr n = std::make_shared<semantic::node>();
+
+        // remove blocks without expressions
+        for(auto idx = node.blocks.size(); idx; --idx) {
+            ast::case_ &case_ = boost::get<ast::case_>(node.blocks[idx - 1]);
+
+            if(case_.exprs.empty())
+                node.blocks.erase(node.blocks.begin() + idx - 1);
+        }
+
+        if(node.blocks.empty())
+            return semantic::add_vertex(std::move(n), graph);
+
+        semantic::node_ptr cond = nodes_map[node.cond.apply_visitor(*this)];
+
+        if(1 == node.blocks.size()) {
+            ast::case_ &case_ = boost::get<ast::case_>(node.blocks.at(0));
+            std::vector<std::size_t> br_indices;
+            std::experimental::optional<std::size_t> brf_idx;
+
+            const auto match_size = case_.match_values.size();
+            for(std::size_t idx = 0; idx < match_size; ++idx) {
+                semantic::node_ptr value_node = nodes_map[case_.match_values.at(idx).apply_visitor(*this)];
+
+                // if default
+                if(0 == value_node->index)
+                    continue;
+
+                for(auto &insn : cond->insns)
+                    n->insns.push_back(insn);
+
+                n->nr_stack += cond->nr_stack;
+
+                for(auto &insn : value_node->insns)
+                    n->insns.push_back(insn);
+                value_node->insns.clear();
+
+                for(auto &slot : value_node->slots)
+                    n->slots.push_back(std::move(slot));
+                value_node->slots.clear();
+
+                n->nr_stack += value_node->nr_stack;
+                value_node->nr_stack = 0;
+
+                n->insns.push_back(insn_encode(opcode::call_op, op_kind::eq));
+
+                if(idx != match_size - 1) {
+                    br_indices.push_back(n->insns.size());
+                    n->insns.push_back(insn_encode(opcode::brf_true));
+                } else {
+                    brf_idx = n->insns.size();
+                    n->insns.push_back(insn_encode(opcode::brf_false));
+                }
+            }
+
+            std::size_t end_idx = n->insns.size();
+            for(auto idx : br_indices)
+                n->insns[idx] = insn_encode(opcode::brf_true, end_idx - idx);
+            if(brf_idx)
+                n->insns[brf_idx.value()] = insn_encode(opcode::brf_false, end_idx - brf_idx.value() + 1);
+
+            for(auto &expr : case_.exprs) {
+                semantic::node_ptr expr_node = nodes_map[expr.apply_visitor(*this)];
+
+                for(auto &insn : expr_node->insns)
+                    n->insns.push_back(insn);
+                expr_node->insns.clear();
+
+                for(auto &slot : expr_node->slots)
+                    n->slots.push_back(std::move(slot));
+                expr_node->slots.clear();
+
+                n->nr_stack += expr_node->nr_stack;
+                expr_node->nr_stack = 0;
+            }
+
+        } else {
+            using pair_type = std::pair<semantic::node_ptr, std::size_t>;
+            std::map<double, pair_type> doubles;
+            std::map<std::string, pair_type> strings;
+            semantic::node_ptr default_exprs;
+            pair_type true_expr, false_expr;
+
+            for(auto &insn : cond->insns)
+                n->insns.push_back(insn);
+
+            n->nr_stack += cond->nr_stack;
+
+            for(auto &case_node : node.blocks) {
+                ast::case_ &case_ = boost::get<ast::case_>(case_node);
+
+                if(case_.exprs.empty())
+                    continue;
+
+                semantic::node_ptr case_exprs = std::make_shared<semantic::node>();
+
+                for(auto &expr : case_.exprs) {
+                    semantic::node_ptr expr_node = nodes_map[expr.apply_visitor(*this)];
+
+                    for(auto &insn : expr_node->insns)
+                        case_exprs->insns.push_back(insn);
+                    expr_node->insns.clear();
+
+                    for(auto &slot : expr_node->slots)
+                        case_exprs->slots.push_back(std::move(slot));
+                    expr_node->slots.clear();
+
+                    case_exprs->nr_stack += expr_node->nr_stack;
+                    expr_node->nr_stack = 0;
+                }
+
+                for(auto &match_value : case_.match_values) {
+                    semantic::node_ptr value_node = nodes_map[match_value.apply_visitor(*this)];
+                    const auto &value = const_pool.at(value_node->index);
+                    switch(value.which()) {
+                        case 0:
+                            assert(!default_exprs);
+                            default_exprs = case_exprs;
+                            break;
+
+                        case 1: {
+                            auto res = strings.emplace(boost::get<std::string>(value),
+                                std::make_pair(case_exprs, value_node->index));
+                            assert(res.second);
+                            break;
+                        }
+
+                        case 2: {
+                            auto res = doubles.emplace(boost::get<double>(value),
+                                std::make_pair(case_exprs, value_node->index));
+                            assert(res.second);
+                            break;
+                        }
+
+                        case 3: {
+                            const bool v = boost::get<bool>(value);
+                            assert(v ? !true_expr.first : !false_expr.first);
+                            (v ? true_expr : false_expr) = std::make_pair(case_exprs, value_node->index);
+                            break;
+                        }
+
+                        default:
+                            assert(false);
+                    }
+                }
+            }
+
+            {
+                std::size_t dup_count = 0;
+
+                if(!doubles.empty())
+                    ++dup_count;
+
+                if(!strings.empty())
+                    ++dup_count;
+
+                if(true_expr.first || false_expr.first)
+                    ++dup_count;
+
+                if(dup_count > 1) {
+                    n->insns.push_back(insn_encode(opcode::dup, --dup_count));
+                    n->nr_stack += dup_count;
+                }
+            }
+
+            std::vector<std::size_t> push_indices_for_doubles, push_indices_for_strings, brf_indices;
+            std::size_t double_table_insn_idx, string_table_insn_idx, last_table_insn_idx;
+
+            if(!doubles.empty()) {
+                std::for_each(doubles.rbegin(), doubles.rend(),
+                [&](const std::pair<double, pair_type> &entry) {
+
+                    push_indices_for_doubles.push_back(n->insns.size());
+                    n->nr_stack += 2;
+                    n->insns.push_back(insn_encode(opcode::push));
+                    n->insns.push_back(insn_encode(opcode::push_const, entry.second.second));
+                });
+
+                last_table_insn_idx = double_table_insn_idx = n->insns.size();
+                n->insns.push_back(insn_encode(opcode::br_table, doubles.size()));
+            }
+
+            if(!strings.empty()) {
+                std::for_each(strings.rbegin(), strings.rend(),
+                [&](const std::pair<std::string, pair_type> &entry) {
+
+                    push_indices_for_strings.push_back(n->insns.size());
+                    n->nr_stack += 2;
+                    n->insns.push_back(insn_encode(opcode::push));
+                    n->insns.push_back(insn_encode(opcode::push_const, entry.second.second));
+                });
+
+                last_table_insn_idx = string_table_insn_idx = n->insns.size();
+                n->insns.push_back(insn_encode(opcode::br_table, strings.size()));
+            }
+
+            std::unordered_map<semantic::node_ptr, std::size_t> used_blocks;
+
+            auto bool_expr = true_expr.first ? true_expr : false_expr;
+
+            if(bool_expr.first) {
+                const auto br_idx = n->insns.size();
+
+                if(bool_expr == true_expr)
+                    n->insns.push_back(insn_encode(opcode::brf_false));
+                else
+                    n->insns.push_back(insn_encode(opcode::brf_true));
+
+                const auto res = used_blocks.emplace(bool_expr.first, n->insns.size());
+
+                if(res.second) {
+                    for(auto &insn : bool_expr.first->insns)
+                        n->insns.push_back(insn);
+                    bool_expr.first->insns.clear();
+
+                    for(auto &slot : bool_expr.first->slots)
+                        n->slots.push_back(std::move(slot));
+                    bool_expr.first->slots.clear();
+
+                    n->nr_stack += bool_expr.first->nr_stack;
+                    bool_expr.first->nr_stack = 0;
+                }
+                else assert(false);
+
+                if(true_expr.first && false_expr.first)
+                    n->insns.push_back(insn_encode(opcode::brf));
+
+                const auto end_idx = false_expr.first && true_expr.first || !default_exprs
+                        ? n->insns.size() : n->insns.size() + 1;
+
+                if(bool_expr == true_expr)
+                    n->insns[br_idx] = insn_encode(opcode::brf_false, end_idx - br_idx);
+                else
+                    n->insns[br_idx] = insn_encode(opcode::brf_true, end_idx - br_idx);
+            }
+
+            if(false_expr.first && true_expr.first) {
+                assert(bool_expr == true_expr);
+                const auto res = used_blocks.emplace(false_expr.first, n->insns.size());
+                const auto brf_idx = n->insns.size() - 1;
+
+                if(res.second) {
+                    for(auto &insn : false_expr.first->insns)
+                        n->insns.push_back(insn);
+                    false_expr.first->insns.clear();
+
+                    for(auto &slot : false_expr.first->slots)
+                        n->slots.push_back(std::move(slot));
+                    false_expr.first->slots.clear();
+
+                    n->nr_stack += false_expr.first->nr_stack;
+                    false_expr.first->nr_stack = 0;
+                }
+                else assert(false);
+
+                const auto end_idx = n->insns.size();
+                n->insns[brf_idx] = insn_encode(opcode::brf, end_idx - brf_idx);
+            }
+
+            else if(default_exprs) {
+                if(bool_expr.first) {
+                    brf_indices.push_back(n->insns.size());
+                    n->insns.push_back(insn_encode(opcode::brf));
+                }
+
+                const auto res = used_blocks.emplace(default_exprs, n->insns.size());
+
+                if(res.second) {
+                    for(auto &insn : default_exprs->insns)
+                        n->insns.push_back(insn);
+                    default_exprs->insns.clear();
+
+                    for(auto &slot : default_exprs->slots)
+                        n->slots.push_back(std::move(slot));
+                    default_exprs->slots.clear();
+
+                    n->nr_stack += default_exprs->nr_stack;
+                    default_exprs->nr_stack = 0;
+                }
+            }
+
+            if(!doubles.empty() || !strings.empty()) {
+                brf_indices.push_back(n->insns.size());
+                n->insns.push_back(insn_encode(opcode::brf));
+            }
+
+            if(!doubles.empty()) {
+                std::size_t code_slot_idx = doubles.size();
+
+                std::for_each(doubles.begin(), doubles.end(),
+                    [&](const std::pair<double, pair_type> &entry) {
+
+                    auto expr_node = entry.second.first;
+                    const auto res = used_blocks.emplace(expr_node, n->insns.size());
+                    const auto current_idx = res.first->second;
+
+                    const auto branch_offset = current_idx - double_table_insn_idx;
+                    n->insns[push_indices_for_doubles[code_slot_idx - 1]]
+                            = insn_encode(opcode::push, branch_offset);
+
+                    if(res.second) {
+                        for(auto &insn : expr_node->insns)
+                            n->insns.push_back(insn);
+                        expr_node->insns.clear();
+
+                        for(auto &slot : expr_node->slots)
+                            n->slots.push_back(std::move(slot));
+                        expr_node->slots.clear();
+
+                        n->nr_stack += expr_node->nr_stack;
+                        expr_node->nr_stack = 0;
+
+                        brf_indices.push_back(n->insns.size());
+                        n->insns.push_back(insn_encode(opcode::brf));
+                    }
+
+                    --code_slot_idx;
+                });
+            }
+
+            if(!strings.empty()) {
+                std::size_t code_slot_idx = strings.size();
+
+                std::for_each(strings.begin(), strings.end(),
+                    [&](const std::pair<std::string, pair_type> &entry) {
+
+                    auto expr_node = entry.second.first;
+                    const auto res = used_blocks.emplace(expr_node, n->insns.size());
+                    const auto current_idx = res.first->second;
+
+                    const auto branch_offset = current_idx - string_table_insn_idx;
+                    n->insns[push_indices_for_strings[code_slot_idx - 1]]
+                            = insn_encode(opcode::push, branch_offset);
+
+                    if(res.second) {
+                        for(auto &insn : expr_node->insns)
+                            n->insns.push_back(insn);
+                        expr_node->insns.clear();
+
+                        for(auto &slot : expr_node->slots)
+                            n->slots.push_back(std::move(slot));
+                        expr_node->slots.clear();
+
+                        n->nr_stack += expr_node->nr_stack;
+                        expr_node->nr_stack = 0;
+
+                        brf_indices.push_back(n->insns.size());
+                        n->insns.push_back(insn_encode(opcode::brf));
+                    }
+
+                    --code_slot_idx;
+                });
+            }
+
+            if(insn_encode(opcode::brf) == n->insns.back()) {
+                n->insns.pop_back();
+                brf_indices.pop_back();
+            }
+
+            const auto end_idx = n->insns.size();
+            for(auto idx : brf_indices)
+                n->insns[idx] = insn_encode(opcode::brf, end_idx - idx);
+        }
+
+        return semantic::add_vertex(std::move(n), graph);
     }
 
     codegen_result operator()(ast::case_ &node)

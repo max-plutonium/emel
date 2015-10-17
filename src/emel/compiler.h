@@ -363,6 +363,7 @@ public:
     {
     }
 
+    // TODO Optimize booleans in condition
     codegen_result operator()(ast::for_ &node)
     {
         semantic::node_ptr n = std::make_shared<semantic::node>();
@@ -448,6 +449,7 @@ public:
         return semantic::add_vertex(std::move(n), graph);
     }
 
+    // TODO Optimize booleans in condition
     codegen_result operator()(ast::ternary &node)
     {
         semantic::node_ptr n = std::make_shared<semantic::node>();
@@ -508,6 +510,7 @@ public:
         return semantic::add_vertex(std::move(n), graph);
     }
 
+    // TODO Optimize booleans in condition
     codegen_result operator()(ast::if_ &node)
     {
         semantic::node_ptr n = std::make_shared<semantic::node>();
@@ -572,6 +575,7 @@ public:
         return semantic::add_vertex(std::move(n), graph);
     }
 
+    // TODO Optimize False in condition
     codegen_result operator()(ast::while_ &node)
     {
         semantic::node_ptr n = std::make_shared<semantic::node>();

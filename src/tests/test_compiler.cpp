@@ -179,9 +179,13 @@ TEST(Compiler, EmptyClass)
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
         insn_encode(opcode::drop_frame, 1),
+
         insn_encode(opcode::push_frame, 1),
+
+        // call base ctor
         insn_encode(opcode::push_local, 0),
         insn_encode(opcode::fcall, 0),
+
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -244,10 +248,14 @@ TEST(Compiler, EmptyClassWithBaseClass)
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
         insn_encode(opcode::drop_frame, 1),
+
+        // BaseName ctor
         insn_encode(opcode::push_frame, 1),
         insn_encode(opcode::push_local, 0),
         insn_encode(opcode::fcall, 0),
         insn_encode(opcode::drop_frame, 1),
+
+        // Name ctor
         insn_encode(opcode::push_frame, 1),
         insn_encode(opcode::push_local, 0),
         insn_encode(opcode::fcall, 1),
@@ -278,8 +286,8 @@ TEST(Compiler, Constants)
     EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
     EXPECT_THAT(boost::get<std::string>(const_pool[5]), Eq("hello world!"));
     EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(12.3));
-    EXPECT_TRUE(boost::get<bool>(const_pool[7]));
-    EXPECT_FALSE(boost::get<bool>(const_pool[8]));
+    EXPECT_THAT(boost::get<bool>(const_pool[7]),        Eq(true));
+    EXPECT_THAT(boost::get<bool>(const_pool[8]),        Eq(false));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -309,10 +317,12 @@ TEST(Compiler, Constants)
     ASSERT_THAT(module->insns, SizeIs(6));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
+
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::push_const, 7),
         insn_encode(opcode::push_const, 8),
+
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -323,6 +333,7 @@ TEST(Compiler, AssignsInCtor)
 {
     ast::class_ class_;
     class_.name = "Object";
+
     class_.exprs.emplace_back(ast::assign { "VarName", 1.23 });
     class_.exprs.emplace_back(ast::assign { "ReusedName", 5.0 });
     class_.exprs.emplace_back(ast::assign { "ReusedName", 15.0 });
@@ -389,15 +400,22 @@ TEST(Compiler, AssignsInCtor)
     ASSERT_THAT(module->insns, SizeIs(11));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
+
+        // VarName field init
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::push_local, 0),
         insn_encode(opcode::load_field, 0),
+
+        // ReusedName field init
         insn_encode(opcode::push_const, 8),
         insn_encode(opcode::push_local, 0),
         insn_encode(opcode::load_field, 1),
+
+        // ReusedName field reassign
         insn_encode(opcode::push_const, 9),
         insn_encode(opcode::push_local, 0),
         insn_encode(opcode::load_field, 1),
+
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -406,6 +424,7 @@ TEST(Compiler, UnaryOp)
 {
     ast::class_ class_;
     class_.name = "Object";
+
     class_.exprs.emplace_back(ast::un_op { op_kind::not_, 1.23 });
     class_.exprs.emplace_back(ast::un_op { op_kind::neg, 1.23 });
 
@@ -451,10 +470,15 @@ TEST(Compiler, UnaryOp)
     ASSERT_THAT(module->insns, SizeIs(6));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
+
+        // ~1.23
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::call_op, op_kind::not_),
+
+        // -1.23
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::call_op, op_kind::neg),
+
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -463,6 +487,7 @@ TEST(Compiler, BinaryOp)
 {
     ast::class_ class_;
     class_.name = "Object";
+
     class_.exprs.emplace_back(ast::bin_op { op_kind::div,
         ast::bin_op { op_kind::sub, 1.23, 2.0 }, ast::bin_op { op_kind::add, 1.23, -20.3 }
     });
@@ -511,6 +536,8 @@ TEST(Compiler, BinaryOp)
     ASSERT_THAT(module->insns, SizeIs(9));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
+
+        // 1.23 - 2.0 / 1.23 + -20.3
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::call_op, op_kind::add),
@@ -518,6 +545,7 @@ TEST(Compiler, BinaryOp)
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::call_op, op_kind::sub),
         insn_encode(opcode::call_op, op_kind::div),
+
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -526,7 +554,9 @@ TEST(Compiler, TernaryOp)
 {
     ast::class_ class_;
     class_.name = "Object";
+
     class_.exprs.emplace_back(ast::ternary { true, 1.23, -20.3 });
+
     class_.exprs.emplace_back(ast::ternary {
         ast::bin_op { op_kind::gte, -1.0, 0.0 },
         ast::bin_op { op_kind::mul, -1.0, 1.0 },
@@ -545,13 +575,13 @@ TEST(Compiler, TernaryOp)
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
     EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
     EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
-    EXPECT_TRUE(boost::get<bool>(const_pool[5]));
+    EXPECT_THAT(boost::get<bool>(const_pool[5]),        Eq(true));
     EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(1.23));
     EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(-20.3));
     EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(0.0));
     EXPECT_THAT(boost::get<double>(const_pool[9]),      Eq(-1.0));
     EXPECT_THAT(boost::get<double>(const_pool[10]),     Eq(1.0));
-    EXPECT_FALSE(boost::get<bool>(const_pool[11]));
+    EXPECT_THAT(boost::get<bool>(const_pool[11]),       Eq(false));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
@@ -581,11 +611,15 @@ TEST(Compiler, TernaryOp)
     ASSERT_THAT(module->insns, SizeIs(20));
     EXPECT_THAT(module->insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
+
+        // True ? 1.23 : -20.3
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::brf_false, 3),
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::brf, 2),
         insn_encode(opcode::push_const, 7),
+
+        // -1.0 >= 0.0 ? -1.0 * 1.0 : False ? 1.0 : -1.0
         insn_encode(opcode::push_const, 8),
         insn_encode(opcode::push_const, 9),
         insn_encode(opcode::call_op, op_kind::gte),
@@ -599,6 +633,7 @@ TEST(Compiler, TernaryOp)
         insn_encode(opcode::push_const, 10),
         insn_encode(opcode::brf, 2),
         insn_encode(opcode::push_const, 9),
+
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -607,9 +642,11 @@ TEST(Compiler, IfBlock)
 {
     ast::class_ class_;
     class_.name = "Object";
+
     class_.exprs.emplace_back(ast::if_ {
         true, { -1.23 }, { }
     });
+
     class_.exprs.emplace_back(ast::if_ {
         false, { -1.23 }, { 456.0 }
     });
@@ -626,9 +663,9 @@ TEST(Compiler, IfBlock)
     EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
     EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
     EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
-    EXPECT_TRUE(boost::get<bool>(const_pool[5]));
+    EXPECT_THAT(boost::get<bool>(const_pool[5]),        Eq(true));
     EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(-1.23));
-    EXPECT_FALSE(boost::get<bool>(const_pool[7]));
+    EXPECT_THAT(boost::get<bool>(const_pool[7]),        Eq(false));
     EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(456.0));
 
     EXPECT_THAT(module->name_index, Eq(1));
@@ -848,6 +885,7 @@ TEST(Compiler, WhileLoop)
 {
     ast::class_ class_;
     class_.name = "Object";
+
     class_.exprs.emplace_back(ast::while_ { 1.23, { } });
     class_.exprs.emplace_back(ast::while_ { 1.23, { -1.23 } });
     class_.exprs.emplace_back(ast::while_ { true, { } });

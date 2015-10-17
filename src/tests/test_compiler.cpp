@@ -959,9 +959,1065 @@ TEST(Compiler, WhileLoop)
     }));
 }
 
+TEST(Compiler, SwitchBlockWithNumbers)
+{
+    ast::class_ class_;
+    class_.name = "Object";
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, { } });
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34 }, { } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34 }, { 3.45 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34, 10.23 }, { 3.45 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34 }, { } },
+        ast::case_ { { 10.23 }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34 }, { } },
+        ast::case_ { { 10.23 }, { } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34 }, { 3.45 } },
+        ast::case_ { { 10.23 }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34, 10.23 }, { 3.45 } },
+        ast::case_ { { 1.23, 3.45 }, { 3.47, 2.34 } }
+    }});
+
+    auto module = std::make_shared<semantic::module>();
+    symbol_table syms;
+    semantic::graph_type graph;
+    std::vector<value_type> const_pool;
+    codegen c("test", module, syms, graph, const_pool);
+    c(class_);
+
+    ASSERT_THAT(const_pool, SizeIs(10));
+    EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(2.34));
+    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(3.45));
+    EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(10.23));
+    EXPECT_THAT(boost::get<double>(const_pool[9]),      Eq(3.47));
+
+    EXPECT_THAT(module->name_index, Eq(1));
+    ASSERT_THAT(module->classes, SizeIs(1));
+    EXPECT_THAT(module->classes.back()->index, Eq(0));
+    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
+    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
+    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
+    EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
+    EXPECT_THAT(module->classes.back()->name_index, Eq(2));
+    EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
+    EXPECT_THAT(module->classes.back()->code_range.second, Eq(46));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
+    EXPECT_THAT(module->classes.back()->fields, IsEmpty());
+    ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
+
+    EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
+    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(30));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(46));
+
+    ASSERT_THAT(module->insns, SizeIs(46));
+    EXPECT_THAT(module->insns, ElementsAreArray({
+        insn_encode(opcode::push_frame, 1),
+
+        // switch(1.23) { }
+        // generate nothing
+
+        // switch(1.23) {
+        //  case 2.34:
+        // }
+        // generate nothing
+
+        // switch(1.23) {
+        //  case 2.34: 3.45
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 7),
+
+        // switch(1.23) {
+        //  case 2.34: case 10.23: 3.45
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::brf_true, 5),
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 7),
+
+        // switch(1.23) {
+        //  case 2.34:
+        //  case 10.23: 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 9),
+
+        // switch(1.23) {
+        //  case 2.34:
+        //  case 10.23:
+        // }
+        // generate nothing
+
+        // switch(1.23) {
+        //  case 2.34: 3.45
+        //  case 10.23: 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push, 2),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::br_table, 2),
+        insn_encode(opcode::brf, 4),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 9),
+
+        // switch(1.23) {
+        //  case 2.34: case 10.23: 3.45
+        //  case 1.23: case 3.45: 3.47, 2.34
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push, 5),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push, 2),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push, 5),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push, 2),
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::br_table, 4),
+        insn_encode(opcode::brf, 5),
+        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 7),
+
+        insn_encode(opcode::drop_frame, 1)
+    }));
+}
+
+TEST(Compiler, SwitchBlockWithStrings)
+{
+    ast::class_ class_;
+    class_.name = "Object";
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s }, { } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s }, { 3.45 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s, "two"s }, { 3.45 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s }, { } },
+        ast::case_ { { "two"s }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s }, { } },
+        ast::case_ { { "two"s }, { } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s }, { 3.45 } },
+        ast::case_ { { "two"s }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s, "two"s }, { 3.45, 1.23 } },
+        ast::case_ { { std::string("") }, { 3.47 } }
+    }});
+
+    auto module = std::make_shared<semantic::module>();
+    symbol_table syms;
+    semantic::graph_type graph;
+    std::vector<value_type> const_pool;
+    codegen c("test", module, syms, graph, const_pool);
+    c(class_);
+
+    ASSERT_THAT(const_pool, SizeIs(10));
+    EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
+    EXPECT_THAT(boost::get<std::string>(const_pool[6]), Eq("one"));
+    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(3.45));
+    EXPECT_THAT(boost::get<std::string>(const_pool[8]), Eq("two"));
+    EXPECT_THAT(boost::get<double>(const_pool[9]),      Eq(3.47));
+
+    EXPECT_THAT(module->name_index, Eq(1));
+    ASSERT_THAT(module->classes, SizeIs(1));
+    EXPECT_THAT(module->classes.back()->index, Eq(0));
+    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
+    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
+    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
+    EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
+    EXPECT_THAT(module->classes.back()->name_index, Eq(2));
+    EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
+    EXPECT_THAT(module->classes.back()->code_range.second, Eq(44));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
+    EXPECT_THAT(module->classes.back()->fields, IsEmpty());
+    ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
+
+    EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
+    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(28));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(44));
+
+    ASSERT_THAT(module->insns, SizeIs(44));
+    EXPECT_THAT(module->insns, ElementsAreArray({
+        insn_encode(opcode::push_frame, 1),
+
+        // switch(1.23) {
+        //  case "one":
+        // }
+        // generate nothing
+
+        // switch(1.23) {
+        //  case "one": 3.45
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 7),
+
+        // switch(1.23) {
+        //  case "one": case "two": 3.45
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::brf_true, 5),
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 7),
+
+        // switch(1.23) {
+        //  case "one":
+        //  case "two": 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 9),
+
+        // switch(1.23) {
+        //  case "one":
+        //  case "two":
+        // }
+        // generate nothing
+
+        // switch(1.23) {
+        //  case "one": 3.45
+        //  case "two": 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push, 2),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::br_table, 2),
+        insn_encode(opcode::brf, 4),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 9),
+
+        // switch(1.23) {
+        //  case "one": case "two": 3.45, 1.23
+        //  case "": 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push, 2),
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::br_table, 3),
+        insn_encode(opcode::brf, 5),
+        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::brf, 3),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 5),
+
+        insn_encode(opcode::drop_frame, 1)
+    }));
+}
+
+TEST(Compiler, SwitchBlockWithBooleans)
+{
+    ast::class_ class_;
+    class_.name = "Object";
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { true }, { } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { true }, { 3.45 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { false }, { 3.45 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { false }, { 3.45 } },
+        ast::case_ { { true }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { true }, { 3.45 } },
+        ast::case_ { { false }, { 3.47 } }
+    }});
+
+    auto module = std::make_shared<semantic::module>();
+    symbol_table syms;
+    semantic::graph_type graph;
+    std::vector<value_type> const_pool;
+    codegen c("test", module, syms, graph, const_pool);
+    c(class_);
+
+    ASSERT_THAT(const_pool, SizeIs(10));
+    EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
+    EXPECT_THAT(boost::get<bool>(const_pool[6]),        Eq(true));
+    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(3.45));
+    EXPECT_THAT(boost::get<bool>(const_pool[8]),        Eq(false));
+    EXPECT_THAT(boost::get<double>(const_pool[9]),      Eq(3.47));
+
+    EXPECT_THAT(module->name_index, Eq(1));
+    ASSERT_THAT(module->classes, SizeIs(1));
+    EXPECT_THAT(module->classes.back()->index, Eq(0));
+    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
+    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
+    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
+    EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
+    EXPECT_THAT(module->classes.back()->name_index, Eq(2));
+    EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
+    EXPECT_THAT(module->classes.back()->code_range.second, Eq(22));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
+    EXPECT_THAT(module->classes.back()->fields, IsEmpty());
+    ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
+
+    EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
+    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(12));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(22));
+
+    ASSERT_THAT(module->insns, SizeIs(22));
+    EXPECT_THAT(module->insns, ElementsAreArray({
+        insn_encode(opcode::push_frame, 1),
+
+        // switch(1.23) {
+        //  case True:
+        // }
+        // generate nothing
+
+        // switch(1.23) {
+        //  case True: 3.45
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 7),
+
+        // switch(1.23) {
+        //  case False: 3.45
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 7),
+
+        // switch(1.23) {
+        //  case False: 3.45
+        //  case True: 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 7),
+
+        // switch(1.23) {
+        //  case True: 3.45
+        //  case False: 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 9),
+
+        insn_encode(opcode::drop_frame, 1)
+    }));
+}
+
+TEST(Compiler, SwitchBlockWithDefaults)
+{
+    ast::class_ class_;
+    class_.name = "Object";
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { empty_value }, { } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { empty_value }, { 3.45 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { false }, { 3.45 } },
+        ast::case_ { { empty_value }, { } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { false }, { 3.45 } },
+        ast::case_ { { empty_value }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { true }, { 3.45 } },
+        ast::case_ { { empty_value }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { true }, { 3.45 } },
+        ast::case_ { { false }, { "one"s } },
+        ast::case_ { { empty_value }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s }, { 3.45 } },
+        ast::case_ { { empty_value }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s }, { 3.45 } },
+        ast::case_ { { "two"s }, { 3.47 } },
+        ast::case_ { { empty_value }, { 1.23 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 3.45, 3.47 }, { 3.45, 3.47 } },
+        ast::case_ { { empty_value }, { 3.47, 3.45 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 3.45 }, { 3.45, 3.47 } },
+        ast::case_ { { empty_value, 3.47 }, { 3.47, 3.45 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s, "two"s }, { 3.45, 3.47 } },
+        ast::case_ { { empty_value }, { 3.47, 3.45 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s }, { 3.45, 3.47 } },
+        ast::case_ { { empty_value, "two"s }, { 3.47, 3.45 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { true }, { 3.45, 3.47 } },
+        ast::case_ { { empty_value, false }, { 3.47, 3.45 } }
+    }});
+
+    auto module = std::make_shared<semantic::module>();
+    symbol_table syms;
+    semantic::graph_type graph;
+    std::vector<value_type> const_pool;
+    codegen c("test", module, syms, graph, const_pool);
+    c(class_);
+
+    ASSERT_THAT(const_pool, SizeIs(12));
+    EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(3.45));
+    EXPECT_THAT(boost::get<bool>(const_pool[7]),        Eq(false));
+    EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(3.47));
+    EXPECT_THAT(boost::get<bool>(const_pool[9]),        Eq(true));
+    EXPECT_THAT(boost::get<std::string>(const_pool[10]), Eq("one"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[11]), Eq("two"));
+
+    EXPECT_THAT(module->name_index, Eq(1));
+    ASSERT_THAT(module->classes, SizeIs(1));
+    EXPECT_THAT(module->classes.back()->index, Eq(0));
+    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
+    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
+    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
+    EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
+    EXPECT_THAT(module->classes.back()->name_index, Eq(2));
+    EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
+    EXPECT_THAT(module->classes.back()->code_range.second, Eq(92));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
+    EXPECT_THAT(module->classes.back()->fields, IsEmpty());
+    ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
+
+    EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
+    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(67));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(92));
+
+    ASSERT_THAT(module->insns, SizeIs(92));
+    EXPECT_THAT(module->insns, ElementsAreArray({
+        insn_encode(opcode::push_frame, 1),
+
+        // switch(1.23) {
+        //  default:
+        // }
+        // generate nothing
+
+        // switch(1.23) {
+        //  default: 3.45
+        // }
+        insn_encode(opcode::push_const, 6),
+
+        // switch(1.23) {
+        //  case False: 3.45
+        //  default:
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 6),
+
+        // switch(1.23) {
+        //  case False: 3.45
+        //  default: 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::brf_true, 3),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 8),
+
+        // switch(1.23) {
+        //  case True: 3.45
+        //  default: 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 8),
+
+        // switch(1.23) {
+        //  case True: 3.45
+        //  case False: "one"
+        //  default: 3.47
+        // }
+        // default block is not generated
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 10),
+
+        // switch(1.23) {
+        //  case "one": 3.45
+        //  default: 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push, 3),
+        insn_encode(opcode::push_const, 10),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 6),
+
+        // switch(1.23) {
+        //  case "one": 3.45
+        //  case "two": 3.47
+        //  default: 1.23
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push, 5),
+        insn_encode(opcode::push_const, 11),
+        insn_encode(opcode::push, 3),
+        insn_encode(opcode::push_const, 10),
+        insn_encode(opcode::br_table, 2),
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::brf, 4),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 8),
+
+        // switch(1.23) {
+        //  case 3.45: case 3.47: 3.45, 3.47
+        //  default: 3.47, 3.45
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::br_table, 2),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 3),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 8),
+
+        // switch(1.23) {
+        //  case 3.45: 3.45, 3.47
+        //  default: case 3.47: 3.47, 3.45
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push, 1),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::br_table, 2),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 3),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 8),
+
+        // switch(1.23) {
+        //  case "one": case "two": 3.45, 3.47
+        //  default: 3.47, 3.45
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 11),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 10),
+        insn_encode(opcode::br_table, 2),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 3),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 8),
+
+        // switch(1.23) {
+        //  case "one": 3.45, 3.47
+        //  default: case "two": 3.47, 3.45
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push, 1),
+        insn_encode(opcode::push_const, 11),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 10),
+        insn_encode(opcode::br_table, 2),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 3),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 8),
+
+        // switch(1.23) {
+        //  case True: 3.45, 3.47
+        //  default: case False: 3.47, 3.45
+        // }
+        // default block is not generated
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::brf_false, 4),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 3),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 6),
+
+        insn_encode(opcode::drop_frame, 1)
+    }));
+}
+
+TEST(Compiler, SwitchBlockWithMixedCases)
+{
+    ast::class_ class_;
+    class_.name = "Object";
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34 }, { 3.45 } },
+        ast::case_ { { "one"s }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34 }, { 3.45 } },
+        ast::case_ { { "one"s }, { 3.47 } },
+        ast::case_ { { empty_value }, { 2.34 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34 }, { 3.45 } },
+        ast::case_ { { true }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34 }, { 3.45 } },
+        ast::case_ { { true }, { 3.47 } },
+        ast::case_ { { empty_value }, { 2.34 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s }, { 3.45 } },
+        ast::case_ { { true }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s }, { 3.45 } },
+        ast::case_ { { true }, { 3.47 } },
+        ast::case_ { { empty_value }, { 2.34 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34 }, { 3.45 } },
+        ast::case_ { { "one"s }, { 2.34 } },
+        ast::case_ { { true }, { 3.47 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34 }, { 3.45 } },
+        ast::case_ { { "one"s }, { 2.34 } },
+        ast::case_ { { true }, { 3.47 } },
+        ast::case_ { { empty_value }, { 2.34 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { 2.34, "one"s }, { 3.45 } },
+        ast::case_ { { ""s, true }, { 3.47 } },
+        ast::case_ { { empty_value }, { 2.34 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s, true }, { 3.45 } },
+        ast::case_ { { false, 2.34 }, { 3.47 } },
+        ast::case_ { { empty_value }, { 2.34 } }
+    }});
+
+    class_.exprs.emplace_back(ast::switch_ { 1.23, {
+        ast::case_ { { "one"s, false, 2.34 }, { 3.45 } },
+        ast::case_ { { empty_value }, { 3.47 } }
+    }});
+
+    auto module = std::make_shared<semantic::module>();
+    symbol_table syms;
+    semantic::graph_type graph;
+    std::vector<value_type> const_pool;
+    codegen c("test", module, syms, graph, const_pool);
+    c(class_);
+
+    ASSERT_THAT(const_pool, SizeIs(12));
+    EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[2]), Eq("Object"));
+    EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
+    EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
+    EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(3.45));
+    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(2.34));
+    EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(3.47));
+    EXPECT_THAT(boost::get<std::string>(const_pool[9]), Eq("one"));
+    EXPECT_THAT(boost::get<bool>(const_pool[10]),       Eq(true));
+    EXPECT_THAT(boost::get<bool>(const_pool[11]),       Eq(false));
+
+    EXPECT_THAT(module->name_index, Eq(1));
+    ASSERT_THAT(module->classes, SizeIs(1));
+    EXPECT_THAT(module->classes.back()->index, Eq(0));
+    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
+    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
+    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
+    EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
+    EXPECT_THAT(module->classes.back()->name_index, Eq(2));
+    EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
+    EXPECT_THAT(module->classes.back()->code_range.second, Eq(137));
+    EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
+    EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
+    EXPECT_THAT(module->classes.back()->fields, IsEmpty());
+    ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
+
+    EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
+    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(94));
+    EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
+    EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(137));
+
+    ASSERT_THAT(module->insns, SizeIs(137));
+    EXPECT_THAT(module->insns, ElementsAreArray({
+        insn_encode(opcode::push_frame, 1),
+
+        // switch(1.23) {
+        //  case 2.34: 3.45
+        //  case "one": 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 1),
+        insn_encode(opcode::push, 5),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::brf, 4),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 8),
+
+        // switch(1.23) {
+        //  case 2.34: 3.45
+        //  case "one": 3.47
+        //  default: 2.34
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 1),
+        insn_encode(opcode::push, 6),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::push, 5),
+        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf, 4),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 8),
+
+        // switch(1.23) {
+        //  case 2.34: 3.45
+        //  case True: 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 1),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 6),
+
+        // switch(1.23) {
+        //  case 2.34: 3.45
+        //  case True: 3.47
+        //  default: 2.34
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 1),
+        insn_encode(opcode::push, 6),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 4),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 6),
+
+        // switch(1.23) {
+        //  case "one": 3.45
+        //  case True: 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 1),
+        insn_encode(opcode::push, 4),
+        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 6),
+
+        // switch(1.23) {
+        //  case "one": 3.45
+        //  case True: 3.47
+        //  default: 2.34
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 1),
+        insn_encode(opcode::push, 6),
+        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 4),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 6),
+
+        // switch(1.23) {
+        //  case 2.34: 3.45
+        //  case "one": 2.34
+        //  case True: 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 2),
+        insn_encode(opcode::push, 7),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::push, 6),
+        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 4),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 7),
+
+        // switch(1.23) {
+        //  case 2.34: 3.45
+        //  case "one": 2.34
+        //  case True: 3.47
+        //  default: 2.34
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 2),
+        insn_encode(opcode::push, 9),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::push, 8),
+        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 6),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf, 4),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 7),
+
+        // switch(1.23) {
+        //  case 2.34: case "one": 3.45
+        //  case "": case True: 3.47
+        //  default: 2.34
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 2),
+        insn_encode(opcode::push, 11),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::push, 6),
+        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::push, 2),
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::br_table, 2),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 4),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 6),
+
+        // switch(1.23) {
+        //  case "one": case True: 3.45
+        //  case False: case 2.34: 3.47
+        //  default: 2.34
+        // }
+        // default block is not generated
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 2),
+        insn_encode(opcode::push, 7),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::push, 2),
+        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::brf_false, 3),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 8),
+
+        // switch(1.23) {
+        //  case "one": case False: case 2.34: 3.45
+        //  default: 3.47
+        // }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 2),
+        insn_encode(opcode::push, 5),
+        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::push, 2),
+        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::br_table, 1),
+        insn_encode(opcode::brf_true, 3),
+        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 8),
+
+        insn_encode(opcode::drop_frame, 1)
+    }));
+}
+
 // TODO Call
 // TODO TryBlock
-// TODO SwitchBlock
 // TODO Branches
 // TODO MethodDef
 // TODO Assigns

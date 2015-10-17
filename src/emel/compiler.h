@@ -359,8 +359,10 @@ public:
     {
     }
 
-    codegen_result operator()(ast::case_ &)
+    codegen_result operator()(ast::case_ &node)
     {
+        assert(false);
+        return 0;
     }
 
     // TODO Optimize booleans in condition

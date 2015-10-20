@@ -79,6 +79,7 @@ TEST(Compiler, EmptyObjectClass)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(5));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -89,9 +90,6 @@ TEST(Compiler, EmptyObjectClass)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -103,16 +101,13 @@ TEST(Compiler, EmptyObjectClass)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(2));
 
-    ASSERT_THAT(module->insns, SizeIs(2));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(2));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
         insn_encode(opcode::drop_frame, 1)
     }));
@@ -143,6 +138,7 @@ TEST(Compiler, EmptyClass)
     codegen c("test", module, syms, graph, const_pool);
     c(obj_class_);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(6));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -154,9 +150,6 @@ TEST(Compiler, EmptyClass)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(2));
     EXPECT_THAT(module->classes.back()->index, Eq(1));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(5));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(2));
@@ -168,16 +161,13 @@ TEST(Compiler, EmptyClass)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(2));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(6));
 
-    ASSERT_THAT(module->insns, SizeIs(6));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(6));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
         insn_encode(opcode::drop_frame, 1),
 
@@ -211,6 +201,7 @@ TEST(Compiler, EmptyClassWithBaseClass)
     c(obj_class_);
     c(base_class_);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(7));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -223,9 +214,6 @@ TEST(Compiler, EmptyClassWithBaseClass)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(3));
     EXPECT_THAT(module->classes.back()->index, Eq(2));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(6));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(6));
@@ -237,16 +225,13 @@ TEST(Compiler, EmptyClassWithBaseClass)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(2));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(6));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(10));
 
-    ASSERT_THAT(module->insns, SizeIs(10));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(10));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
         insn_encode(opcode::drop_frame, 1),
 
@@ -280,6 +265,7 @@ TEST(Compiler, Constants)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(9));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -294,9 +280,6 @@ TEST(Compiler, Constants)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -308,16 +291,13 @@ TEST(Compiler, Constants)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(6));
 
-    ASSERT_THAT(module->insns, SizeIs(6));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(6));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         insn_encode(opcode::push_const, 5),
@@ -346,6 +326,7 @@ TEST(Compiler, AssignsInCtor)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(10));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -361,9 +342,6 @@ TEST(Compiler, AssignsInCtor)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -376,31 +354,22 @@ TEST(Compiler, AssignsInCtor)
 
     auto field = module->classes.back()->fields[0];
     EXPECT_THAT(field->index, Eq(0));
-    EXPECT_THAT(field->insns, IsEmpty());
-    EXPECT_THAT(field->slots, IsEmpty());
-    EXPECT_THAT(field->nr_stack, Eq(0));
     EXPECT_THAT(field->nr_args, Eq(0));
     EXPECT_THAT(field->name_index, Eq(5));
 
     field = module->classes.back()->fields[1];
     EXPECT_THAT(field->index, Eq(1));
-    EXPECT_THAT(field->insns, IsEmpty());
-    EXPECT_THAT(field->slots, IsEmpty());
-    EXPECT_THAT(field->nr_stack, Eq(0));
     EXPECT_THAT(field->nr_args, Eq(0));
     EXPECT_THAT(field->name_index, Eq(7));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(6));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(11));
 
-    ASSERT_THAT(module->insns, SizeIs(11));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(11));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         // VarName field init
@@ -436,6 +405,7 @@ TEST(Compiler, UnaryOp)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(6));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -447,9 +417,6 @@ TEST(Compiler, UnaryOp)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -461,16 +428,13 @@ TEST(Compiler, UnaryOp)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(2));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(6));
 
-    ASSERT_THAT(module->insns, SizeIs(6));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(6));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         // ~1.23
@@ -500,6 +464,7 @@ TEST(Compiler, BinaryOp)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(8));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -513,9 +478,6 @@ TEST(Compiler, BinaryOp)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -527,16 +489,13 @@ TEST(Compiler, BinaryOp)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(9));
 
-    ASSERT_THAT(module->insns, SizeIs(9));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(9));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         // 1.23 - 2.0 / 1.23 + -20.3
@@ -571,6 +530,7 @@ TEST(Compiler, TernaryOp)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(12));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -588,9 +548,6 @@ TEST(Compiler, TernaryOp)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -602,16 +559,13 @@ TEST(Compiler, TernaryOp)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(10));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(20));
 
-    ASSERT_THAT(module->insns, SizeIs(20));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(20));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         // True ? 1.23 : -20.3
@@ -659,6 +613,7 @@ TEST(Compiler, IfBlock)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(9));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -673,9 +628,6 @@ TEST(Compiler, IfBlock)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -687,16 +639,13 @@ TEST(Compiler, IfBlock)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(5));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(10));
 
-    ASSERT_THAT(module->insns, SizeIs(10));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(10));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         // if(true) -1.23
@@ -751,6 +700,7 @@ TEST(Compiler, ForLoop)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(9));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -765,9 +715,6 @@ TEST(Compiler, ForLoop)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -779,16 +726,13 @@ TEST(Compiler, ForLoop)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(32));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(58));
 
-    ASSERT_THAT(module->insns, SizeIs(58));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(58));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         // for(;;) { }
@@ -899,6 +843,7 @@ TEST(Compiler, WhileLoop)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(7));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -911,9 +856,6 @@ TEST(Compiler, WhileLoop)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -925,16 +867,13 @@ TEST(Compiler, WhileLoop)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(12));
 
-    ASSERT_THAT(module->insns, SizeIs(12));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(12));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         // while(1.23) { }
@@ -1004,6 +943,7 @@ TEST(Compiler, SwitchBlockWithNumbers)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(10));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -1019,9 +959,6 @@ TEST(Compiler, SwitchBlockWithNumbers)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -1033,16 +970,13 @@ TEST(Compiler, SwitchBlockWithNumbers)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(30));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(46));
 
-    ASSERT_THAT(module->insns, SizeIs(46));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(46));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         // switch(1.23) { }
@@ -1066,10 +1000,10 @@ TEST(Compiler, SwitchBlockWithNumbers)
         //  case 2.34: case 10.23: 3.45
         // }
         insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 1),
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::call_op, op_kind::eq),
-        insn_encode(opcode::brf_true, 5),
-        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::brf_true, 4),
         insn_encode(opcode::push_const, 8),
         insn_encode(opcode::call_op, op_kind::eq),
         insn_encode(opcode::brf_false, 2),
@@ -1173,6 +1107,7 @@ TEST(Compiler, SwitchBlockWithStrings)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(10));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -1188,9 +1123,6 @@ TEST(Compiler, SwitchBlockWithStrings)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -1202,16 +1134,13 @@ TEST(Compiler, SwitchBlockWithStrings)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(28));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(44));
 
-    ASSERT_THAT(module->insns, SizeIs(44));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(44));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         // switch(1.23) {
@@ -1232,10 +1161,10 @@ TEST(Compiler, SwitchBlockWithStrings)
         //  case "one": case "two": 3.45
         // }
         insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::dup, 1),
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::call_op, op_kind::eq),
-        insn_encode(opcode::brf_true, 5),
-        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::brf_true, 4),
         insn_encode(opcode::push_const, 8),
         insn_encode(opcode::call_op, op_kind::eq),
         insn_encode(opcode::brf_false, 2),
@@ -1327,6 +1256,7 @@ TEST(Compiler, SwitchBlockWithBooleans)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(10));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -1342,9 +1272,6 @@ TEST(Compiler, SwitchBlockWithBooleans)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -1356,16 +1283,13 @@ TEST(Compiler, SwitchBlockWithBooleans)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(12));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(22));
 
-    ASSERT_THAT(module->insns, SizeIs(22));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(22));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         // switch(1.23) {
@@ -1491,6 +1415,7 @@ TEST(Compiler, SwitchBlockWithDefaults)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(12));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -1508,9 +1433,6 @@ TEST(Compiler, SwitchBlockWithDefaults)
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -1522,16 +1444,13 @@ TEST(Compiler, SwitchBlockWithDefaults)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(67));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(92));
 
-    ASSERT_THAT(module->insns, SizeIs(92));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(92));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         // switch(1.23) {
@@ -1770,6 +1689,7 @@ TEST(Compiler, SwitchBlockWithMixedCases)
     std::vector<value_type> const_pool;
     codegen c("test", module, syms, graph, const_pool);
     c(class_);
+    auto res = c.get_result();
 
     ASSERT_THAT(const_pool, SizeIs(12));
     EXPECT_THAT(boost::get<std::string>(const_pool[1]), Eq("test"));
@@ -1777,19 +1697,16 @@ TEST(Compiler, SwitchBlockWithMixedCases)
     EXPECT_THAT(boost::get<std::string>(const_pool[3]), Eq(""));
     EXPECT_THAT(boost::get<std::string>(const_pool[4]), Eq("~init"));
     EXPECT_THAT(boost::get<double>(const_pool[5]),      Eq(1.23));
-    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(3.45));
-    EXPECT_THAT(boost::get<double>(const_pool[7]),      Eq(2.34));
-    EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(3.47));
-    EXPECT_THAT(boost::get<std::string>(const_pool[9]), Eq("one"));
+    EXPECT_THAT(boost::get<double>(const_pool[6]),      Eq(2.34));
+    EXPECT_THAT(boost::get<std::string>(const_pool[7]), Eq("one"));
+    EXPECT_THAT(boost::get<double>(const_pool[8]),      Eq(3.45));
+    EXPECT_THAT(boost::get<double>(const_pool[9]),      Eq(3.47));
     EXPECT_THAT(boost::get<bool>(const_pool[10]),       Eq(true));
     EXPECT_THAT(boost::get<bool>(const_pool[11]),       Eq(false));
 
     EXPECT_THAT(module->name_index, Eq(1));
     ASSERT_THAT(module->classes, SizeIs(1));
     EXPECT_THAT(module->classes.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->slots, IsEmpty());
-    EXPECT_THAT(module->classes.back()->nr_stack, Eq(0));
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
@@ -1801,16 +1718,13 @@ TEST(Compiler, SwitchBlockWithMixedCases)
     ASSERT_THAT(module->classes.back()->methods, SizeIs(1));
 
     EXPECT_THAT(module->classes.back()->methods.back()->index, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->insns, IsEmpty());
-    EXPECT_THAT(module->classes.back()->methods.back()->slots, SizeIs(1));
-    EXPECT_THAT(module->classes.back()->methods.back()->nr_stack, Eq(94));
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(137));
 
-    ASSERT_THAT(module->insns, SizeIs(137));
-    EXPECT_THAT(module->insns, ElementsAreArray({
+    ASSERT_THAT(res.insns, SizeIs(137));
+    EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
         // switch(1.23) {
@@ -1820,15 +1734,15 @@ TEST(Compiler, SwitchBlockWithMixedCases)
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::dup, 1),
         insn_encode(opcode::push, 5),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::push, 4),
-        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::brf, 4),
-        insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::brf, 2),
         insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 9),
 
         // switch(1.23) {
         //  case 2.34: 3.45
@@ -1838,16 +1752,16 @@ TEST(Compiler, SwitchBlockWithMixedCases)
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::dup, 1),
         insn_encode(opcode::push, 6),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::push, 5),
-        insn_encode(opcode::push_const, 9),
-        insn_encode(opcode::br_table, 1),
         insn_encode(opcode::push_const, 7),
-        insn_encode(opcode::brf, 4),
+        insn_encode(opcode::br_table, 1),
         insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::brf, 4),
         insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 9),
 
         // switch(1.23) {
         //  case 2.34: 3.45
@@ -1856,12 +1770,12 @@ TEST(Compiler, SwitchBlockWithMixedCases)
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::dup, 1),
         insn_encode(opcode::push, 4),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::brf_false, 2),
-        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 9),
         insn_encode(opcode::brf, 2),
-        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 8),
 
         // switch(1.23) {
         //  case 2.34: 3.45
@@ -1871,14 +1785,14 @@ TEST(Compiler, SwitchBlockWithMixedCases)
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::dup, 1),
         insn_encode(opcode::push, 6),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::brf_false, 3),
-        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 9),
         insn_encode(opcode::brf, 4),
-        insn_encode(opcode::push_const, 7),
-        insn_encode(opcode::brf, 2),
         insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 8),
 
         // switch(1.23) {
         //  case "one": 3.45
@@ -1887,12 +1801,12 @@ TEST(Compiler, SwitchBlockWithMixedCases)
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::dup, 1),
         insn_encode(opcode::push, 4),
-        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::brf_false, 2),
-        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 9),
         insn_encode(opcode::brf, 2),
-        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 8),
 
         // switch(1.23) {
         //  case "one": 3.45
@@ -1902,14 +1816,14 @@ TEST(Compiler, SwitchBlockWithMixedCases)
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::dup, 1),
         insn_encode(opcode::push, 6),
-        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::brf_false, 3),
-        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 9),
         insn_encode(opcode::brf, 4),
-        insn_encode(opcode::push_const, 7),
-        insn_encode(opcode::brf, 2),
         insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 8),
 
         // switch(1.23) {
         //  case 2.34: 3.45
@@ -1919,17 +1833,17 @@ TEST(Compiler, SwitchBlockWithMixedCases)
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::dup, 2),
         insn_encode(opcode::push, 7),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::push, 6),
-        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::brf_false, 2),
-        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 9),
         insn_encode(opcode::brf, 4),
-        insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::brf, 2),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
 
         // switch(1.23) {
         //  case 2.34: 3.45
@@ -1940,19 +1854,19 @@ TEST(Compiler, SwitchBlockWithMixedCases)
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::dup, 2),
         insn_encode(opcode::push, 9),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::push, 8),
-        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::brf_false, 3),
-        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 9),
         insn_encode(opcode::brf, 6),
-        insn_encode(opcode::push_const, 7),
-        insn_encode(opcode::brf, 4),
         insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 4),
+        insn_encode(opcode::push_const, 8),
         insn_encode(opcode::brf, 2),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
 
         // switch(1.23) {
         //  case 2.34: case "one": 3.45
@@ -1962,19 +1876,19 @@ TEST(Compiler, SwitchBlockWithMixedCases)
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::dup, 2),
         insn_encode(opcode::push, 11),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::push, 6),
-        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::push, 2),
         insn_encode(opcode::push_const, 3),
         insn_encode(opcode::br_table, 2),
         insn_encode(opcode::brf_false, 3),
-        insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::push_const, 9),
         insn_encode(opcode::brf, 4),
-        insn_encode(opcode::push_const, 7),
-        insn_encode(opcode::brf, 2),
         insn_encode(opcode::push_const, 6),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 8),
 
         // switch(1.23) {
         //  case "one": case True: 3.45
@@ -1985,15 +1899,15 @@ TEST(Compiler, SwitchBlockWithMixedCases)
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::dup, 2),
         insn_encode(opcode::push, 7),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::push, 2),
-        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::brf_false, 3),
-        insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::brf, 2),
         insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 9),
 
         // switch(1.23) {
         //  case "one": case False: case 2.34: 3.45
@@ -2002,15 +1916,15 @@ TEST(Compiler, SwitchBlockWithMixedCases)
         insn_encode(opcode::push_const, 5),
         insn_encode(opcode::dup, 2),
         insn_encode(opcode::push, 5),
-        insn_encode(opcode::push_const, 7),
+        insn_encode(opcode::push_const, 6),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::push, 2),
-        insn_encode(opcode::push_const, 9),
+        insn_encode(opcode::push_const, 7),
         insn_encode(opcode::br_table, 1),
         insn_encode(opcode::brf_true, 3),
-        insn_encode(opcode::push_const, 6),
-        insn_encode(opcode::brf, 2),
         insn_encode(opcode::push_const, 8),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 9),
 
         insn_encode(opcode::drop_frame, 1)
     }));

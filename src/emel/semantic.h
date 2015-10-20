@@ -128,11 +128,8 @@ struct node {
     const kind k = is_regular;
     const attribute a = is_local;
     const visibility v = vis_private;
-    std::uint32_t index = 0;
-    insn_array insns;
-    std::deque<std::shared_ptr<node>> slots;
-    std::uint32_t nr_stack = 0;
     std::uint32_t nr_args = 0;
+    std::uint32_t index = 0;
 
     explicit node(type t = is_value, unsigned k = is_regular,
         attribute a = is_local, visibility v = vis_private, std::uint32_t nr_args = 0)
@@ -157,6 +154,7 @@ struct variable : node {
 struct function : node {
     std::size_t name_index = 0;
     std::pair<std::size_t, std::size_t> code_range { 0, 0 };
+    std::vector<std::shared_ptr<variable>> locals;
 
     function(visibility vis, std::uint32_t nr_args)
         : node(is_function, is_regular, is_local, vis, nr_args)

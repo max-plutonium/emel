@@ -694,6 +694,10 @@ TEST(Compiler, ForLoop)
     class_.exprs.emplace_back(ast::for_ { 999.2, 152.0, 229.7, { } });
     class_.exprs.emplace_back(ast::for_ { 999.2, 152.0, 229.7, { 1.23 } });
 
+    class_.exprs.emplace_back(ast::for_ { empty_value, false, empty_value, { 1.23 } });
+    class_.exprs.emplace_back(ast::for_ { empty_value, true, empty_value, { } });
+    class_.exprs.emplace_back(ast::for_ { empty_value, true, empty_value, { 1.23 } });
+
     auto module = std::make_shared<semantic::module>();
     symbol_table syms;
     semantic::graph_type graph;
@@ -718,7 +722,7 @@ TEST(Compiler, ForLoop)
     EXPECT_THAT(module->classes.back()->nr_args, Eq(0));
     EXPECT_THAT(module->classes.back()->name_index, Eq(2));
     EXPECT_THAT(module->classes.back()->code_range.first, Eq(0));
-    EXPECT_THAT(module->classes.back()->code_range.second, Eq(58));
+    EXPECT_THAT(module->classes.back()->code_range.second, Eq(61));
     EXPECT_THAT(module->classes.back()->base_name_index, Eq(3));
     EXPECT_THAT(module->classes.back()->fields_offset, Eq(0));
     EXPECT_THAT(module->classes.back()->methods_offset, Eq(0));
@@ -729,9 +733,9 @@ TEST(Compiler, ForLoop)
     EXPECT_THAT(module->classes.back()->methods.back()->nr_args, Eq(1));
     EXPECT_THAT(module->classes.back()->methods.back()->name_index, Eq(4));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
-    EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(58));
+    EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(61));
 
-    ASSERT_THAT(res.insns, SizeIs(58));
+    ASSERT_THAT(res.insns, SizeIs(61));
     EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
 
@@ -823,6 +827,16 @@ TEST(Compiler, ForLoop)
         insn_encode(opcode::push_const, 8),
         insn_encode(opcode::brb, 4),
 
+        // for(; false;) { 1.23 }
+        // generate nothing
+
+        // for(; true;) { }
+        insn_encode(opcode::brb, 0),
+
+        // for(; true;) { 1.23 }
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::brb, 1),
+
         insn_encode(opcode::drop_frame, 1)
     }));
 }
@@ -836,6 +850,8 @@ TEST(Compiler, WhileLoop)
     class_.exprs.emplace_back(ast::while_ { 1.23, { -1.23 } });
     class_.exprs.emplace_back(ast::while_ { true, { } });
     class_.exprs.emplace_back(ast::while_ { true, { -1.23 } });
+    class_.exprs.emplace_back(ast::while_ { false, { } });
+    class_.exprs.emplace_back(ast::while_ { false, { -1.23 } });
 
     auto module = std::make_shared<semantic::module>();
     symbol_table syms;
@@ -872,6 +888,7 @@ TEST(Compiler, WhileLoop)
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(12));
 
+    std::cerr << res.insns << std::endl;
     ASSERT_THAT(res.insns, SizeIs(12));
     EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),
@@ -893,6 +910,12 @@ TEST(Compiler, WhileLoop)
         // while(true) { -1.23 }
         insn_encode(opcode::push_const, 6),
         insn_encode(opcode::brb, 1),
+
+        // while(false) { }
+        // generate nothing
+
+        // while(false) { -1.23 }
+        // generate nothing
 
         insn_encode(opcode::drop_frame, 1)
     }));

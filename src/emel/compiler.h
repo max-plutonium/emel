@@ -697,14 +697,20 @@ public:
         __builtin_unreachable();
     }
 
-    // TODO Optimize booleans in condition
     codegen_result operator()(ast::for_ &node)
     {
         codegen_result res;
 
         const bool init_empty = node.init.which() == 0;
-        const bool cond_empty = node.cond.which() == 0;
+        bool cond_empty = node.cond.which() == 0;
         const bool step_empty = node.step.which() == 0;
+
+        if(!cond_empty && (typeid(bool) == node.cond.type())) {
+            if(boost::get<bool>(node.cond))
+                cond_empty = true; // make forever loop
+            else
+                return res; // generate nothing
+        }
 
         if(!init_empty) {
             auto init_res = node.init.apply_visitor(*this);
@@ -841,17 +847,15 @@ public:
         return res;
     }
 
-    // TODO Optimize False in condition
     codegen_result operator()(ast::while_ &node)
     {
         codegen_result res;
         optional<std::size_t> br_idx;
 
-        // Для упрощения "вечного" цикла
-        const bool forever_loop = typeid(bool) == node.cond.type()
-            && boost::get<bool>(node.cond);
-
-        if(!forever_loop) {
+        if(typeid(bool) == node.cond.type()) {
+            if(!boost::get<bool>(node.cond))
+                return res; // generate nothing
+        } else {
             auto cond_res = node.cond.apply_visitor(*this);
 
             res.pull_insns(cond_res);

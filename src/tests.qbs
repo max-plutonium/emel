@@ -29,7 +29,7 @@ CppApplication {
     cpp.systemIncludePaths: [project.boostPath, gmockPath]
     cpp.libraryPaths: [project.boostLibsPath]
     cpp.cxxStandardLibrary: 'libstdc++'
-    cpp.dynamicLibraries: ['pthread']
+    cpp.dynamicLibraries: ['pthread', 'boost_serialization']
     cpp.defines: ['EMEL_EXPORT=__attribute__((visibility ("default")))']
     cpp.objcopyPath: project.objcopyPath
     cpp.stripPath: project.stripPath

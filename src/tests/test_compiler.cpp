@@ -888,7 +888,6 @@ TEST(Compiler, WhileLoop)
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.first, Eq(0));
     EXPECT_THAT(module->classes.back()->methods.back()->code_range.second, Eq(12));
 
-    std::cerr << res.insns << std::endl;
     ASSERT_THAT(res.insns, SizeIs(12));
     EXPECT_THAT(res.insns, ElementsAreArray({
         insn_encode(opcode::push_frame, 1),

@@ -60,7 +60,7 @@ TEST(Interp, ReturnConstant)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_THAT(runtime::any_cast<std::string>(res), Eq("test"));
+    EXPECT_THAT((std::string) res, Eq("test"));
 }
 
 TEST(Interp, UnaryNot)
@@ -80,7 +80,7 @@ TEST(Interp, UnaryNot)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_FALSE(runtime::any_cast<bool>(res));
+    EXPECT_FALSE((bool) res);
 }
 
 TEST(Interp, UnaryNeg)
@@ -100,13 +100,13 @@ TEST(Interp, UnaryNeg)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_THAT(runtime::any_cast<double>(res), Eq(-1.23));
+    EXPECT_THAT((double) res, Eq(-1.23));
 }
 
 TEST(Interp, BinaryOr)
 {
     const std::vector<value_type> const_pool {
-        empty_value, "test"s, 1.23, 2.50
+        empty_value, "test"s, 1.23, 0.0
     };
 
     const insn_array insns {
@@ -121,5 +121,109 @@ TEST(Interp, BinaryOr)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_TRUE(runtime::any_cast<bool>(res));
+    EXPECT_TRUE((bool) res);
+}
+
+TEST(Interp, BinaryXor)
+{
+    const std::vector<value_type> const_pool {
+        empty_value, "test"s, 1.23, 1.0
+    };
+
+    const insn_array insns {
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::call_op, op_kind::xor_),
+        insn_encode(opcode::ret, 1)
+    };
+
+    runtime::interp interp(const_pool,
+        insns.begin(), insns.end(), 0, 2);
+
+    auto res = interp.run();
+    ASSERT_FALSE(res.empty());
+    EXPECT_FALSE((bool) res);
+}
+
+TEST(Interp, BinaryAnd)
+{
+    const std::vector<value_type> const_pool {
+        empty_value, "test"s, 1.23, 0.00001
+    };
+
+    const insn_array insns {
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::call_op, op_kind::and_),
+        insn_encode(opcode::ret, 1)
+    };
+
+    runtime::interp interp(const_pool,
+        insns.begin(), insns.end(), 0, 2);
+
+    auto res = interp.run();
+    ASSERT_FALSE(res.empty());
+    EXPECT_TRUE((bool) res);
+}
+
+TEST(Interp, BinaryRelativeOps)
+{
+    const std::vector<value_type> const_pool {
+        empty_value, "test"s, 1.23, 1.23000, 1.230001
+    };
+
+    const insn_array insns {
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::call_op, op_kind::not_),
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::call_op, op_kind::ne),
+        insn_encode(opcode::call_op, op_kind::and_),
+        insn_encode(opcode::ret, 1)
+    };
+
+    const insn_array insns2 {
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::call_op, op_kind::and_),
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::call_op, op_kind::ne),
+        insn_encode(opcode::call_op, op_kind::xor_),
+        insn_encode(opcode::ret, 1)
+    };
+
+    runtime::interp interp(const_pool,
+        insns2.begin(), insns2.end(), 0, 3);
+
+    interp.push_frame(const_pool,
+        insns.begin(), insns.end(), 0, 3);
+
+    auto res = interp.run();
+    ASSERT_FALSE(res.empty());
+    EXPECT_TRUE((bool) res);
+}
+
+TEST(Interp, BinaryLessThan)
+{
+    const std::vector<value_type> const_pool {
+        empty_value, "test"s, 1.23, 1.231
+    };
+
+    const insn_array insns {
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::call_op, op_kind::lt),
+        insn_encode(opcode::ret, 1)
+    };
+
+    runtime::interp interp(const_pool,
+        insns.begin(), insns.end(), 0, 2);
+
+    auto res = interp.run();
+    ASSERT_FALSE(res.empty());
+    EXPECT_TRUE((bool) res);
 }

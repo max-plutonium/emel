@@ -54,7 +54,7 @@ object::object(const object &other) : base(other), t(other.t)
         case is_string: s = std::string(); s = other.s; break;
         case is_number: d = other.d; break;
         case is_boolean: b = other.b; break;
-        case is_ref: ref = other.ref; break;
+        case is_ref: ref = other.ref; break; // BUG падает
     }
 }
 

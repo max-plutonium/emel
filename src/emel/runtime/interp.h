@@ -21,34 +21,28 @@
 #define INTERP_H
 
 #include "../opcodes.h"
+#include "object.h"
 
-#include <experimental/any>
-#include <experimental/optional>
+#include <vector>
 #include <stack>
 #include <array>
 
 namespace emel { namespace runtime {
 
-using any = std::experimental::any;
-using std::experimental::any_cast;
-
-template <typename Tp>
-  using optional = std::experimental::optional<Tp>;
-
 struct frame {
     const std::vector<value_type> &const_pool;
     insn_array::const_iterator pc;
     const insn_array::const_iterator end_pc;
-    std::vector<any> locals;
-    std::deque<any> stack;
+    std::vector<object, boost::pool_allocator<object>> locals, stack;
 
     frame(const std::vector<value_type> &const_pool,
           insn_array::const_iterator pc,
           insn_array::const_iterator end_pc,
-          std::size_t /*locals_size*/, std::size_t /*stack_size*/)
+          std::size_t locals_size, std::size_t stack_size)
         : const_pool(const_pool), pc(pc), end_pc(end_pc)
-        //, locals(locals_size), stack(stack_size)
     {
+        locals.reserve(locals_size);
+        stack.reserve(stack_size);
     }
 };
 
@@ -65,9 +59,6 @@ public:
 
   template <typename... Args>
     void push_frame(Args &&...args) {
-        frame &top = frame_stack.top();
-        ++top.pc;
-        assert(top.pc != top.end_pc);
         frame_stack.emplace(std::forward<Args>(args)...);
     }
 
@@ -76,8 +67,8 @@ public:
         frame_stack.pop();
     }
 
-    any run() {
-        any ret_value;
+    object run() {
+        object ret_value;
 
         while(true) {
             frame &top = frame_stack.top();
@@ -94,10 +85,10 @@ public:
                 case opcode::push_const: {
                     const auto &value = top.const_pool.at(arg);
                     switch(value.which()) {
-                        case 0: top.stack.push_front(any()); break;
-                        case 1: top.stack.push_front(boost::get<std::string>(value)); break;
-                        case 2: top.stack.push_front(boost::get<double>(value)); break;
-                        case 3: top.stack.push_front(boost::get<bool>(value)); break;
+                        case 0: top.stack.push_back(object()); break;
+                        case 1: top.stack.push_back(boost::get<std::string>(value)); break;
+                        case 2: top.stack.push_back(boost::get<double>(value)); break;
+                        case 3: top.stack.push_back(boost::get<bool>(value)); break;
                         default: assert(false);
                     }
                 }
@@ -107,46 +98,43 @@ public:
                     const auto kind = static_cast<op_kind>(arg);
                     if(op_kind::not_ == kind || op_kind::neg == kind) {
                         assert(top.stack.size() > 0);
-                        const auto rhs = any_cast<double>(top.stack.at(0));
-                        top.stack.pop_front();
+                        const object top_object = std::move(top.stack.back());
+                        top.stack.pop_back();
 
                         switch(static_cast<op_kind>(arg)) {
-                            case op_kind::not_: top.stack.push_front(!rhs); break;
-                            case op_kind::neg: top.stack.push_front(-rhs); break;
+                            case op_kind::not_: top.stack.push_back(!top_object); break;
+                            case op_kind::neg: top.stack.push_back(- (double) top_object); break;
                             default: assert(false);
                         }
 
                     } else {
                         assert(top.stack.size() > 1);
-                        const auto lhs = any_cast<double>(top.stack.at(0));
-                        const auto rhs = any_cast<double>(top.stack.at(1));
-                        top.stack.pop_front();
-                        top.stack.pop_front();
+                        const object lhs = std::move(top.stack.back());
+                        top.stack.pop_back();
+                        const object rhs = std::move(top.stack.back());
+                        top.stack.pop_back();
 
-                        optional<bool> bres;
-                        optional<double> dres;
+                        object res;
 
                         switch(static_cast<op_kind>(arg)) {
-                            case op_kind::or_: bres = lhs || rhs; break;
-                            case op_kind::xor_: bres = !lhs != !rhs; break;
-                            case op_kind::and_: bres = lhs && rhs; break;
-                            case op_kind::eq: bres = lhs == rhs; break;
-                            case op_kind::ne: bres = lhs != rhs; break;
-                            case op_kind::lt: bres = lhs < rhs; break;
-                            case op_kind::gt: bres = lhs > rhs; break;
-                            case op_kind::lte: bres = lhs <= rhs; break;
-                            case op_kind::gte: bres = lhs >= rhs; break;
-                            case op_kind::add: dres = lhs + rhs; break;
-                            case op_kind::sub: dres = lhs - rhs; break;
-                            case op_kind::mul: dres = lhs * rhs; break;
-                            case op_kind::div: dres = lhs / rhs; break; // TODO div by zero
+                            case op_kind::or_: res = lhs || rhs; break;
+                            case op_kind::xor_: res = !lhs != !rhs; break;
+                            case op_kind::and_: res = lhs && rhs; break;
+                            case op_kind::eq: res = lhs == rhs; break;
+                            case op_kind::ne: res = lhs != rhs; break;
+                            case op_kind::lt: res = lhs < rhs; break;
+                            case op_kind::gt: res = lhs > rhs; break;
+                            case op_kind::lte: res = lhs <= rhs; break;
+                            case op_kind::gte: res = lhs >= rhs; break;
+                            case op_kind::add: res = lhs + rhs; break;
+                            case op_kind::sub: res = lhs - rhs; break;
+                            case op_kind::mul: res = lhs * rhs; break;
+                            case op_kind::div: res = lhs / rhs; break;
                             default: assert(false);
                         }
 
-                        if(bres)
-                            top.stack.push_front(bres.value());
-                        else
-                            top.stack.push_front(dres.value());
+                        if(!res.empty())
+                            top.stack.push_back(std::move(res));
                     }
                 }
                     break;
@@ -154,10 +142,16 @@ public:
                 case opcode::ret:
                     if(arg > 0) {
                         assert(top.stack.size() > 0);
-                        ret_value = std::move(top.stack.front());
+                        ret_value = std::move(top.stack.back());
                     }
                     drop_frame();
-                    return ret_value;
+
+                    if(frame_stack.empty())
+                        return ret_value;
+                    else
+                        frame_stack.top().stack.push_back(std::move(ret_value));
+
+                    break;
 
                 default:
                     break;

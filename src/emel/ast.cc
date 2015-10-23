@@ -59,8 +59,7 @@ std::ostream &operator <<(std::ostream &os, const std::vector<param> &arg)
     os << "params [";
     for(const param &p : arg)
         os << p;
-    os << "]";
-    return os;
+    return os << "]";
 }
 
 std::ostream &operator <<(std::ostream &os, const method &arg)
@@ -68,8 +67,7 @@ std::ostream &operator <<(std::ostream &os, const method &arg)
     os << "method " << arg.name << "( ";
     for(const param &p : arg.params)
         os << p << ",";
-    os << ")";
-    return os;
+    return os << ")";
 }
 
 std::ostream &operator <<(std::ostream &os, const std::vector<method> &arg)
@@ -77,62 +75,52 @@ std::ostream &operator <<(std::ostream &os, const std::vector<method> &arg)
     os << "methods [";
     for(const method &m : arg)
         os << m;
-    os << "]";
-    return os;
+    return os << "]";
 }
 
 std::ostream &operator <<(std::ostream &os, const while_ &arg)
 {
-    os << "while (" << arg.cond << ")";
-    return os;
+    return os << "while (" << arg.cond << ")";
 }
 
 std::ostream &operator <<(std::ostream &os, const for_ &arg)
 {
-    os << "for (" << arg.init << ";" << arg.cond << ";" << arg.step << ")";
-    return os;
+    return os << "for (" << arg.init << ";" << arg.cond << ";" << arg.step << ")";
 }
 
 std::ostream &operator <<(std::ostream &os, const if_ &arg)
 {
-    os << "if (" << arg.cond << ")";
-    return os;
+    return os << "if (" << arg.cond << ")";
 }
 
 std::ostream &operator <<(std::ostream &os, const case_ &arg)
 {
-    os << "case " << arg.match_values;
-    return os;
+    return os << "case " << arg.match_values;
 }
 
 std::ostream &operator <<(std::ostream &os, const switch_ &arg)
 {
-    os << "switch (" << arg.cond << ") {\n" << arg.blocks << "\n}";
-    return os;
+    return os << "witch (" << arg.cond << ") {\n" << arg.blocks << "\n}";
 }
 
 std::ostream &operator <<(std::ostream &os, const continue_ &)
 {
-    os << "continue";
-    return os;
+    return os << "continue";
 }
 
 std::ostream &operator <<(std::ostream &os, const break_ &)
 {
-    os << "break";
-    return os;
+    return os << "break";
 }
 
 std::ostream &operator <<(std::ostream &os, const return_ &arg)
 {
-    os << "return " << arg.e;
-    return os;
+    return os << "return " << arg.e;
 }
 
 std::ostream &operator <<(std::ostream &os, const try_ &arg)
 {
-    os << "try " << arg.exprs << " catch";
-    return os;
+    return os << "try " << arg.exprs << " catch";
 }
 
 std::ostream &operator <<(std::ostream &os, const assign &arg)
@@ -140,14 +128,12 @@ std::ostream &operator <<(std::ostream &os, const assign &arg)
     os << arg.var_name;
     if(arg.as_external)
         os << " as external ";
-    os << " = " << arg.rhs;
-    return os;
+    return os << " = " << arg.rhs;
 }
 
 std::ostream &operator <<(std::ostream &os, const ternary &arg)
 {
-    os << arg.cond << " ? " << arg.first << " : " << arg.second;
-    return os;
+    return os << arg.cond << " ? " << arg.first << " : " << arg.second;
 }
 
 std::ostream &operator <<(std::ostream &os, const bin_op &arg)
@@ -195,8 +181,8 @@ std::ostream &operator <<(std::ostream &os, const bin_op &arg)
             break;
         default: break;
     }
-    os << arg.rhs << ")";
-    return os;
+
+    return os << arg.rhs << ")";
 }
 
 std::ostream &operator <<(std::ostream &os, const variable &arg)
@@ -205,8 +191,7 @@ std::ostream &operator <<(std::ostream &os, const variable &arg)
         os << "ref of ";
     else if(arg.val_of)
         os << "val of ";
-    os << arg.name;
-    return os;
+    return os << arg.name;
 }
 
 std::ostream &operator <<(std::ostream &os, const un_op &arg)
@@ -220,8 +205,8 @@ std::ostream &operator <<(std::ostream &os, const un_op &arg)
             break;
         default: break;
     }
-    os << arg.rhs;
-    return os;
+
+    return os << arg.rhs;
 }
 
 std::ostream &operator <<(std::ostream &os, const call &arg)
@@ -231,8 +216,7 @@ std::ostream &operator <<(std::ostream &os, const call &arg)
     os << "(";
     for(auto &a : arg.args)
         os << a << ",";
-    os << ")" << arg.chain_call;
-    return os;
+    return os << ")" << arg.chain_call;
 }
 
 std::ostream &operator <<(std::ostream &os, const std::vector<node> &arg)

@@ -23,6 +23,7 @@
 #define BOOST_MPL_LIMIT_LIST_SIZE 30
 #define BOOST_MPL_LIMIT_VECTOR_SIZE 30
 
+#include <vector>
 #include <memory>
 #include <boost/variant/recursive_variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>

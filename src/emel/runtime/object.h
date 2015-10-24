@@ -49,7 +49,7 @@ public:
     };
 
 protected:
-    type t = is_empty;
+    type t;
 
     union {
         std::string s;
@@ -62,6 +62,7 @@ public:
     object();
     object(empty_value_type);
     object(const std::string &s);
+    object(const char *s);
     object(double d);
     object(bool b);
     object(reference ref);
@@ -81,7 +82,7 @@ public:
     type get_type() const { return t; }
     bool empty() const { return t == is_empty; }
 
-    virtual ~object() { }
+    virtual ~object();
     virtual operator std::string() const;
     virtual operator double() const;
     virtual operator bool() const;

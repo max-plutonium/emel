@@ -23,15 +23,19 @@
 
 namespace emel { namespace runtime {
 
-object::object() : t(is_empty)
+object::object() : t(is_empty), d(0)
 {
 }
 
-object::object(empty_value_type) : t(is_empty)
+object::object(empty_value_type) : t(is_empty), d(0)
 {
 }
 
 object::object(const std::string &s) : t(is_string), s(s)
+{
+}
+
+object::object(const char *s) : t(is_string), s(s)
 {
 }
 
@@ -47,14 +51,15 @@ object::object(reference ref) : t(is_ref), ref(ref)
 {
 }
 
-object::object(const object &other) : base(other), t(other.t)
+object::object(const object &other)
+    : base(other), t(other.t), d(0)
 {
     switch(t) {
         case is_empty: break;
-        case is_string: s = std::string(); s = other.s; break;
-        case is_number: d = other.d; break;
-        case is_boolean: b = other.b; break;
-        case is_ref: ref = other.ref; break; // BUG падает
+        case is_string: new (&s) std::string(other.s); break;
+        case is_number: new (&d) double(other.d); break;
+        case is_boolean: new (&b) bool(other.b); break;
+        case is_ref: new (&ref) reference(other.ref); break;
     }
 }
 
@@ -85,16 +90,31 @@ object &object::operator =(reference ref)
     return *this = object(ref);
 }
 
-object::object(object &&other) : t(other.t)
+object::~object()
 {
     switch(t) {
         case is_empty: break;
-        case is_string: s = std::move(other.s); break;
-        case is_number: d = other.d; break;
-        case is_boolean: b = other.b; break;
-        case is_ref: ref = std::move(other.ref); break;
+        case is_string: s.~basic_string(); break;
+        case is_number: break;
+        case is_boolean: break;
+        case is_ref: ref.~reference(); break;
     }
 
+    d = 0;
+    t = is_empty;
+}
+
+object::object(object &&other) : t(other.t), d(0)
+{
+    switch(t) {
+        case is_empty: break;
+        case is_string: new (&s) std::string(std::move(other.s)); break;
+        case is_number: new (&d) double(other.d); break;
+        case is_boolean: new (&b) bool(other.b); break;
+        case is_ref: new (&ref) reference(std::move(other.ref)); break;
+    }
+
+    other.d = 0;
     other.t = is_empty;
 }
 
@@ -107,23 +127,49 @@ object &object::operator =(object &&other)
 
 void object::swap(object &other)
 {
-    if(t == other.t)
+    if(t == other.t) {
+        switch(t) {
+            case is_empty: break;
+            case is_string: std::swap(s, other.s); break;
+            case is_number: std::swap(d, other.d); break;
+            case is_boolean: std::swap(b, other.b); break;
+            case is_ref: std::swap(ref, other.ref); break;
+        }
+
         return;
+    }
+
+    union U {
+        std::string s;
+        double d;
+        bool b;
+        reference ref;
+        U(const std::string &str) : s(str) { }
+        ~U() { }
+    } tmp("");
 
     switch(other.t) {
         case is_empty: break;
-        case is_string: s = std::move(other.s); break;
-        case is_number: d = other.d; break;
-        case is_boolean: b = other.b; break;
-        case is_ref: ref = std::move(other.ref); break;
+        case is_string: new (&tmp.s) std::string(std::move(other.s)); break;
+        case is_number: new (&tmp.d) double(other.d); break;
+        case is_boolean: new (&tmp.b) bool(other.b); break;
+        case is_ref: new (&tmp.ref) reference(std::move(other.ref)); break;
     }
 
     switch(t) {
         case is_empty: break;
-        case is_string: other.s = std::move(s); break;
-        case is_number: other.d = d; break;
-        case is_boolean: other.b = b; break;
-        case is_ref: other.ref = std::move(ref); break;
+        case is_string: new (&other.s) std::string(std::move(s)); break;
+        case is_number: new (&other.d) double(d); break;
+        case is_boolean: new (&other.b) bool(b); break;
+        case is_ref: new (&other.ref) reference(std::move(ref)); break;
+    }
+
+    switch(other.t) {
+        case is_empty: break;
+        case is_string: new (&s) std::string(std::move(tmp.s)); break;
+        case is_number: new (&d) double(tmp.d); break;
+        case is_boolean: new (&b) bool(tmp.b); break;
+        case is_ref: new (&ref) reference(std::move(tmp.ref)); break;
     }
 
     std::swap(t, other.t);

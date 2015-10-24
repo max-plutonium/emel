@@ -20,6 +20,7 @@
 #include "object.h"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace emel { namespace runtime {
 
@@ -181,8 +182,7 @@ object::operator std::string() const {
         case is_string: return s;
         case is_number: return boost::lexical_cast<std::string>(d);
         case is_boolean: return b ? "true" : "false";
-        case is_ref: return std::string("object ")
-                    + boost::lexical_cast<std::string>(ref.get());
+        case is_ref: return ref->operator std::string();
     }
 
     return std::string();
@@ -197,13 +197,19 @@ object::operator double() const {
         case is_ref: return ref->operator double();
     }
 
-    return 0;
+    return 0.0;
 }
 
 object::operator bool() const {
     switch(t) {
         case is_empty: return false;
-        case is_string: return !s.empty();
+        case is_string: {
+            auto str = s;
+            boost::algorithm::trim(str);
+            boost::algorithm::erase_all(str, " \n\t\r\0");
+            return !str.empty() && !boost::iequals("false", str);
+        }
+
         case is_number: return static_cast<bool>(d);
         case is_boolean: return b;
         case is_ref: return ref->operator bool();

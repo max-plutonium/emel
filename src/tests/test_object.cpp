@@ -306,3 +306,84 @@ TEST(Object, MoveAssign)
     EXPECT_EQ(runtime::object::is_empty, obj7.get_type());
     EXPECT_TRUE(obj7.empty());
 }
+
+#include <boost/lexical_cast.hpp>
+
+TEST(Object, CastToString)
+{
+    auto ptr = runtime::make_object("test");
+
+    runtime::object obj1;
+    runtime::object obj2(empty_value);
+    runtime::object obj3("string");
+    runtime::object obj4(1.23);
+    runtime::object obj5(true);
+    runtime::object obj6(false);
+    runtime::object obj7(ptr);
+
+    EXPECT_EQ("", static_cast<std::string>(obj1));
+    EXPECT_EQ("", static_cast<std::string>(obj2));
+    EXPECT_EQ("string", static_cast<std::string>(obj3));
+    EXPECT_EQ("1.23", static_cast<std::string>(obj4));
+    EXPECT_EQ("true", static_cast<std::string>(obj5));
+    EXPECT_EQ("false", static_cast<std::string>(obj6));
+    EXPECT_EQ("test", static_cast<std::string>(obj7));
+}
+
+TEST(Object, CastToDouble)
+{
+    auto ptr = runtime::make_object("2.34");
+
+    runtime::object obj1;
+    runtime::object obj2(empty_value);
+    runtime::object obj3("string");
+    runtime::object obj4(1.23);
+    runtime::object obj5(true);
+    runtime::object obj6(false);
+    runtime::object obj7(ptr);
+
+    EXPECT_EQ(0, static_cast<double>(obj1));
+    EXPECT_EQ(0, static_cast<double>(obj2));
+    EXPECT_THROW(static_cast<double>(obj3), boost::bad_lexical_cast);
+    EXPECT_EQ(1.23, static_cast<double>(obj4));
+    EXPECT_EQ(1, static_cast<double>(obj5));
+    EXPECT_EQ(0, static_cast<double>(obj6));
+    EXPECT_EQ(2.34, static_cast<double>(obj7));
+}
+
+TEST(Object, CastToBoolean)
+{
+    auto ptr = runtime::make_object("");
+
+    runtime::object obj1;
+    runtime::object obj2(empty_value);
+    runtime::object obj3("string");
+    runtime::object obj4(1.23);
+    runtime::object obj5(0.0);
+    runtime::object obj6(true);
+    runtime::object obj7(false);
+    runtime::object obj8(ptr);
+    runtime::object obj9("true");
+    runtime::object obj10("false");
+    runtime::object obj11(" \ntrue");
+    runtime::object obj12("false \n ");
+    runtime::object obj13(" \nTrue");
+    runtime::object obj14(" FALSE \n ");
+    runtime::object obj15(" \t \n ");
+
+    EXPECT_FALSE(static_cast<bool>(obj1));
+    EXPECT_FALSE(static_cast<bool>(obj2));
+    EXPECT_TRUE(static_cast<bool>(obj3));
+    EXPECT_TRUE(static_cast<bool>(obj4));
+    EXPECT_FALSE(static_cast<bool>(obj5));
+    EXPECT_TRUE(static_cast<bool>(obj6));
+    EXPECT_FALSE(static_cast<bool>(obj7));
+    EXPECT_FALSE(static_cast<bool>(obj8));
+    EXPECT_TRUE(static_cast<bool>(obj9));
+    EXPECT_FALSE(static_cast<bool>(obj10));
+    EXPECT_TRUE(static_cast<bool>(obj11));
+    EXPECT_FALSE(static_cast<bool>(obj12));
+    EXPECT_TRUE(static_cast<bool>(obj13));
+    EXPECT_FALSE(static_cast<bool>(obj14));
+    EXPECT_FALSE(static_cast<bool>(obj15));
+}

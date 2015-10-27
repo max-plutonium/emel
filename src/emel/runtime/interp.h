@@ -29,49 +29,63 @@
 
 namespace emel { namespace runtime {
 
-struct frame {
+struct frame : public object {
     const std::vector<value_type> &const_pool;
     insn_array::const_iterator pc;
     const insn_array::const_iterator end_pc;
     std::vector<object, boost::pool_allocator<object>> locals, stack;
+    std::shared_ptr<frame> super_frame, caller_frame;
 
     frame(const std::vector<value_type> &const_pool,
           insn_array::const_iterator pc,
           insn_array::const_iterator end_pc,
-          std::size_t locals_size, std::size_t stack_size)
-        : const_pool(const_pool), pc(pc), end_pc(end_pc)
+          std::size_t locals_size, std::size_t stack_size,
+          std::shared_ptr<frame> super_frame = std::shared_ptr<frame>())
+        : const_pool(const_pool), pc(pc), end_pc(end_pc), super_frame(super_frame)
     {
         locals.reserve(locals_size);
         stack.reserve(stack_size);
+    }
+
+    void set_caller(std::shared_ptr<frame> caller) {
+        caller_frame = std::move(caller);
+    }
+
+    void drop_caller() {
+        caller_frame.reset();
     }
 };
 
 class interp
 {
 protected:
-    std::stack<frame> frame_stack;
+    std::shared_ptr<frame> top_frame;
 
 public:
   template <typename... Args>
     explicit interp(Args &&...args) {
-        frame_stack.emplace(std::forward<Args>(args)...);
+        top_frame = std::make_shared<frame>(std::forward<Args>(args)...);
     }
 
   template <typename... Args>
     void push_frame(Args &&...args) {
-        frame_stack.emplace(std::forward<Args>(args)...);
+        auto callee_frame = std::make_shared<frame>(std::forward<Args>(args)...);
+        callee_frame->set_caller(std::move(top_frame));
+        top_frame = callee_frame;
     }
 
     void drop_frame()
     {
-        frame_stack.pop();
+        auto callee_frame = top_frame;
+        top_frame = top_frame->caller_frame;
+        callee_frame->drop_caller();
     }
 
     object run() {
         object ret_value;
 
         while(true) {
-            frame &top = frame_stack.top();
+            frame &top = *top_frame;
 
             if(top.pc == top.end_pc)
                 break;
@@ -146,10 +160,10 @@ public:
                     }
                     drop_frame();
 
-                    if(frame_stack.empty())
+                    if(!top_frame)
                         return ret_value;
                     else
-                        frame_stack.top().stack.push_back(std::move(ret_value));
+                        top_frame->stack.push_back(std::move(ret_value));
 
                     break;
 

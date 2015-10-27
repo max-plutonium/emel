@@ -60,7 +60,7 @@ TEST(Interp, ReturnConstant)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_THAT((std::string) res, Eq("test"));
+    EXPECT_THAT(res.as_string().value(), Eq("test"));
 }
 
 TEST(Interp, UnaryNot)
@@ -80,7 +80,7 @@ TEST(Interp, UnaryNot)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_FALSE((bool) res);
+    EXPECT_FALSE(res.as_bool().value());
 }
 
 TEST(Interp, UnaryNeg)
@@ -100,7 +100,7 @@ TEST(Interp, UnaryNeg)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_THAT((double) res, Eq(-1.23));
+    EXPECT_THAT(res.as_number().value(), Eq(-1.23));
 }
 
 TEST(Interp, BinaryOr)
@@ -121,7 +121,7 @@ TEST(Interp, BinaryOr)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_TRUE((bool) res);
+    EXPECT_TRUE(res.as_bool().value());
 }
 
 TEST(Interp, BinaryXor)
@@ -142,7 +142,7 @@ TEST(Interp, BinaryXor)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_FALSE((bool) res);
+    EXPECT_FALSE(res.as_bool().value());
 }
 
 TEST(Interp, BinaryAnd)
@@ -163,7 +163,7 @@ TEST(Interp, BinaryAnd)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_TRUE((bool) res);
+    EXPECT_TRUE(res.as_bool().value());
 }
 
 TEST(Interp, BinaryRelativeOps)
@@ -204,7 +204,7 @@ TEST(Interp, BinaryRelativeOps)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_TRUE((bool) res);
+    EXPECT_TRUE(res.as_bool().value());
 }
 
 TEST(Interp, BinaryLessThan)
@@ -225,5 +225,168 @@ TEST(Interp, BinaryLessThan)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_TRUE((bool) res);
+    EXPECT_TRUE(res.as_bool().value());
+}
+
+TEST(Interp, BinaryGreaterThan)
+{
+    const std::vector<value_type> const_pool {
+        empty_value, "test"s, 1.23, 1.231
+    };
+
+    const insn_array insns {
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::call_op, op_kind::gt),
+        insn_encode(opcode::ret, 1)
+    };
+
+    runtime::interp interp(const_pool,
+        insns.begin(), insns.end(), 0, 2);
+
+    auto res = interp.run();
+    ASSERT_FALSE(res.empty());
+    EXPECT_TRUE(res.as_bool().value());
+}
+
+TEST(Interp, BinaryLTE)
+{
+    const std::vector<value_type> const_pool {
+        empty_value, "test"s, 1.23, 1.231, 1.23000, 2.34
+    };
+
+    const insn_array insns {
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::call_op, op_kind::lte),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::call_op, op_kind::lte),
+        insn_encode(opcode::call_op, op_kind::and_),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::call_op, op_kind::lte),
+        insn_encode(opcode::call_op, op_kind::xor_),
+        insn_encode(opcode::ret, 1)
+    };
+
+    runtime::interp interp(const_pool,
+        insns.begin(), insns.end(), 0, 2);
+
+    auto res = interp.run();
+    ASSERT_FALSE(res.empty());
+    EXPECT_TRUE(res.as_bool().value());
+}
+
+TEST(Interp, BinaryGTE)
+{
+    const std::vector<value_type> const_pool {
+        empty_value, "test"s, 1.23, 1.231, 1.23000, 2.34
+    };
+
+    const insn_array insns {
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::call_op, op_kind::gte),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::call_op, op_kind::gte),
+        insn_encode(opcode::call_op, op_kind::and_),
+        insn_encode(opcode::push_const, 5),
+        insn_encode(opcode::push_const, 4),
+        insn_encode(opcode::call_op, op_kind::gte),
+        insn_encode(opcode::call_op, op_kind::xor_),
+        insn_encode(opcode::ret, 1)
+    };
+
+    runtime::interp interp(const_pool,
+        insns.begin(), insns.end(), 0, 2);
+
+    auto res = interp.run();
+    ASSERT_FALSE(res.empty());
+    EXPECT_TRUE(res.as_bool().value());
+}
+
+TEST(Interp, BinaryAdd)
+{
+    const std::vector<value_type> const_pool {
+        empty_value, "test"s, 1.23, 2.34
+    };
+
+    const insn_array insns {
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::call_op, op_kind::add),
+        insn_encode(opcode::ret, 1)
+    };
+
+    runtime::interp interp(const_pool,
+        insns.begin(), insns.end(), 0, 2);
+
+    auto res = interp.run();
+    ASSERT_FALSE(res.empty());
+    EXPECT_EQ(1.23 + 2.34, res.as_number().value());
+}
+
+TEST(Interp, BinarySub)
+{
+    const std::vector<value_type> const_pool {
+        empty_value, "test"s, 1.23, 2.34
+    };
+
+    const insn_array insns {
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::call_op, op_kind::sub),
+        insn_encode(opcode::ret, 1)
+    };
+
+    runtime::interp interp(const_pool,
+        insns.begin(), insns.end(), 0, 2);
+
+    auto res = interp.run();
+    ASSERT_FALSE(res.empty());
+    EXPECT_EQ(1.23 - 2.34, res.as_number().value());
+}
+
+TEST(Interp, BinaryMul)
+{
+    const std::vector<value_type> const_pool {
+        empty_value, "test"s, 1.23, 2.34
+    };
+
+    const insn_array insns {
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::call_op, op_kind::mul),
+        insn_encode(opcode::ret, 1)
+    };
+
+    runtime::interp interp(const_pool,
+        insns.begin(), insns.end(), 0, 2);
+
+    auto res = interp.run();
+    ASSERT_FALSE(res.empty());
+    EXPECT_EQ(1.23 * 2.34, res.as_number().value());
+}
+
+TEST(Interp, BinaryDiv)
+{
+    const std::vector<value_type> const_pool {
+        empty_value, "test"s, 1.23, 2.34
+    };
+
+    const insn_array insns {
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::call_op, op_kind::div),
+        insn_encode(opcode::ret, 1)
+    };
+
+    runtime::interp interp(const_pool,
+        insns.begin(), insns.end(), 0, 2);
+
+    auto res = interp.run();
+    ASSERT_FALSE(res.empty());
+    EXPECT_EQ(2.34 / 1.23, res.as_number().value());
 }

@@ -191,7 +191,13 @@ object::operator std::string() const {
 object::operator double() const {
     switch(t) {
         case is_empty: return 0.0;
-        case is_string: return boost::lexical_cast<double>(s);
+        case is_string: {
+            double res = 0.0;
+            if(boost::conversion::try_lexical_convert<double>(s, res))
+                return res;
+            return std::numeric_limits<double>::quiet_NaN();
+        }
+
         case is_number: return d;
         case is_boolean: return b ? 1 : 0;
         case is_ref: return ref->operator double();
@@ -250,7 +256,7 @@ object::operator const_reference() const
 bool object::operator ==(const object &other) const
 {
     switch(t) {
-        case is_empty: return false;
+        case is_empty: return other.get_type() == is_empty;
         case is_string: return s == static_cast<std::string>(other);
         case is_number: return d == static_cast<double>(other);
         case is_boolean: return b == static_cast<bool>(other);
@@ -327,6 +333,7 @@ object object::operator +(const object &other) const
                 return static_cast<std::string>(*this)
                         + static_cast<std::string>(other);
             return d + static_cast<double>(other);
+
         case is_boolean: return b;
         case is_ref: return ref->operator +(other);
     }
@@ -345,6 +352,7 @@ object object::operator -(const object &other) const
                     return std::string(s).erase(idx, str.size());
                 return s;
             }
+
         case is_number: return d - static_cast<double>(other);
         case is_boolean: return b;
         case is_ref: return ref->operator -(other);
@@ -369,6 +377,7 @@ object object::operator *(const object &other) const
                 }
                 return s;
             }
+
         case is_number: return d * static_cast<double>(other);
         case is_boolean: return b;
         case is_ref: return ref->operator *(other);

@@ -344,7 +344,7 @@ TEST(Object, CastToDouble)
 
     EXPECT_EQ(0, static_cast<double>(obj1));
     EXPECT_EQ(0, static_cast<double>(obj2));
-    EXPECT_THROW(static_cast<double>(obj3), boost::bad_lexical_cast);
+    EXPECT_TRUE(std::isnan(static_cast<double>(obj3)));
     EXPECT_EQ(1.23, static_cast<double>(obj4));
     EXPECT_EQ(1, static_cast<double>(obj5));
     EXPECT_EQ(0, static_cast<double>(obj6));
@@ -386,4 +386,175 @@ TEST(Object, CastToBoolean)
     EXPECT_TRUE(static_cast<bool>(obj13));
     EXPECT_FALSE(static_cast<bool>(obj14));
     EXPECT_FALSE(static_cast<bool>(obj15));
+}
+
+TEST(Object, EqualsEmpty)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_TRUE(empty1 == empty2);
+    EXPECT_FALSE(empty1 != empty2);
+    EXPECT_FALSE(empty1 == string1);
+    EXPECT_FALSE(empty1 == string2);
+    EXPECT_FALSE(empty1 == string3);
+    EXPECT_FALSE(empty1 == string4);
+    EXPECT_FALSE(empty1 == string_empty);
+    EXPECT_FALSE(empty1 == string_true);
+    EXPECT_FALSE(empty1 == string_false);
+    EXPECT_FALSE(empty1 == number1);
+    EXPECT_FALSE(empty1 == number2);
+    EXPECT_FALSE(empty1 == number3);
+    EXPECT_FALSE(empty1 == true_);
+    EXPECT_FALSE(empty1 == false_);
+}
+
+TEST(Object, EqualsString)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(string1 == empty1);
+    EXPECT_FALSE(string1 == empty2);
+    EXPECT_TRUE(string1 == string1);
+    EXPECT_TRUE(string1 == string2);
+    EXPECT_FALSE(string1 == string3);
+    EXPECT_FALSE(string1 == string4);
+    EXPECT_FALSE(string1 == string_empty);
+    EXPECT_FALSE(string1 == string_true);
+    EXPECT_FALSE(string1 == string_false);
+    EXPECT_FALSE(string1 == number1);
+    EXPECT_FALSE(string1 == number2);
+    EXPECT_FALSE(string1 == number3);
+    EXPECT_FALSE(string1 == true_);
+    EXPECT_FALSE(string1 == false_);
+
+    EXPECT_TRUE(string4 == number1);
+    EXPECT_TRUE(string4 == number2);
+
+    EXPECT_TRUE(string_true == true_);
+    EXPECT_FALSE(string_true == false_);
+
+    EXPECT_FALSE(string_false == true_);
+    EXPECT_TRUE(string_false == false_);
+}
+
+TEST(Object, EqualsNumber)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(number1 == empty1);
+    EXPECT_FALSE(number1 == empty2);
+    EXPECT_FALSE(number1 == string1);
+    EXPECT_FALSE(number1 == string2);
+    EXPECT_FALSE(number1 == string3);
+    EXPECT_TRUE(number1 == string4);
+    EXPECT_FALSE(number1 == string_empty);
+    EXPECT_FALSE(number1 == string_true);
+    EXPECT_FALSE(number1 == string_false);
+    EXPECT_TRUE(number1 == number1);
+    EXPECT_TRUE(number1 == number2);
+    EXPECT_FALSE(number1 == number3);
+    EXPECT_FALSE(number1 == true_);
+    EXPECT_FALSE(number1 == false_);
+
+    EXPECT_FALSE(number3 == true_);
+    EXPECT_TRUE(number3 == false_);
+}
+
+TEST(Object, EqualsBoolean)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(true_ == empty1);
+    EXPECT_FALSE(true_ == empty2);
+    EXPECT_TRUE(true_ == string1);
+    EXPECT_TRUE(true_ == string2);
+    EXPECT_TRUE(true_ == string3);
+    EXPECT_TRUE(true_ == string4);
+    EXPECT_FALSE(true_ == string_empty);
+    EXPECT_TRUE(true_ == string_true);
+    EXPECT_FALSE(true_ == string_false);
+    EXPECT_TRUE(true_ == number1);
+    EXPECT_TRUE(true_ == number2);
+    EXPECT_FALSE(true_ == number3);
+    EXPECT_TRUE(true_ == true_);
+    EXPECT_FALSE(true_ == false_);
+
+    EXPECT_TRUE(false_ == empty1);
+    EXPECT_TRUE(false_ == empty2);
+    EXPECT_FALSE(false_ == string1);
+    EXPECT_FALSE(false_ == string2);
+    EXPECT_FALSE(false_ == string3);
+    EXPECT_FALSE(false_ == string4);
+    EXPECT_TRUE(false_ == string_empty);
+    EXPECT_FALSE(false_ == string_true);
+    EXPECT_TRUE(false_ == string_false);
+    EXPECT_FALSE(false_ == number1);
+    EXPECT_FALSE(false_ == number2);
+    EXPECT_TRUE(false_ == number3);
+    EXPECT_FALSE(false_ == true_);
+    EXPECT_TRUE(false_ == false_);
 }

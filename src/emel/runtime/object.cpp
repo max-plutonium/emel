@@ -24,100 +24,6 @@
 
 namespace emel { namespace runtime {
 
-array::array(object *ptr, std::size_t len)
-{
-    ptrs.first = new object[len];
-    ptrs.second = ptrs.first + len;
-    std::copy(ptr, ptr + len, ptrs.first);
-}
-
-array::array(const std::vector<object> &vec)
-{
-    ptrs.first = new object[vec.size()];
-    ptrs.second = ptrs.first + vec.size();
-    std::copy(vec.begin(), vec.end(), ptrs.first);
-}
-
-array::array(std::vector<object> &&vec)
-{
-    ptrs.first = new object[vec.size()];
-    ptrs.second = ptrs.first + vec.size();
-    std::move(vec.begin(), vec.end(), ptrs.first);
-}
-
-array::array(const array &other)
-{
-    const auto len = other.ptrs.second - other.ptrs.first;
-    ptrs.first = new object[len];
-    ptrs.second = ptrs.first + len;
-    std::copy(other.ptrs.first, other.ptrs.second, ptrs.first);
-}
-
-array &array::operator =(const array &other)
-{
-    if(this != &other)
-        array(other).swap(*this);
-    return *this;
-}
-
-array::array(array &&other) : ptrs(nullptr, nullptr)
-{
-    std::swap(ptrs, other.ptrs);
-}
-
-array &array::operator =(array &&other)
-{
-    if(this != &other)
-        array(std::move(other)).swap(*this);
-    return *this;
-}
-
-array::~array()
-{
-    delete [] ptrs.first; ptrs.first = ptrs.second = nullptr;
-}
-
-void array::swap(array &other)
-{
-    std::swap(ptrs, other.ptrs);
-}
-
-std::size_t array::size() const
-{
-    return ptrs.second - ptrs.first;
-}
-
-bool array::empty() const
-{
-    return ptrs.second == ptrs.first;
-}
-
-std::vector<object> array::to_vector() const &
-{
-    std::vector<object> ret(size());
-    for(std::size_t i = 0; i < size(); ++i)
-        ret[i] = ptrs.first[i];
-    return ret;
-}
-
-std::vector<object> array::to_vector() &&
-{
-    std::vector<object> ret(size());
-    for(std::size_t i = 0; i < size(); ++i)
-        ret[i] = std::move(ptrs.first[i]);
-    return ret;
-}
-
-object &array::operator[](std::size_t i)
-{
-    return ptrs.first[i];
-}
-
-const object &array::operator[](std::size_t i) const
-{
-    return ptrs.first[i];
-}
-
 object::object() : t(is_empty), d(0)
 {
 }
@@ -140,7 +46,6 @@ object:: object(const std::vector<object> &vec) : t(is_array), a(vec)
 
 object::object(std::vector<object> &&vec) : t(is_array), a(std::move(vec))
 {
-
 }
 
 object::object(const std::string &s) : t(is_string), s(s)
@@ -163,8 +68,7 @@ object::object(reference ref) : t(is_ref), ref(ref)
 {
 }
 
-object::object(const object &other)
-    : base(other), t(other.t), d(0)
+object::object(const object &other) : t(other.t), d(0)
 {
     switch(t) {
         case is_empty: break;
@@ -295,6 +199,12 @@ object &object::operator =(reference ref)
     return ((is_ref == t) ? *ref : *this) = object(ref);
 }
 
+// TODO split object types to is_ref and rest types
+// TODO detach() for copy elision
+// TODO if is_ref - we always have to change the pointee object
+// TODO if rest - we always have to change local data or
+// call detach() and change one if is_ref
+
 object object::share()
 {
     reference ret;
@@ -383,7 +293,7 @@ object::operator bool() const
         case is_string: {
             auto str = s;
             boost::algorithm::trim(str);
-            boost::algorithm::erase_all(str, " \n\t\r\0");
+            //boost::algorithm::erase_all(str, " \n\t\r\0");
             return !str.empty() && !boost::iequals("false", str);
         }
 

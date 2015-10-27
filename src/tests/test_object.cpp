@@ -307,8 +307,6 @@ TEST(Object, MoveAssign)
     EXPECT_TRUE(obj7.empty());
 }
 
-#include <boost/lexical_cast.hpp>
-
 TEST(Object, CastToString)
 {
     auto ptr = runtime::make_object("test");

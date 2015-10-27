@@ -21,9 +21,9 @@
 #define OBJECT_H
 
 #include "../opcodes.h"
+#include "array.h"
 
 #include <memory>
-#include <vector>
 #include <string>
 
 #include <experimental/optional>
@@ -44,36 +44,8 @@ template <typename... Args>
           std::forward<Args>(args)...);
   }
 
-class array
+class object
 {
-    std::pair<object *, object *> ptrs;
-
-public:
-    array(object *ptr, std::size_t len);
-    array(const std::vector<object> &vec);
-    array(std::vector<object> &&vec);
-    array(const array &other);
-    array &operator =(const array &other);
-    array(array &&other);
-    array &operator =(array &&other);
-    ~array();
-
-    void swap(array &other);
-
-    std::size_t size() const;
-    bool empty() const;
-
-    std::vector<object> to_vector() const &;
-    std::vector<object> to_vector() &&;
-
-    object &operator[](std::size_t);
-    const object &operator[](std::size_t) const;
-};
-
-class object : public std::enable_shared_from_this<object>
-{
-    using base = std::enable_shared_from_this<object>;
-
 public:
     enum type {
         is_empty, is_array, is_string, is_number, is_boolean, is_ref
@@ -152,7 +124,7 @@ public:
     optional<reference> as_ref() const;
 };
 
-std::ostream &operator <<(std::ostream &os, const object &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const object &arg);
 
 } // namespace runtime
 

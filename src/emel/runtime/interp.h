@@ -41,9 +41,10 @@ struct frame : public object {
           insn_array::const_iterator end_pc,
           std::size_t locals_size, std::size_t stack_size,
           std::shared_ptr<frame> super_frame = std::shared_ptr<frame>())
-        : const_pool(const_pool), pc(pc), end_pc(end_pc), super_frame(super_frame)
+        : const_pool(const_pool), pc(pc), end_pc(end_pc)
+        , locals(locals_size)
+        , super_frame(super_frame)
     {
-        locals.reserve(locals_size);
         stack.reserve(stack_size);
     }
 
@@ -97,7 +98,8 @@ public:
 
             switch (op) {
                 case opcode::push_const: {
-                    const auto &value = top.const_pool.at(arg);
+                    assert(top.const_pool.size() > arg);
+                    const auto &value = top.const_pool[arg];
                     switch(value.which()) {
                         case 0: top.stack.push_back(object()); break;
                         case 1: top.stack.push_back(boost::get<std::string>(value)); break;
@@ -108,10 +110,41 @@ public:
                 }
                     break;
 
+                case opcode::pop:
+                    if(!arg) arg = 1;
+                    assert(top.stack.size() >= arg);
+                    while(arg--)
+                        top.stack.pop_back();
+                    break;
+
+                case opcode::dup:
+                    assert(!top.stack.empty());
+                    if(!arg) arg = 1;
+                    while(arg--)
+                        top.stack.push_back(top.stack.back());
+                    break;
+
+                case opcode::swap:
+                    assert(top.stack.size() > 1);
+                    std::swap(top.stack.back(), *(top.stack.end() - 2));
+                    break;
+
+                case opcode::push_local:
+                    assert(top.locals.size() > arg);
+                    top.stack.push_back(top.locals[arg]);
+                    break;
+
+                case opcode::load_local:
+                    assert(!top.stack.empty());
+                    assert(top.locals.size() > arg);
+                    top.locals[arg] = std::move(top.stack.back());
+                    top.stack.pop_back();
+                    break;
+
                 case opcode::call_op: {
                     const auto kind = static_cast<op_kind>(arg);
                     if(op_kind::not_ == kind || op_kind::neg == kind) {
-                        assert(top.stack.size() > 0);
+                        assert(!top.stack.empty());
                         const object top_object = std::move(top.stack.back());
                         top.stack.pop_back();
 
@@ -155,9 +188,10 @@ public:
 
                 case opcode::ret:
                     if(arg > 0) {
-                        assert(top.stack.size() > 0);
+                        assert(!top.stack.empty());
                         ret_value = std::move(top.stack.back());
                     }
+
                     drop_frame();
 
                     if(!top_frame)

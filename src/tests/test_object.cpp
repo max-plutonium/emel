@@ -1918,3 +1918,36 @@ TEST(Object, DivBoolean)
     EXPECT_EQ(runtime::object(false), false_ / true_);
     EXPECT_EQ(runtime::object(false), false_ / false_);
 }
+
+TEST(Object, Arrays)
+{
+    std::vector<runtime::object> vec {
+        runtime::object(),
+        runtime::object(empty_value),
+        runtime::object("string"),
+        runtime::object(1.23),
+        runtime::object(true),
+        runtime::object(false),
+        runtime::object(runtime::make_object("test")),
+    };
+
+    runtime::object array(std::move(vec));
+    runtime::object str("string");
+    EXPECT_EQ(7, array.size());
+    EXPECT_EQ(6, str.size());
+
+    std::string s;
+    for(std::size_t i = 0; i < array.size(); ++i)
+        s.append(array[i]);
+
+    EXPECT_EQ("string1.23truefalsetest", s);
+
+    array[2] = "STRING";
+    array[3] = 100.500;
+    s.clear();
+    for(std::size_t i = 0; i < array.size(); ++i)
+        s.append(array[i]);
+
+    EXPECT_EQ("STRING100.5truefalsetest", s);
+    EXPECT_EQ(runtime::object("g"), str[5]);
+}

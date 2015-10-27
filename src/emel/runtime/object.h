@@ -22,9 +22,11 @@
 
 #include "../opcodes.h"
 
-#include <string>
 #include <memory>
+#include <vector>
+#include <string>
 
+#include <experimental/optional>
 #include <boost/pool/pool_alloc.hpp>
 
 namespace emel EMEL_EXPORT { namespace runtime EMEL_EXPORT {
@@ -33,11 +35,40 @@ class object;
 using reference = std::shared_ptr<object>;
 using const_reference = std::shared_ptr<const object>;
 
+template <typename Tp>
+  using optional = std::experimental::optional<Tp>;
+
 template <typename... Args>
   inline reference make_object(Args &&...args) {
       return std::allocate_shared<object>(boost::pool_allocator<object>(),
           std::forward<Args>(args)...);
   }
+
+class array
+{
+    std::pair<object *, object *> ptrs;
+
+public:
+    array(object *ptr, std::size_t len);
+    array(const std::vector<object> &vec);
+    array(std::vector<object> &&vec);
+    array(const array &other);
+    array &operator =(const array &other);
+    array(array &&other);
+    array &operator =(array &&other);
+    ~array();
+
+    void swap(array &other);
+
+    std::size_t size() const;
+    bool empty() const;
+
+    std::vector<object> to_vector() const &;
+    std::vector<object> to_vector() &&;
+
+    object &operator[](std::size_t);
+    const object &operator[](std::size_t) const;
+};
 
 class object : public std::enable_shared_from_this<object>
 {
@@ -45,13 +76,14 @@ class object : public std::enable_shared_from_this<object>
 
 public:
     enum type {
-        is_empty, is_string, is_number, is_boolean, is_ref
+        is_empty, is_array, is_string, is_number, is_boolean, is_ref
     };
 
 protected:
     type t;
 
     union {
+        array a;
         std::string s;
         double d;
         bool b;
@@ -61,6 +93,10 @@ protected:
 public:
     object();
     object(empty_value_type);
+    object(array a);
+    object(object *ptr, std::size_t len);
+    object(const std::vector<object> &vec);
+    object(std::vector<object> &&vec);
     object(const std::string &s);
     object(const char *s);
     object(double d);
@@ -74,7 +110,10 @@ public:
 
     void swap(object &other);
 
+    object &operator =(empty_value_type);
+    object &operator =(array a);
     object &operator =(const std::string &s);
+    object &operator =(const char *s);
     object &operator =(double d);
     object &operator =(bool b);
     object &operator =(reference ref);
@@ -82,12 +121,14 @@ public:
     type get_type() const { return t; }
     bool empty() const { return t == is_empty; }
 
+    virtual object share();
+    virtual object clone();
+
     virtual ~object();
     virtual operator std::string() const;
     virtual operator double() const;
     virtual operator bool() const;
-    virtual operator reference();
-    virtual operator const_reference() const;
+    virtual operator reference() const;
 
     virtual bool operator ==(const object &other) const;
     virtual bool operator !=(const object &other) const;
@@ -99,6 +140,16 @@ public:
     virtual object operator -(const object &other) const;
     virtual object operator *(const object &other) const;
     virtual object operator /(const object &other) const;
+
+    std::size_t size() const;
+    object operator[](std::size_t);
+    object operator[](std::size_t) const;
+
+    optional<array> as_array() const;
+    optional<std::string> as_string() const;
+    optional<double> as_number() const;
+    optional<bool> as_bool() const;
+    optional<reference> as_ref() const;
 };
 
 std::ostream &operator <<(std::ostream &os, const object &arg);

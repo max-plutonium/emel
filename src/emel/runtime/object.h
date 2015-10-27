@@ -101,6 +101,8 @@ public:
     virtual object operator /(const object &other) const;
 };
 
+std::ostream &operator <<(std::ostream &os, const object &arg);
+
 } // namespace runtime
 
 } // namespace emel

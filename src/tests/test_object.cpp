@@ -342,12 +342,12 @@ TEST(Object, CastToDouble)
     runtime::object obj6(false);
     runtime::object obj7(ptr);
 
-    EXPECT_EQ(0, static_cast<double>(obj1));
-    EXPECT_EQ(0, static_cast<double>(obj2));
+    EXPECT_EQ(0.0, static_cast<double>(obj1));
+    EXPECT_EQ(0.0, static_cast<double>(obj2));
     EXPECT_TRUE(std::isnan(static_cast<double>(obj3)));
     EXPECT_EQ(1.23, static_cast<double>(obj4));
     EXPECT_EQ(1, static_cast<double>(obj5));
-    EXPECT_EQ(0, static_cast<double>(obj6));
+    EXPECT_EQ(0.0, static_cast<double>(obj6));
     EXPECT_EQ(2.34, static_cast<double>(obj7));
 }
 
@@ -557,4 +557,1364 @@ TEST(Object, EqualsBoolean)
     EXPECT_TRUE(false_ == number3);
     EXPECT_FALSE(false_ == true_);
     EXPECT_TRUE(false_ == false_);
+}
+
+TEST(Object, LessThanEmpty)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(empty1 < empty2);
+    EXPECT_FALSE(empty1 < string1);
+    EXPECT_FALSE(empty1 < string2);
+    EXPECT_FALSE(empty1 < string3);
+    EXPECT_FALSE(empty1 < string4);
+    EXPECT_FALSE(empty1 < string_empty);
+    EXPECT_FALSE(empty1 < string_true);
+    EXPECT_FALSE(empty1 < string_false);
+    EXPECT_FALSE(empty1 < number1);
+    EXPECT_FALSE(empty1 < number2);
+    EXPECT_FALSE(empty1 < number3);
+    EXPECT_FALSE(empty1 < true_);
+    EXPECT_FALSE(empty1 < false_);
+}
+
+TEST(Object, LessThanString)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(string1 < empty1);
+    EXPECT_FALSE(string1 < empty2);
+    EXPECT_FALSE(string1 < string1);
+    EXPECT_FALSE(string1 < string2);
+    EXPECT_FALSE(string1 < string3);
+    EXPECT_FALSE(string1 < string4);
+    EXPECT_FALSE(string1 < string_empty);
+    EXPECT_TRUE(string1 < string_true);
+    EXPECT_FALSE(string1 < string_false);
+    EXPECT_FALSE(string1 < number1);
+    EXPECT_FALSE(string1 < number2);
+    EXPECT_FALSE(string1 < number3);
+    EXPECT_TRUE(string1 < true_);
+    EXPECT_FALSE(string1 < false_);
+
+    EXPECT_FALSE(string4 < number1);
+    EXPECT_FALSE(string4 < number2);
+
+    EXPECT_FALSE(string_true < true_);
+    EXPECT_FALSE(string_true < false_);
+
+    EXPECT_TRUE(string_false < true_);
+    EXPECT_FALSE(string_false < false_);
+}
+
+TEST(Object, LessThanNumber)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(number1 < empty1);
+    EXPECT_FALSE(number1 < empty2);
+    EXPECT_FALSE(number1 < string1);
+    EXPECT_FALSE(number1 < string2);
+    EXPECT_FALSE(number1 < string3);
+    EXPECT_FALSE(number1 < string4);
+    EXPECT_FALSE(number1 < string_empty);
+    EXPECT_FALSE(number1 < string_true);
+    EXPECT_FALSE(number1 < string_false);
+    EXPECT_FALSE(number1 < number1);
+    EXPECT_FALSE(number1 < number2);
+    EXPECT_FALSE(number1 < number3);
+    EXPECT_FALSE(number1 < true_);
+    EXPECT_FALSE(number1 < false_);
+
+    EXPECT_TRUE(number3 < true_);
+    EXPECT_FALSE(number3 < false_);
+}
+
+TEST(Object, LessThanBoolean)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(true_ < empty1);
+    EXPECT_FALSE(true_ < empty2);
+    EXPECT_FALSE(true_ < string1);
+    EXPECT_FALSE(true_ < string2);
+    EXPECT_FALSE(true_ < string3);
+    EXPECT_FALSE(true_ < string4);
+    EXPECT_FALSE(true_ < string_empty);
+    EXPECT_FALSE(true_ < string_true);
+    EXPECT_FALSE(true_ < string_false);
+    EXPECT_FALSE(true_ < number1);
+    EXPECT_FALSE(true_ < number2);
+    EXPECT_FALSE(true_ < number3);
+    EXPECT_FALSE(true_ < true_);
+    EXPECT_FALSE(true_ < false_);
+
+    EXPECT_FALSE(false_ < empty1);
+    EXPECT_FALSE(false_ < empty2);
+    EXPECT_FALSE(false_ < string1);
+    EXPECT_FALSE(false_ < string2);
+    EXPECT_FALSE(false_ < string3);
+    EXPECT_FALSE(false_ < string4);
+    EXPECT_FALSE(false_ < string_empty);
+    EXPECT_FALSE(false_ < string_true);
+    EXPECT_FALSE(false_ < string_false);
+    EXPECT_FALSE(false_ < number1);
+    EXPECT_FALSE(false_ < number2);
+    EXPECT_FALSE(false_ < number3);
+    EXPECT_FALSE(false_ < true_);
+    EXPECT_FALSE(false_ < false_);
+}
+
+TEST(Object, GreaterThanEmpty)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(empty1 > empty2);
+    EXPECT_FALSE(empty1 > string1);
+    EXPECT_FALSE(empty1 > string2);
+    EXPECT_FALSE(empty1 > string3);
+    EXPECT_FALSE(empty1 > string4);
+    EXPECT_FALSE(empty1 > string_empty);
+    EXPECT_FALSE(empty1 > string_true);
+    EXPECT_FALSE(empty1 > string_false);
+    EXPECT_FALSE(empty1 > number1);
+    EXPECT_FALSE(empty1 > number2);
+    EXPECT_FALSE(empty1 > number3);
+    EXPECT_FALSE(empty1 > true_);
+    EXPECT_FALSE(empty1 > false_);
+}
+
+TEST(Object, GreaterThanString)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_TRUE(string1 > empty1);
+    EXPECT_TRUE(string1 > empty2);
+    EXPECT_FALSE(string1 > string1);
+    EXPECT_FALSE(string1 > string2);
+    EXPECT_TRUE(string1 > string3);
+    EXPECT_TRUE(string1 > string4);
+    EXPECT_TRUE(string1 > string_empty);
+    EXPECT_FALSE(string1 > string_true);
+    EXPECT_TRUE(string1 > string_false);
+    EXPECT_TRUE(string1 > number1);
+    EXPECT_TRUE(string1 > number2);
+    EXPECT_TRUE(string1 > number3);
+    EXPECT_FALSE(string1 > true_);
+    EXPECT_TRUE(string1 > false_);
+
+    EXPECT_FALSE(string4 > number1);
+    EXPECT_FALSE(string4 > number2);
+
+    EXPECT_FALSE(string_true > true_);
+    EXPECT_TRUE(string_true > false_);
+
+    EXPECT_FALSE(string_false > true_);
+    EXPECT_FALSE(string_false > false_);
+}
+
+TEST(Object, GreaterThanNumber)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_TRUE(number1 > empty1);
+    EXPECT_TRUE(number1 > empty2);
+    EXPECT_FALSE(number1 > string1);
+    EXPECT_FALSE(number1 > string2);
+    EXPECT_FALSE(number1 > string3);
+    EXPECT_FALSE(number1 > string4);
+    EXPECT_FALSE(number1 > string_empty);
+    EXPECT_FALSE(number1 > string_true);
+    EXPECT_FALSE(number1 > string_false);
+    EXPECT_FALSE(number1 > number1);
+    EXPECT_FALSE(number1 > number2);
+    EXPECT_TRUE(number1 > number3);
+    EXPECT_TRUE(number1 > true_);
+    EXPECT_TRUE(number1 > false_);
+
+    EXPECT_FALSE(number3 > true_);
+    EXPECT_FALSE(number3 > false_);
+}
+
+TEST(Object, GreaterThanBoolean)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(true_ > empty1);
+    EXPECT_FALSE(true_ > empty2);
+    EXPECT_FALSE(true_ > string1);
+    EXPECT_FALSE(true_ > string2);
+    EXPECT_FALSE(true_ > string3);
+    EXPECT_FALSE(true_ > string4);
+    EXPECT_FALSE(true_ > string_empty);
+    EXPECT_FALSE(true_ > string_true);
+    EXPECT_FALSE(true_ > string_false);
+    EXPECT_FALSE(true_ > number1);
+    EXPECT_FALSE(true_ > number2);
+    EXPECT_FALSE(true_ > number3);
+    EXPECT_FALSE(true_ > true_);
+    EXPECT_FALSE(true_ > false_);
+
+    EXPECT_FALSE(false_ > empty1);
+    EXPECT_FALSE(false_ > empty2);
+    EXPECT_FALSE(false_ > string1);
+    EXPECT_FALSE(false_ > string2);
+    EXPECT_FALSE(false_ > string3);
+    EXPECT_FALSE(false_ > string4);
+    EXPECT_FALSE(false_ > string_empty);
+    EXPECT_FALSE(false_ > string_true);
+    EXPECT_FALSE(false_ > string_false);
+    EXPECT_FALSE(false_ > number1);
+    EXPECT_FALSE(false_ > number2);
+    EXPECT_FALSE(false_ > number3);
+    EXPECT_FALSE(false_ > true_);
+    EXPECT_FALSE(false_ > false_);
+}
+
+TEST(Object, LTEEmpty)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(empty1 <= empty2);
+    EXPECT_FALSE(empty1 <= string1);
+    EXPECT_FALSE(empty1 <= string2);
+    EXPECT_FALSE(empty1 <= string3);
+    EXPECT_FALSE(empty1 <= string4);
+    EXPECT_FALSE(empty1 <= string_empty);
+    EXPECT_FALSE(empty1 <= string_true);
+    EXPECT_FALSE(empty1 <= string_false);
+    EXPECT_FALSE(empty1 <= number1);
+    EXPECT_FALSE(empty1 <= number2);
+    EXPECT_FALSE(empty1 <= number3);
+    EXPECT_FALSE(empty1 <= true_);
+    EXPECT_FALSE(empty1 <= false_);
+}
+
+TEST(Object, LTEString)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(string1 <= empty1);
+    EXPECT_FALSE(string1 <= empty2);
+    EXPECT_TRUE(string1 <= string1);
+    EXPECT_TRUE(string1 <= string2);
+    EXPECT_FALSE(string1 <= string3);
+    EXPECT_FALSE(string1 <= string4);
+    EXPECT_FALSE(string1 <= string_empty);
+    EXPECT_TRUE(string1 <= string_true);
+    EXPECT_FALSE(string1 <= string_false);
+    EXPECT_FALSE(string1 <= number1);
+    EXPECT_FALSE(string1 <= number2);
+    EXPECT_FALSE(string1 <= number3);
+    EXPECT_TRUE(string1 <= true_);
+    EXPECT_FALSE(string1 <= false_);
+
+    EXPECT_TRUE(string4 <= number1);
+    EXPECT_TRUE(string4 <= number2);
+
+    EXPECT_TRUE(string_true <= true_);
+    EXPECT_FALSE(string_true <= false_);
+
+    EXPECT_TRUE(string_false <= true_);
+    EXPECT_TRUE(string_false <= false_);
+}
+
+TEST(Object, LTENumber)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(number1 <= empty1);
+    EXPECT_FALSE(number1 <= empty2);
+    EXPECT_FALSE(number1 <= string1);
+    EXPECT_FALSE(number1 <= string2);
+    EXPECT_FALSE(number1 <= string3);
+    EXPECT_TRUE(number1 <= string4);
+    EXPECT_FALSE(number1 <= string_empty);
+    EXPECT_FALSE(number1 <= string_true);
+    EXPECT_FALSE(number1 <= string_false);
+    EXPECT_TRUE(number1 <= number1);
+    EXPECT_TRUE(number1 <= number2);
+    EXPECT_FALSE(number1 <= number3);
+    EXPECT_FALSE(number1 <= true_);
+    EXPECT_FALSE(number1 <= false_);
+
+    EXPECT_TRUE(number3 <= true_);
+    EXPECT_TRUE(number3 <= false_);
+}
+
+TEST(Object, LTEBoolean)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(true_ <= empty1);
+    EXPECT_FALSE(true_ <= empty2);
+    EXPECT_FALSE(true_ <= string1);
+    EXPECT_FALSE(true_ <= string2);
+    EXPECT_FALSE(true_ <= string3);
+    EXPECT_FALSE(true_ <= string4);
+    EXPECT_FALSE(true_ <= string_empty);
+    EXPECT_FALSE(true_ <= string_true);
+    EXPECT_FALSE(true_ <= string_false);
+    EXPECT_FALSE(true_ <= number1);
+    EXPECT_FALSE(true_ <= number2);
+    EXPECT_FALSE(true_ <= number3);
+    EXPECT_FALSE(true_ <= true_);
+    EXPECT_FALSE(true_ <= false_);
+
+    EXPECT_FALSE(false_ <= empty1);
+    EXPECT_FALSE(false_ <= empty2);
+    EXPECT_FALSE(false_ <= string1);
+    EXPECT_FALSE(false_ <= string2);
+    EXPECT_FALSE(false_ <= string3);
+    EXPECT_FALSE(false_ <= string4);
+    EXPECT_FALSE(false_ <= string_empty);
+    EXPECT_FALSE(false_ <= string_true);
+    EXPECT_FALSE(false_ <= string_false);
+    EXPECT_FALSE(false_ <= number1);
+    EXPECT_FALSE(false_ <= number2);
+    EXPECT_FALSE(false_ <= number3);
+    EXPECT_FALSE(false_ <= true_);
+    EXPECT_FALSE(false_ <= false_);
+}
+
+TEST(Object, GTEEmpty)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(empty1 >= empty2);
+    EXPECT_FALSE(empty1 >= string1);
+    EXPECT_FALSE(empty1 >= string2);
+    EXPECT_FALSE(empty1 >= string3);
+    EXPECT_FALSE(empty1 >= string4);
+    EXPECT_FALSE(empty1 >= string_empty);
+    EXPECT_FALSE(empty1 >= string_true);
+    EXPECT_FALSE(empty1 >= string_false);
+    EXPECT_FALSE(empty1 >= number1);
+    EXPECT_FALSE(empty1 >= number2);
+    EXPECT_FALSE(empty1 >= number3);
+    EXPECT_FALSE(empty1 >= true_);
+    EXPECT_FALSE(empty1 >= false_);
+}
+
+TEST(Object, GTEString)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_TRUE(string1 >= empty1);
+    EXPECT_TRUE(string1 >= empty2);
+    EXPECT_TRUE(string1 >= string1);
+    EXPECT_TRUE(string1 >= string2);
+    EXPECT_TRUE(string1 >= string3);
+    EXPECT_TRUE(string1 >= string4);
+    EXPECT_TRUE(string1 >= string_empty);
+    EXPECT_FALSE(string1 >= string_true);
+    EXPECT_TRUE(string1 >= string_false);
+    EXPECT_TRUE(string1 >= number1);
+    EXPECT_TRUE(string1 >= number2);
+    EXPECT_TRUE(string1 >= number3);
+    EXPECT_FALSE(string1 >= true_);
+    EXPECT_TRUE(string1 >= false_);
+
+    EXPECT_TRUE(string4 >= number1);
+    EXPECT_TRUE(string4 >= number2);
+
+    EXPECT_TRUE(string_true >= true_);
+    EXPECT_TRUE(string_true >= false_);
+
+    EXPECT_FALSE(string_false >= true_);
+    EXPECT_TRUE(string_false >= false_);
+}
+
+TEST(Object, GTENumber)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_TRUE(number1 >= empty1);
+    EXPECT_TRUE(number1 >= empty2);
+    EXPECT_FALSE(number1 >= string1);
+    EXPECT_FALSE(number1 >= string2);
+    EXPECT_FALSE(number1 >= string3);
+    EXPECT_TRUE(number1 >= string4);
+    EXPECT_FALSE(number1 >= string_empty);
+    EXPECT_FALSE(number1 >= string_true);
+    EXPECT_FALSE(number1 >= string_false);
+    EXPECT_TRUE(number1 >= number1);
+    EXPECT_TRUE(number1 >= number2);
+    EXPECT_TRUE(number1 >= number3);
+    EXPECT_TRUE(number1 >= true_);
+    EXPECT_TRUE(number1 >= false_);
+
+    EXPECT_FALSE(number3 >= true_);
+    EXPECT_TRUE(number3 >= false_);
+}
+
+TEST(Object, GTEBoolean)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_FALSE(true_ >= empty1);
+    EXPECT_FALSE(true_ >= empty2);
+    EXPECT_FALSE(true_ >= string1);
+    EXPECT_FALSE(true_ >= string2);
+    EXPECT_FALSE(true_ >= string3);
+    EXPECT_FALSE(true_ >= string4);
+    EXPECT_FALSE(true_ >= string_empty);
+    EXPECT_FALSE(true_ >= string_true);
+    EXPECT_FALSE(true_ >= string_false);
+    EXPECT_FALSE(true_ >= number1);
+    EXPECT_FALSE(true_ >= number2);
+    EXPECT_FALSE(true_ >= number3);
+    EXPECT_FALSE(true_ >= true_);
+    EXPECT_FALSE(true_ >= false_);
+
+    EXPECT_FALSE(false_ >= empty1);
+    EXPECT_FALSE(false_ >= empty2);
+    EXPECT_FALSE(false_ >= string1);
+    EXPECT_FALSE(false_ >= string2);
+    EXPECT_FALSE(false_ >= string3);
+    EXPECT_FALSE(false_ >= string4);
+    EXPECT_FALSE(false_ >= string_empty);
+    EXPECT_FALSE(false_ >= string_true);
+    EXPECT_FALSE(false_ >= string_false);
+    EXPECT_FALSE(false_ >= number1);
+    EXPECT_FALSE(false_ >= number2);
+    EXPECT_FALSE(false_ >= number3);
+    EXPECT_FALSE(false_ >= true_);
+    EXPECT_FALSE(false_ >= false_);
+}
+
+TEST(Object, PlusEmpty)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object(), empty1 + empty2);
+    EXPECT_EQ(runtime::object(), empty1 + string1);
+    EXPECT_EQ(runtime::object(), empty1 + string2);
+    EXPECT_EQ(runtime::object(), empty1 + string3);
+    EXPECT_EQ(runtime::object(), empty1 + string4);
+    EXPECT_EQ(runtime::object(), empty1 + string_empty);
+    EXPECT_EQ(runtime::object(), empty1 + string_true);
+    EXPECT_EQ(runtime::object(), empty1 + string_false);
+    EXPECT_EQ(runtime::object(), empty1 + number1);
+    EXPECT_EQ(runtime::object(), empty1 + number2);
+    EXPECT_EQ(runtime::object(), empty1 + number3);
+    EXPECT_EQ(runtime::object(), empty1 + true_);
+    EXPECT_EQ(runtime::object(), empty1 + false_);
+}
+
+TEST(Object, PlusString)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object("string"), string1 + empty1);
+    EXPECT_EQ(runtime::object("string"), string1 + empty2);
+    EXPECT_EQ(runtime::object("stringstring"), string1 + string1);
+    EXPECT_EQ(runtime::object("stringstring"), string1 + string2);
+    EXPECT_EQ(runtime::object("stringString"), string1 + string3);
+    EXPECT_EQ(runtime::object("string1.23"), string1 + string4);
+    EXPECT_EQ(runtime::object("string"), string1 + string_empty);
+    EXPECT_EQ(runtime::object("stringtrue"), string1 + string_true);
+    EXPECT_EQ(runtime::object("stringfalse"), string1 + string_false);
+    EXPECT_EQ(runtime::object("string1.23"), string1 + number1);
+    EXPECT_EQ(runtime::object("string1.23"), string1 + number2);
+    EXPECT_EQ(runtime::object("string0"), string1 + number3);
+    EXPECT_EQ(runtime::object("stringtrue"), string1 + true_);
+    EXPECT_EQ(runtime::object("stringfalse"), string1 + false_);
+
+    EXPECT_EQ(runtime::object("1.231.23"), string4 + number1);
+    EXPECT_EQ(runtime::object("1.231.23"), string4 + number2);
+
+    EXPECT_EQ(runtime::object("truetrue"), string_true + true_);
+    EXPECT_EQ(runtime::object("truefalse"), string_true + false_);
+
+    EXPECT_EQ(runtime::object("falsetrue"), string_false + true_);
+    EXPECT_EQ(runtime::object("falsefalse"), string_false + false_);
+}
+
+TEST(Object, PlusNumber)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object(1.23), number1 + empty1);
+    EXPECT_EQ(runtime::object(1.23), number1 + empty2);
+    EXPECT_EQ(runtime::object("1.23string"), number1 + string1);
+    EXPECT_EQ(runtime::object("1.23string"), number1 + string2);
+    EXPECT_EQ(runtime::object("1.23String"), number1 + string3);
+    EXPECT_EQ(runtime::object("1.231.23"), number1 + string4);
+    EXPECT_EQ(runtime::object("1.23"), number1 + string_empty);
+    EXPECT_EQ(runtime::object("1.23true"), number1 + string_true);
+    EXPECT_EQ(runtime::object("1.23false"), number1 + string_false);
+    EXPECT_EQ(runtime::object(2.46), number1 + number1);
+    EXPECT_EQ(runtime::object(2.46), number1 + number2);
+    EXPECT_EQ(runtime::object(1.23), number1 + number3);
+    EXPECT_EQ(runtime::object(2.23), number1 + true_);
+    EXPECT_EQ(runtime::object(1.23), number1 + false_);
+
+    EXPECT_EQ(runtime::object(1.0), number3 + true_);
+    EXPECT_EQ(runtime::object(0.0), number3 + false_);
+}
+
+TEST(Object, PlusBoolean)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object(true), true_ + empty1);
+    EXPECT_EQ(runtime::object(true), true_ + empty2);
+    EXPECT_EQ(runtime::object(true), true_ + string1);
+    EXPECT_EQ(runtime::object(true), true_ + string2);
+    EXPECT_EQ(runtime::object(true), true_ + string3);
+    EXPECT_EQ(runtime::object(true), true_ + string4);
+    EXPECT_EQ(runtime::object(true), true_ + string_empty);
+    EXPECT_EQ(runtime::object(true), true_ + string_true);
+    EXPECT_EQ(runtime::object(true), true_ + string_false);
+    EXPECT_EQ(runtime::object(true), true_ + number1);
+    EXPECT_EQ(runtime::object(true), true_ + number2);
+    EXPECT_EQ(runtime::object(true), true_ + number3);
+    EXPECT_EQ(runtime::object(true), true_ + true_);
+    EXPECT_EQ(runtime::object(true), true_ + false_);
+
+    EXPECT_EQ(runtime::object(false), false_ + empty1);
+    EXPECT_EQ(runtime::object(false), false_ + empty2);
+    EXPECT_EQ(runtime::object(false), false_ + string1);
+    EXPECT_EQ(runtime::object(false), false_ + string2);
+    EXPECT_EQ(runtime::object(false), false_ + string3);
+    EXPECT_EQ(runtime::object(false), false_ + string4);
+    EXPECT_EQ(runtime::object(false), false_ + string_empty);
+    EXPECT_EQ(runtime::object(false), false_ + string_true);
+    EXPECT_EQ(runtime::object(false), false_ + string_false);
+    EXPECT_EQ(runtime::object(false), false_ + number1);
+    EXPECT_EQ(runtime::object(false), false_ + number2);
+    EXPECT_EQ(runtime::object(false), false_ + number3);
+    EXPECT_EQ(runtime::object(false), false_ + true_);
+    EXPECT_EQ(runtime::object(false), false_ + false_);
+}
+
+TEST(Object, MinusEmpty)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object(), empty1 - empty2);
+    EXPECT_EQ(runtime::object(), empty1 - string1);
+    EXPECT_EQ(runtime::object(), empty1 - string2);
+    EXPECT_EQ(runtime::object(), empty1 - string3);
+    EXPECT_EQ(runtime::object(), empty1 - string4);
+    EXPECT_EQ(runtime::object(), empty1 - string_empty);
+    EXPECT_EQ(runtime::object(), empty1 - string_true);
+    EXPECT_EQ(runtime::object(), empty1 - string_false);
+    EXPECT_EQ(runtime::object(), empty1 - number1);
+    EXPECT_EQ(runtime::object(), empty1 - number2);
+    EXPECT_EQ(runtime::object(), empty1 - number3);
+    EXPECT_EQ(runtime::object(), empty1 - true_);
+    EXPECT_EQ(runtime::object(), empty1 - false_);
+}
+
+TEST(Object, MinusString)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object("string"), string1 - empty1);
+    EXPECT_EQ(runtime::object("string"), string1 - empty2);
+    EXPECT_EQ(runtime::object(""), string1 - string1);
+    EXPECT_EQ(runtime::object(""), string1 - string2);
+    EXPECT_EQ(runtime::object("string"), string1 - string3);
+    EXPECT_EQ(runtime::object("string"), string1 - string4);
+    EXPECT_EQ(runtime::object("string"), string1 - string_empty);
+    EXPECT_EQ(runtime::object("string"), string1 - string_true);
+    EXPECT_EQ(runtime::object("string"), string1 - string_false);
+    EXPECT_EQ(runtime::object("string"), string1 - number1);
+    EXPECT_EQ(runtime::object("string"), string1 - number2);
+    EXPECT_EQ(runtime::object("string"), string1 - number3);
+    EXPECT_EQ(runtime::object("string"), string1 - true_);
+    EXPECT_EQ(runtime::object("string"), string1 - false_);
+
+    EXPECT_EQ(runtime::object(""), string4 - number1);
+    EXPECT_EQ(runtime::object(""), string4 - number2);
+
+    EXPECT_EQ(runtime::object(""), string_true - true_);
+    EXPECT_EQ(runtime::object("true"), string_true - false_);
+
+    EXPECT_EQ(runtime::object("false"), string_false - true_);
+    EXPECT_EQ(runtime::object(""), string_false - false_);
+}
+
+TEST(Object, MinusNumber)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object(1.23), number1 - empty1);
+    EXPECT_EQ(runtime::object(1.23), number1 - empty2);
+    EXPECT_EQ(runtime::object(1.23), number1 - string1);
+    EXPECT_EQ(runtime::object(1.23), number1 - string2);
+    EXPECT_EQ(runtime::object(1.23), number1 - string3);
+    EXPECT_EQ(runtime::object(0.0), number1 - string4);
+    EXPECT_EQ(runtime::object(1.23), number1 - string_empty);
+    EXPECT_EQ(runtime::object(1.23), number1 - string_true);
+    EXPECT_EQ(runtime::object(1.23), number1 - string_false);
+    EXPECT_EQ(runtime::object(0.0), number1 - number1);
+    EXPECT_EQ(runtime::object(0.0), number1 - number2);
+    EXPECT_EQ(runtime::object(1.23), number1 - number3);
+    EXPECT_DOUBLE_EQ(runtime::object(0.23), number1 - true_);
+    EXPECT_EQ(runtime::object(1.23), number1 - false_);
+
+    EXPECT_EQ(runtime::object(-1.0), number3 - true_);
+    EXPECT_EQ(runtime::object(0.0), number3 - false_);
+}
+
+TEST(Object, MinusBoolean)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object(true), true_ - empty1);
+    EXPECT_EQ(runtime::object(true), true_ - empty2);
+    EXPECT_EQ(runtime::object(true), true_ - string1);
+    EXPECT_EQ(runtime::object(true), true_ - string2);
+    EXPECT_EQ(runtime::object(true), true_ - string3);
+    EXPECT_EQ(runtime::object(true), true_ - string4);
+    EXPECT_EQ(runtime::object(true), true_ - string_empty);
+    EXPECT_EQ(runtime::object(true), true_ - string_true);
+    EXPECT_EQ(runtime::object(true), true_ - string_false);
+    EXPECT_EQ(runtime::object(true), true_ - number1);
+    EXPECT_EQ(runtime::object(true), true_ - number2);
+    EXPECT_EQ(runtime::object(true), true_ - number3);
+    EXPECT_EQ(runtime::object(true), true_ - true_);
+    EXPECT_EQ(runtime::object(true), true_ - false_);
+
+    EXPECT_EQ(runtime::object(false), false_ - empty1);
+    EXPECT_EQ(runtime::object(false), false_ - empty2);
+    EXPECT_EQ(runtime::object(false), false_ - string1);
+    EXPECT_EQ(runtime::object(false), false_ - string2);
+    EXPECT_EQ(runtime::object(false), false_ - string3);
+    EXPECT_EQ(runtime::object(false), false_ - string4);
+    EXPECT_EQ(runtime::object(false), false_ - string_empty);
+    EXPECT_EQ(runtime::object(false), false_ - string_true);
+    EXPECT_EQ(runtime::object(false), false_ - string_false);
+    EXPECT_EQ(runtime::object(false), false_ - number1);
+    EXPECT_EQ(runtime::object(false), false_ - number2);
+    EXPECT_EQ(runtime::object(false), false_ - number3);
+    EXPECT_EQ(runtime::object(false), false_ - true_);
+    EXPECT_EQ(runtime::object(false), false_ - false_);
+}
+
+TEST(Object, MultEmpty)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object(), empty1 * empty2);
+    EXPECT_EQ(runtime::object(), empty1 * string1);
+    EXPECT_EQ(runtime::object(), empty1 * string2);
+    EXPECT_EQ(runtime::object(), empty1 * string3);
+    EXPECT_EQ(runtime::object(), empty1 * string4);
+    EXPECT_EQ(runtime::object(), empty1 * string_empty);
+    EXPECT_EQ(runtime::object(), empty1 * string_true);
+    EXPECT_EQ(runtime::object(), empty1 * string_false);
+    EXPECT_EQ(runtime::object(), empty1 * number1);
+    EXPECT_EQ(runtime::object(), empty1 * number2);
+    EXPECT_EQ(runtime::object(), empty1 * number3);
+    EXPECT_EQ(runtime::object(), empty1 * true_);
+    EXPECT_EQ(runtime::object(), empty1 * false_);
+}
+
+TEST(Object, MultString)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(3.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object("string"), string1 * empty1);
+    EXPECT_EQ(runtime::object("string"), string1 * empty2);
+    EXPECT_EQ(runtime::object("string"), string1 * string1);
+    EXPECT_EQ(runtime::object("string"), string1 * string2);
+    EXPECT_EQ(runtime::object("string"), string1 * string3);
+    EXPECT_EQ(runtime::object("string"), string1 * string4);
+    EXPECT_EQ(runtime::object("string"), string1 * string_empty);
+    EXPECT_EQ(runtime::object("string"), string1 * string_true);
+    EXPECT_EQ(runtime::object("string"), string1 * string_false);
+    EXPECT_EQ(runtime::object("string"), string1 * number1);
+    EXPECT_EQ(runtime::object("stringstringstring"), string1 * number2);
+    EXPECT_EQ(runtime::object(""), string1 * number3);
+    EXPECT_EQ(runtime::object("string"), string1 * true_);
+    EXPECT_EQ(runtime::object("string"), string1 * false_);
+
+    EXPECT_EQ(runtime::object("1.23"), string4 * number1);
+    EXPECT_EQ(runtime::object("1.231.231.23"), string4 * number2);
+
+    EXPECT_EQ(runtime::object("true"), string_true * true_);
+    EXPECT_EQ(runtime::object("true"), string_true * false_);
+
+    EXPECT_EQ(runtime::object("false"), string_false * true_);
+    EXPECT_EQ(runtime::object("false"), string_false * false_);
+}
+
+TEST(Object, MultNumber)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object(0.0), number1 * empty1);
+    EXPECT_EQ(runtime::object(0.0), number1 * empty2);
+    EXPECT_EQ(runtime::object(1.23), number1 * string1);
+    EXPECT_EQ(runtime::object(1.23), number1 * string2);
+    EXPECT_EQ(runtime::object(1.23), number1 * string3);
+    EXPECT_EQ(runtime::object(1.23 * 1.23), number1 * string4);
+    EXPECT_EQ(runtime::object(1.23), number1 * string_empty);
+    EXPECT_EQ(runtime::object(1.23), number1 * string_true);
+    EXPECT_EQ(runtime::object(1.23), number1 * string_false);
+    EXPECT_EQ(runtime::object(1.23 * 1.23), number1 * number1);
+    EXPECT_EQ(runtime::object(1.23 * 1.23), number1 * number2);
+    EXPECT_EQ(runtime::object(0.0), number1 * number3);
+    EXPECT_EQ(runtime::object(1.23), number1 * true_);
+    EXPECT_EQ(runtime::object(0.0), number1 * false_);
+
+    EXPECT_EQ(runtime::object(0.0), number3 * true_);
+    EXPECT_EQ(runtime::object(0.0), number3 * false_);
+}
+
+TEST(Object, MultBoolean)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object(true), true_ * empty1);
+    EXPECT_EQ(runtime::object(true), true_ * empty2);
+    EXPECT_EQ(runtime::object(true), true_ * string1);
+    EXPECT_EQ(runtime::object(true), true_ * string2);
+    EXPECT_EQ(runtime::object(true), true_ * string3);
+    EXPECT_EQ(runtime::object(true), true_ * string4);
+    EXPECT_EQ(runtime::object(true), true_ * string_empty);
+    EXPECT_EQ(runtime::object(true), true_ * string_true);
+    EXPECT_EQ(runtime::object(true), true_ * string_false);
+    EXPECT_EQ(runtime::object(true), true_ * number1);
+    EXPECT_EQ(runtime::object(true), true_ * number2);
+    EXPECT_EQ(runtime::object(true), true_ * number3);
+    EXPECT_EQ(runtime::object(true), true_ * true_);
+    EXPECT_EQ(runtime::object(true), true_ * false_);
+
+    EXPECT_EQ(runtime::object(false), false_ * empty1);
+    EXPECT_EQ(runtime::object(false), false_ * empty2);
+    EXPECT_EQ(runtime::object(false), false_ * string1);
+    EXPECT_EQ(runtime::object(false), false_ * string2);
+    EXPECT_EQ(runtime::object(false), false_ * string3);
+    EXPECT_EQ(runtime::object(false), false_ * string4);
+    EXPECT_EQ(runtime::object(false), false_ * string_empty);
+    EXPECT_EQ(runtime::object(false), false_ * string_true);
+    EXPECT_EQ(runtime::object(false), false_ * string_false);
+    EXPECT_EQ(runtime::object(false), false_ * number1);
+    EXPECT_EQ(runtime::object(false), false_ * number2);
+    EXPECT_EQ(runtime::object(false), false_ * number3);
+    EXPECT_EQ(runtime::object(false), false_ * true_);
+    EXPECT_EQ(runtime::object(false), false_ * false_);
+}
+
+TEST(Object, DivEmpty)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object(), empty1 / empty2);
+    EXPECT_EQ(runtime::object(), empty1 / string1);
+    EXPECT_EQ(runtime::object(), empty1 / string2);
+    EXPECT_EQ(runtime::object(), empty1 / string3);
+    EXPECT_EQ(runtime::object(), empty1 / string4);
+    EXPECT_EQ(runtime::object(), empty1 / string_empty);
+    EXPECT_EQ(runtime::object(), empty1 / string_true);
+    EXPECT_EQ(runtime::object(), empty1 / string_false);
+    EXPECT_EQ(runtime::object(), empty1 / number1);
+    EXPECT_EQ(runtime::object(), empty1 / number2);
+    EXPECT_EQ(runtime::object(), empty1 / number3);
+    EXPECT_EQ(runtime::object(), empty1 / true_);
+    EXPECT_EQ(runtime::object(), empty1 / false_);
+}
+
+TEST(Object, DivString)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(3.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object("string"), string1 / empty1);
+    EXPECT_EQ(runtime::object("string"), string1 / empty2);
+    EXPECT_EQ(runtime::object("string"), string1 / string1);
+    EXPECT_EQ(runtime::object("string"), string1 / string2);
+    EXPECT_EQ(runtime::object("string"), string1 / string3);
+    EXPECT_EQ(runtime::object("string"), string1 / string4);
+    EXPECT_EQ(runtime::object("string"), string1 / string_empty);
+    EXPECT_EQ(runtime::object("string"), string1 / string_true);
+    EXPECT_EQ(runtime::object("string"), string1 / string_false);
+    EXPECT_EQ(runtime::object("string"), string1 / number1);
+    EXPECT_EQ(runtime::object("string"), string1 / number2);
+    EXPECT_EQ(runtime::object("string"), string1 / number3);
+    EXPECT_EQ(runtime::object("string"), string1 / true_);
+    EXPECT_EQ(runtime::object("string"), string1 / false_);
+
+    EXPECT_EQ(runtime::object("1.23"), string4 / number1);
+    EXPECT_EQ(runtime::object("1.23"), string4 / number2);
+
+    EXPECT_EQ(runtime::object("true"), string_true / true_);
+    EXPECT_EQ(runtime::object("true"), string_true / false_);
+
+    EXPECT_EQ(runtime::object("false"), string_false / true_);
+    EXPECT_EQ(runtime::object("false"), string_false / false_);
+}
+
+TEST(Object, DivNumber)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object("inf"), number1 / empty1);
+    EXPECT_EQ(runtime::object("inf"), number1 / empty2);
+    EXPECT_EQ(runtime::object(1.23), number1 / string1);
+    EXPECT_EQ(runtime::object(1.23), number1 / string2);
+    EXPECT_EQ(runtime::object(1.23), number1 / string3);
+    EXPECT_EQ(runtime::object(1.0), number1 / string4);
+    EXPECT_EQ(runtime::object(1.23), number1 / string_empty);
+    EXPECT_EQ(runtime::object(1.23), number1 / string_true);
+    EXPECT_EQ(runtime::object(1.23), number1 / string_false);
+    EXPECT_EQ(runtime::object(1.0), number1 / number1);
+    EXPECT_EQ(runtime::object(1.0), number1 / number2);
+    EXPECT_EQ(runtime::object("inf"), number1 / number3);
+    EXPECT_EQ(runtime::object(1.23), number1 / true_);
+    EXPECT_EQ(runtime::object("inf"), number1 / false_);
+
+    EXPECT_EQ(runtime::object(0.0), number3 / true_);
+    EXPECT_EQ(runtime::object("-nan"), number3 / false_);
+}
+
+TEST(Object, DivBoolean)
+{
+    runtime::object empty1;
+    runtime::object empty2(empty_value);
+
+    runtime::object string1("string");
+    runtime::object string2("string");
+    runtime::object string3("String");
+    runtime::object string4("1.23");
+    runtime::object string_empty("");
+    runtime::object string_true("true");
+    runtime::object string_false("false");
+
+    runtime::object number1(1.23);
+    runtime::object number2(1.2300);
+    runtime::object number3(0.0);
+
+    runtime::object true_(true);
+    runtime::object false_(false);
+
+    EXPECT_EQ(runtime::object(true), true_ / empty1);
+    EXPECT_EQ(runtime::object(true), true_ / empty2);
+    EXPECT_EQ(runtime::object(true), true_ / string1);
+    EXPECT_EQ(runtime::object(true), true_ / string2);
+    EXPECT_EQ(runtime::object(true), true_ / string3);
+    EXPECT_EQ(runtime::object(true), true_ / string4);
+    EXPECT_EQ(runtime::object(true), true_ / string_empty);
+    EXPECT_EQ(runtime::object(true), true_ / string_true);
+    EXPECT_EQ(runtime::object(true), true_ / string_false);
+    EXPECT_EQ(runtime::object(true), true_ / number1);
+    EXPECT_EQ(runtime::object(true), true_ / number2);
+    EXPECT_EQ(runtime::object(true), true_ / number3);
+    EXPECT_EQ(runtime::object(true), true_ / true_);
+    EXPECT_EQ(runtime::object(true), true_ / false_);
+
+    EXPECT_EQ(runtime::object(false), false_ / empty1);
+    EXPECT_EQ(runtime::object(false), false_ / empty2);
+    EXPECT_EQ(runtime::object(false), false_ / string1);
+    EXPECT_EQ(runtime::object(false), false_ / string2);
+    EXPECT_EQ(runtime::object(false), false_ / string3);
+    EXPECT_EQ(runtime::object(false), false_ / string4);
+    EXPECT_EQ(runtime::object(false), false_ / string_empty);
+    EXPECT_EQ(runtime::object(false), false_ / string_true);
+    EXPECT_EQ(runtime::object(false), false_ / string_false);
+    EXPECT_EQ(runtime::object(false), false_ / number1);
+    EXPECT_EQ(runtime::object(false), false_ / number2);
+    EXPECT_EQ(runtime::object(false), false_ / number3);
+    EXPECT_EQ(runtime::object(false), false_ / true_);
+    EXPECT_EQ(runtime::object(false), false_ / false_);
 }

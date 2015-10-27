@@ -347,13 +347,17 @@ object object::operator -(const object &other) const
         case is_empty: return empty_value;
         case is_string: {
                 const auto str = static_cast<std::string>(other);
-                const auto idx = s.find_first_of(str);
+                const auto idx = s.find(str);
                 if(idx != std::string::npos)
                     return std::string(s).erase(idx, str.size());
                 return s;
             }
 
-        case is_number: return d - static_cast<double>(other);
+        case is_number: {
+            double rhs = static_cast<double>(other);
+            return std::isnan(rhs) ? d : d - rhs;
+        }
+
         case is_boolean: return b;
         case is_ref: return ref->operator -(other);
     }
@@ -368,17 +372,22 @@ object object::operator *(const object &other) const
         case is_string: {
                 if(other.get_type() != is_number)
                     return s;
-                auto i = static_cast<double>(other);
+                int i = static_cast<double>(other);
                 if(i < 1000) {
-                    auto str = s;
-                    str.reserve(str.size() * i);
+                    decltype(s) str;
+                    str.reserve(s.size() * i);
                     while(i-- > 0)
-                        str = str.append(s);
+                        str.append(s);
+                    return str;
                 }
                 return s;
             }
 
-        case is_number: return d * static_cast<double>(other);
+        case is_number:  {
+            double rhs = static_cast<double>(other);
+            return std::isnan(rhs) ? d : d * rhs;
+        }
+
         case is_boolean: return b;
         case is_ref: return ref->operator *(other);
     }
@@ -391,12 +400,21 @@ object object::operator /(const object &other) const
     switch(t) {
         case is_empty: return empty_value;
         case is_string: return s;
-        case is_number: return d / static_cast<double>(other); // TODO div by zero
+        case is_number:  {
+            double rhs = static_cast<double>(other);
+            return std::isnan(rhs) ? d : d / rhs;
+        }
+
         case is_boolean: return b;
         case is_ref: return ref->operator /(other);
     }
 
     return empty_value;
+}
+
+std::ostream &operator <<(std::ostream &os, const object &arg)
+{
+    return os << arg.operator std::string();
 }
 
 } // namespace runtime

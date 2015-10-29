@@ -32,16 +32,16 @@ namespace emel { namespace runtime {
 struct frame : public object {
     const std::vector<value_type> &const_pool;
     insn_array::const_iterator pc;
-    const insn_array::const_iterator end_pc;
+    const insn_array::const_iterator start_pc, end_pc;
     std::vector<object, boost::pool_allocator<object>> locals, stack;
     std::shared_ptr<frame> super_frame, caller_frame;
 
     frame(const std::vector<value_type> &const_pool,
-          insn_array::const_iterator pc,
+          insn_array::const_iterator start_pc,
           insn_array::const_iterator end_pc,
           std::size_t locals_size, std::size_t stack_size,
           std::shared_ptr<frame> super_frame = std::shared_ptr<frame>())
-        : const_pool(const_pool), pc(pc), end_pc(end_pc)
+        : const_pool(const_pool), pc(start_pc), start_pc(start_pc), end_pc(end_pc)
         , locals(locals_size)
         , super_frame(super_frame)
     {
@@ -88,28 +88,15 @@ public:
         while(true) {
             frame &top = *top_frame;
 
-            if(top.pc == top.end_pc)
-                break;
+            assert(top.start_pc <= top.pc);
+            assert(top.pc < top.end_pc);
 
             opcode op;
             std::uint32_t arg;
 
-            std::tie(op, arg) = insn_decode(*top.pc++);
+            std::tie(op, arg) = insn_decode(*top.pc);
 
             switch (op) {
-                case opcode::push_const: {
-                    assert(top.const_pool.size() > arg);
-                    const auto &value = top.const_pool[arg];
-                    switch(value.which()) {
-                        case 0: top.stack.push_back(object()); break;
-                        case 1: top.stack.push_back(boost::get<std::string>(value)); break;
-                        case 2: top.stack.push_back(boost::get<double>(value)); break;
-                        case 3: top.stack.push_back(boost::get<bool>(value)); break;
-                        default: assert(false);
-                    }
-                }
-                    break;
-
                 case opcode::pop:
                     if(!arg) arg = 1;
                     assert(top.stack.size() >= arg);
@@ -127,6 +114,38 @@ public:
                 case opcode::swap:
                     assert(top.stack.size() > 1);
                     std::swap(top.stack.back(), *(top.stack.end() - 2));
+                    break;
+
+                case opcode::ret:
+                    if(arg > 0) {
+                        assert(!top.stack.empty());
+                        ret_value = std::move(top.stack.back());
+                    }
+
+                    drop_frame();
+
+                    if(!top_frame)
+                        return ret_value;
+                    else
+                        top_frame->stack.push_back(std::move(ret_value));
+
+                    break;
+
+                case opcode::push:
+                    top.stack.push_back(object(double(arg)));
+                    break;
+
+                case opcode::push_const: {
+                    assert(top.const_pool.size() > arg);
+                    const auto &value = top.const_pool[arg];
+                    switch(value.which()) {
+                        case 0: top.stack.push_back(object()); break;
+                        case 1: top.stack.push_back(boost::get<std::string>(value)); break;
+                        case 2: top.stack.push_back(boost::get<double>(value)); break;
+                        case 3: top.stack.push_back(boost::get<bool>(value)); break;
+                        default: assert(false);
+                    }
+                }
                     break;
 
                 case opcode::push_local:
@@ -186,24 +205,69 @@ public:
                 }
                     break;
 
-                case opcode::ret:
-                    if(arg > 0) {
-                        assert(!top.stack.empty());
-                        ret_value = std::move(top.stack.back());
+                case opcode::brf:
+                    assert(top.pc + arg < top.end_pc);
+                    top.pc += arg;
+                    continue;
+
+                case opcode::brb:
+                    assert(top.start_pc <= top.pc - arg);
+                    top.pc -= arg;
+                    continue;
+
+                case opcode::brf_true:
+                    assert(!top.stack.empty());
+                    assert(top.pc + arg < top.end_pc);
+                    if(static_cast<bool>(top.stack.back())) {
+                        top.pc += arg;
+                        top.stack.pop_back();
+                        continue;
                     }
 
-                    drop_frame();
+                    top.stack.pop_back();
+                    break;
 
-                    if(!top_frame)
-                        return ret_value;
-                    else
-                        top_frame->stack.push_back(std::move(ret_value));
+                case opcode::brf_false:
+                    assert(!top.stack.empty());
+                    assert(top.pc + arg < top.end_pc);
+                    if(!static_cast<bool>(top.stack.back())) {
+                        top.pc += arg;
+                        top.stack.pop_back();
+                        continue;
+                    }
 
+                    top.stack.pop_back();
+                    break;
+
+                case opcode::brb_true:
+                    assert(!top.stack.empty());
+                    assert(top.start_pc <= top.pc - arg);
+                    if(static_cast<bool>(top.stack.back())) {
+                        top.pc -= arg;
+                        top.stack.pop_back();
+                        continue;
+                    }
+
+                    top.stack.pop_back();
+                    break;
+
+                case opcode::brb_false:
+                    assert(!top.stack.empty());
+                    assert(top.start_pc <= top.pc - arg);
+                    if(!static_cast<bool>(top.stack.back())) {
+                        top.pc -= arg;
+                        top.stack.pop_back();
+                        continue;
+                    }
+
+                    top.stack.pop_back();
                     break;
 
                 default:
                     break;
             }
+
+            ++top.pc;
         }
 
         return ret_value;

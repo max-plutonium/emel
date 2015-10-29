@@ -32,6 +32,8 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 set(PUBLIC_HEADERS
     ast.h
     compiler/compiler.h
+    runtime/array.h
+    runtime/object.h
     parser.h
     plugins.h
 )
@@ -42,6 +44,9 @@ set(HEADERS
     compiler/compiler.h
     compiler/const-pool-manager.h
     compiler/symbol_table.h
+    runtime/array.h
+    runtime/interp.h
+    runtime/object.h
     opcodes.h
     parser.h
     plugins.h

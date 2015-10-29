@@ -471,3 +471,56 @@ TEST(Interp, Swap)
     ASSERT_FALSE(res.empty());
     EXPECT_TRUE(res.as_bool().value());
 }
+
+TEST(Interp, Branches)
+{
+    const std::vector<value_type> const_pool {
+        empty_value, 1.0, 2.0, 3.0
+    };
+
+    const insn_array insns {
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::brf, 2),
+        insn_encode(opcode::push_const, 1),
+        insn_encode(opcode::call_op, op_kind::sub),
+        insn_encode(opcode::dup, 2),
+        insn_encode(opcode::brf_false, 2),
+        insn_encode(opcode::brb_true, 4),
+
+        insn_encode(opcode::pop),
+        insn_encode(opcode::push_const, 1),
+        insn_encode(opcode::push_const, 3),
+        insn_encode(opcode::call_op, op_kind::sub),
+        insn_encode(opcode::push_local, 0),
+        insn_encode(opcode::brf_true, 6),
+        insn_encode(opcode::push_const, 1),
+        insn_encode(opcode::load_local, 0),
+        insn_encode(opcode::push_const, 2),
+        insn_encode(opcode::call_op, op_kind::eq),
+        insn_encode(opcode::brb_true, 15),
+
+        insn_encode(opcode::push_const, 0),
+        insn_encode(opcode::load_local, 0),
+        insn_encode(opcode::push_local, 0),
+        insn_encode(opcode::brf_true, 6),
+        insn_encode(opcode::push_const, 1),
+        insn_encode(opcode::load_local, 0),
+        insn_encode(opcode::brb, 4),
+
+        insn_encode(opcode::call_op, op_kind::sub),
+        insn_encode(opcode::ret, 1),
+        insn_encode(opcode::push_local, 0),
+        insn_encode(opcode::brb_false, 3),
+        insn_encode(opcode::push_const, 0),
+        insn_encode(opcode::load_local, 0),
+        insn_encode(opcode::brb, 4)
+    };
+
+    runtime::interp interp(const_pool,
+        insns.begin(), insns.end(), 1, 1);
+
+    auto res = interp.run();
+    ASSERT_FALSE(res.empty());
+    EXPECT_EQ(2, res.as_number().value());
+}

@@ -56,23 +56,18 @@ bool spirit_parser::parse(source_iter first, source_iter last,
 
 } // namespace emel
 
-static emel::spirit_frontend::spirit_parser g_instance;
+#include <boost/dll/alias.hpp>
 
-extern "C" {
+static const char *s_type = "frontend";
+static const char *s_name = "spirit";
+static const char *s_version = EMEL_FRONTEND_VERSION;
 
-EMEL_EXPORT emel::parser *emel_frontend_instance()
-{
-    return &g_instance;
+static emel::parser *emel_spirit_frontend_instance() {
+    static emel::spirit_frontend::spirit_parser instance;
+    return &instance;
 }
 
-EMEL_EXPORT const char *emel_frontend_name()
-{
-    return "spirit";
-}
-
-EMEL_EXPORT const char *emel_frontend_version()
-{
-    return EMEL_FRONTEND_VERSION;
-}
-
-} // extern "C"
+BOOST_DLL_ALIAS(s_type, emel_plugin_type)
+BOOST_DLL_ALIAS(s_name, emel_plugin_name)
+BOOST_DLL_ALIAS(s_version, emel_plugin_version)
+BOOST_DLL_ALIAS(emel_spirit_frontend_instance, emel_plugin_instance)

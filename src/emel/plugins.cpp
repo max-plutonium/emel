@@ -19,34 +19,49 @@
  */
 #include "plugins.h"
 
-#include <set>
-#include <boost/lexical_cast.hpp>
+#include <boost/dll/import.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
-#include <dlfcn.h>
+#include <boost/lexical_cast.hpp>
 
-namespace emel EMEL_EXPORT {
+#include <set>
+#include <shared_mutex>
+#include <unordered_map>
+
+namespace emel {
 
 namespace bfs = boost::filesystem;
+namespace dll = boost::dll;
 
-void plugin::library_deleter::operator()(plugin::library *ptr)
+using library_ptr = std::shared_ptr<dll::shared_library>;
+
+struct version_compare : std::binary_function<plugin::version, plugin::version, bool>
 {
-    if(ptr && ptr->handle)
-        ::dlclose(ptr->handle);
-    delete ptr;
-}
+    bool operator()(const plugin::version &lhs, const plugin::version &rhs) const
+    {
+        if(lhs.major < rhs.major || lhs.minor < rhs.minor || lhs.patch < rhs.patch)
+            return true;
+        return false;
+    }
+};
 
-bool plugin::version_compare::operator()(
-        const plugin::version &lhs, const plugin::version &rhs) const
-{
-    if(lhs.major < rhs.major || lhs.minor < rhs.minor || lhs.patch < rhs.patch)
-        return true;
-    return false;
-}
+struct lib_entry {
+    std::multimap<plugin::version, library_ptr, version_compare> instances;
+    std::unordered_multimap<std::string, library_ptr> names_map;
+};
 
-static std::vector<std::string> get_paths(const std::string &dir_name, char sep = ':')
+static std::shared_timed_mutex g_libs_lock;
+static std::unordered_map<std::string, lib_entry> g_libs_map;
+
+static std::vector<std::string> get_paths(const std::string &dir_name)
 {
     std::vector<std::string> paths;
+    constexpr char sep =
+#ifdef __linux__
+        ':';
+#else
+        ';';
+#endif
 
     if(dir_name.empty()) {
         paths.push_back(bfs::current_path().string());
@@ -70,40 +85,19 @@ static std::vector<std::string> get_paths(const std::string &dir_name, char sep 
     return paths;
 }
 
-static std::vector<bfs::directory_entry> find_libs(
-        const std::string &path, const char *ext = ".so")
+static std::vector<bfs::directory_entry> find_libs(const std::string &path)
 {
     std::vector<bfs::directory_entry> files;
     bfs::directory_iterator dir_begin(path), dir_end;
 
     std::copy_if(dir_begin, dir_end, std::back_inserter(files),
-        [ext](const bfs::directory_entry &entry) {
+        [](const bfs::directory_entry &entry) {
             const auto fname = entry.path().filename().string();
-            return (fname.find("libemel") != std::string::npos)
-                && (fname.rfind(ext) != std::string::npos);
+            return ((fname.find("libemel") != std::string::npos)
+                && (fname.rfind(dll::shared_library::suffix().string()) != std::string::npos));
         });
 
     return files;
-}
-
-static plugin::library_ptr try_load(const bfs::directory_entry &file,
-        const char *instance_sym, const char *name_sym, const char *version_sym)
-{
-    plugin::library_ptr ret(new plugin::library, plugin::library_deleter());
-
-    ret->handle = ::dlopen(file.path().filename().c_str(), RTLD_LAZY);
-    ret->instance_func = reinterpret_cast<decltype(ret->instance_func)>(
-        ::dlsym(ret->handle, instance_sym));
-    ret->name_func = reinterpret_cast<decltype(ret->name_func)>(
-        ::dlsym(ret->handle, name_sym));
-    ret->version_func = reinterpret_cast<decltype(ret->version_func)>(
-        ::dlsym(ret->handle, version_sym));
-
-    if(!ret->handle || !ret->instance_func
-        || !ret->name_func || !ret->version_func)
-        ret.reset();
-
-    return ret;
 }
 
 static plugin::version parse_version(const std::string &str)
@@ -118,10 +112,8 @@ static plugin::version parse_version(const std::string &str)
     return ret;
 }
 
-plugin::plugin(const char *instance_sym, const char *name_sym,
-               const char *version_sym, const std::string &default_dir)
-    : instance_sym(instance_sym), name_sym(name_sym)
-    , version_sym(version_sym), default_dir(default_dir)
+plugin::plugin(const char *type_name, const std::string &default_dir)
+    : type_name(type_name), default_dir(default_dir)
 {
 }
 
@@ -134,11 +126,30 @@ std::size_t plugin::load_dir(const std::string &dir_name)
         std::vector<bfs::directory_entry> files = find_libs(path);
 
         for(const bfs::directory_entry &file : files) {
-            plugin::library_ptr ptr = try_load(file, instance_sym, name_sym, version_sym);
-            if(!ptr)
+            library_ptr lib = std::make_shared<dll::shared_library>(file.path());
+            if (!lib->has("emel_plugin_type") && !lib->has("emel_plugin_name")
+                    && !lib->has("emel_plugin_version") && !lib->has("emel_plugin_instance"))
+                // no such symbol
                 continue;
-            instances.emplace(parse_version(ptr->version_func()), ptr);
-            names_map.emplace(ptr->name_func(), ptr);
+
+            auto type = lib->get_alias<const char *>("emel_plugin_type");
+            auto name = lib->get_alias<const char *>("emel_plugin_name");
+            auto version = lib->get_alias<const char *>("emel_plugin_version");
+
+            std::unique_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+            auto it = g_libs_map.find(type);
+
+            if(g_libs_map.end() == it) {
+                lib_entry le;
+                le.instances.emplace(parse_version(version), lib);
+                le.names_map.emplace(name, std::move(lib));
+                g_libs_map.emplace(type, std::move(le));
+
+            } else {
+                it->second.instances.emplace(parse_version(version), lib);
+                it->second.names_map.emplace(name, std::move(lib));
+            }
+
             ++ret;
         }
     }
@@ -149,28 +160,39 @@ std::size_t plugin::load_dir(const std::string &dir_name)
 std::pair<plugin::version, void *>
 plugin::load_name(const std::string &name) const
 {
-    auto iter = names_map.find(name);
-    if(names_map.end() == iter)
+    std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+
+    lib_entry &le = g_libs_map.at(type_name);
+    auto it = le.names_map.find(name);
+
+    if(le.names_map.end() == it)
         return std::make_pair<plugin::version>({0, 0, 0}, nullptr);
 
-    return std::make_pair(parse_version(iter->second->version_func()),
-                          iter->second->instance_func());
+    auto &lib = it->second;
+    auto version = lib->get_alias<const char *>("emel_plugin_version");
+    auto instance = lib->get_alias<void *()>("emel_plugin_instance");
+    return std::make_pair(parse_version(version), instance());
 }
 
 std::size_t plugin::names_count(const std::string &name) const
 {
-    return names_map.count(name);
+    std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+    return g_libs_map.at(type_name).names_map.count(name);
 }
 
 std::vector<std::string> plugin::names() const
 {
     std::set<std::string> set;
 
-    std::transform(names_map.cbegin(), names_map.cend(),
-                   std::inserter(set, set.begin()),
-        [](const std::pair<std::string, library_ptr> &entry) {
-            return entry.first;
-        });
+    {
+        std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+        lib_entry &le = g_libs_map.at(type_name);
+        std::transform(le.names_map.cbegin(),
+                le.names_map.cend(), std::inserter(set, set.begin()),
+            [](const std::pair<std::string, library_ptr> &entry) {
+                return entry.first;
+            });
+    }
 
     std::vector<std::string> ret;
     ret.reserve(set.size());
@@ -181,28 +203,38 @@ std::vector<std::string> plugin::names() const
 std::pair<std::string, void *>
 plugin::load_version(plugin::version ver) const
 {
-    auto iter = instances.find(ver);
-    if(instances.end() == iter)
-        return std::make_pair<std::string>({}, nullptr);
+    std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
 
-    return std::make_pair(iter->second->name_func(),
-                          iter->second->instance_func());
+    lib_entry &le = g_libs_map.at(type_name);
+    auto it = le.instances.find(ver);
+    if(le.instances.end() == it)
+        return std::make_pair<std::string>({ }, nullptr);
+
+    auto &lib = it->second;
+    auto name = lib->get_alias<const char *>("emel_plugin_name");
+    auto instance = lib->get_alias<void *()>("emel_plugin_instance");
+    return std::make_pair(name, instance());
 }
 
 std::size_t plugin::versions_count(plugin::version ver) const
 {
-    return instances.count(ver);
+    std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+    return g_libs_map.at(type_name).instances.count(ver);
 }
 
 std::vector<plugin::version> plugin::versions() const
 {
     std::set<version, version_compare> set;
 
-    std::transform(instances.cbegin(), instances.cend(),
-                   std::inserter(set, set.begin()),
-        [](const std::pair<version, library_ptr> &entry) {
-            return entry.first;
-        });
+    {
+        std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+        lib_entry &le = g_libs_map.at(type_name);
+        std::transform(le.instances.cbegin(),
+                le.instances.cend(), std::inserter(set, set.begin()),
+            [](const std::pair<version, library_ptr> &entry) {
+                return entry.first;
+            });
+    }
 
     std::vector<version> ret;
     ret.reserve(set.size());
@@ -210,7 +242,6 @@ std::vector<plugin::version> plugin::versions() const
     return ret;
 }
 
-typed_plugin<parser> frontend("emel_frontend_instance",
-    "emel_frontend_name", "emel_frontend_version");
+typed_plugin<parser> frontend("frontend");
 
 } // namespace emel

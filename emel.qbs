@@ -26,7 +26,7 @@ Project {
         'src/tests.qbs'
     ]
 
-    property path boostPath: '../../boost_1_58_0'
+    property path boostPath: '../../boost_1_59_0'
     readonly property path boostLibsPath: boostPath + '/stage/lib'
     property path objcopyPath: '/usr/bin/objcopy'
     property path stripPath: '/usr/bin/strip'

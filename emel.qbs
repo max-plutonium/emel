@@ -28,6 +28,7 @@ Project {
 
     property path boostPath: '../../boost_1_59_0'
     readonly property path boostLibsPath: boostPath + '/stage/lib'
+    readonly property path boostDLLPath: '../src/boost-dll/include'
     property path objcopyPath: '/usr/bin/objcopy'
     property path stripPath: '/usr/bin/strip'
 }

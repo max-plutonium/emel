@@ -26,8 +26,10 @@ DynamicLibrary {
     Depends { name: 'emel' }
 
     cpp.cxxLanguageVersion: 'c++14'
-    cpp.systemIncludePaths: [project.boostPath]
+    cpp.systemIncludePaths: [project.boostPath, project.boostDLLPath]
+    cpp.libraryPaths: [project.boostLibsPath]
     cpp.cxxStandardLibrary: 'libstdc++'
+    cpp.dynamicLibraries: ['boost_system']
     cpp.defines: [
         'EMEL_EXPORT=__attribute__((visibility ("default")))',
         'EMEL_FRONTEND_VERSION="' + version + '"'
@@ -40,6 +42,7 @@ DynamicLibrary {
         cpp.warningLevel: 'all'
         //cpp.separateDebugInformation: true
         targetName: name + '-debug'
+        cpp.visibility: 'hidden'
     }
 
     Properties {

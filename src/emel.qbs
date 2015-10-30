@@ -25,11 +25,11 @@ DynamicLibrary {
     Depends { name: 'cpp' }
 
     cpp.cxxLanguageVersion: 'c++14'
-    cpp.systemIncludePaths: [project.boostPath]
+    cpp.systemIncludePaths: [project.boostPath, project.boostDLLPath]
     cpp.libraryPaths: [project.boostLibsPath]
     cpp.cxxStandardLibrary: 'libstdc++'
     cpp.dynamicLibraries: [
-        'dl', 'boost_system', 'boost_filesystem',
+        'pthread', 'dl', 'boost_system', 'boost_filesystem',
         'boost_locale'
     ]
     cpp.defines: [

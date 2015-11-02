@@ -22,11 +22,6 @@
 
 #include "parser.h"
 
-#include <memory>
-#include <map>
-#include <unordered_map>
-#include <vector>
-
 namespace emel EMEL_EXPORT {
 
 class plugin

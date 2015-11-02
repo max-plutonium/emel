@@ -24,6 +24,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <map>
 #include <set>
 #include <shared_mutex>
 #include <unordered_map>

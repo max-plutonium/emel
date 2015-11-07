@@ -186,27 +186,27 @@ struct call
     node chain_call;
 };
 
-std::ostream &operator <<(std::ostream &os, const class_ &arg);
-std::ostream &operator <<(std::ostream &os, const param &arg);
-std::ostream &operator <<(std::ostream &os, const std::vector<param> &arg);
-std::ostream &operator <<(std::ostream &os, const method &arg);
-std::ostream &operator <<(std::ostream &os, const std::vector<method> &arg);
-std::ostream &operator <<(std::ostream &os, const while_ &arg);
-std::ostream &operator <<(std::ostream &os, const for_ &arg);
-std::ostream &operator <<(std::ostream &os, const if_ &arg);
-std::ostream &operator <<(std::ostream &os, const case_ &arg);
-std::ostream &operator <<(std::ostream &os, const switch_ &arg);
-std::ostream &operator <<(std::ostream &os, const continue_ &arg);
-std::ostream &operator <<(std::ostream &os, const break_ &arg);
-std::ostream &operator <<(std::ostream &os, const return_ &arg);
-std::ostream &operator <<(std::ostream &os, const try_ &arg);
-std::ostream &operator <<(std::ostream &os, const assign &arg);
-std::ostream &operator <<(std::ostream &os, const ternary &arg);
-std::ostream &operator <<(std::ostream &os, const bin_op &arg);
-std::ostream &operator <<(std::ostream &os, const variable &arg);
-std::ostream &operator <<(std::ostream &os, const un_op &arg);
-std::ostream &operator <<(std::ostream &os, const call &arg);
-std::ostream &operator <<(std::ostream &os, const std::vector<ast::node> &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const class_ &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const param &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const std::vector<param> &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const method &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const std::vector<method> &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const while_ &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const for_ &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const if_ &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const case_ &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const switch_ &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const continue_ &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const break_ &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const return_ &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const try_ &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const assign &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const ternary &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const bin_op &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const variable &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const un_op &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const call &arg);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const std::vector<ast::node> &arg);
 
 } // namespace ast
 

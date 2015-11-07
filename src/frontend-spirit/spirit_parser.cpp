@@ -36,14 +36,14 @@ bool spirit_parser::parse(source_iter first, source_iter last,
         r = qi::phrase_parse(pos_begin, pos_end, g, s, ret);
 
     } catch(const std::runtime_error &e) {
-        std::string rest(pos_begin, pos_end);
+//        std::string rest(pos_begin, pos_end);
 // TODO        std::cerr << "Parsing failed\n" << "stopped at: \""
 //                  << rest << "\"\n";
         return false;
     }
 
     if(pos_begin != pos_end) {
-        std::string rest(pos_begin, pos_end);
+//        std::string rest(pos_begin, pos_end);
 // TODO        std::cerr << "Parsing failed\n" << "stopped at: \""
 //                  << rest << "\"\n";
         return false;

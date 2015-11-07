@@ -19,7 +19,24 @@
  */
 #include "ast.h"
 
+#include <mutex>
+#include <unordered_map>
+
 namespace emel { namespace ast {
+
+static std::mutex s_pos_lock;
+static std::unordered_map<std::string, std::shared_ptr<std::string>> s_pos_map;
+
+position::position(const std::string &file, std::size_t line, std::size_t column)
+    : file(), line(line), column(column)
+{
+    std::lock_guard<decltype(s_pos_lock)> lk(s_pos_lock);
+    auto pair = s_pos_map.emplace(file, nullptr);
+    if(pair.second)
+        this->file = pair.first->second = std::make_shared<std::string>(file);
+    else
+        this->file = pair.first->second;
+}
 
 std::ostream &operator <<(std::ostream &os, const class_ &arg)
 {

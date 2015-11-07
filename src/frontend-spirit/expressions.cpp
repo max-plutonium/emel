@@ -84,6 +84,7 @@ expressions::expressions()
         >> assign >> expr[ at_c<1>(_val) = std::move(_1) ];
 
     assignment.name("assignment");
+    qi::on_success(assignment, ph(_val, _1, _3));
     qi::on_error<qi::fail>(assignment, eh(_1, _3, _4));
 
     ternary = log_or[ _val = std::move(_1) ]
@@ -91,6 +92,7 @@ expressions::expressions()
            [ _val = construct<ast::ternary>(std::move(_val), std::move(_a), std::move(_1)) ]);
 
     ternary.name("ternary");
+    qi::on_success(ternary, ph(_val, _1, _3));
     qi::on_error<qi::fail>(ternary, eh(_1, _3, _4));
 
     log_or = log_xor[ _val = std::move(_1) ] >> *(or_ > log_xor
@@ -120,18 +122,31 @@ expressions::expressions()
            > factor[ _val = construct<ast::bin_op>(_a, std::move(_val), std::move(_1)) ]);
 
     log_or.name("log or");
+    qi::on_success(log_or, ph(_val, _1, _3));
     qi::on_error<qi::fail>(log_or, eh(_1, _3, _4));
+
     log_xor.name("log xor");
+    qi::on_success(log_xor, ph(_val, _1, _3));
     qi::on_error<qi::fail>(log_xor, eh(_1, _3, _4));
+
     log_and.name("log and");
+    qi::on_success(log_and, ph(_val, _1, _3));
     qi::on_error<qi::fail>(log_and, eh(_1, _3, _4));
+
     rel_eq.name("rel eq");
+    qi::on_success(rel_eq, ph(_val, _1, _3));
     qi::on_error<qi::fail>(rel_eq, eh(_1, _3, _4));
+
     rel_order.name("rel order");
+    qi::on_success(rel_order, ph(_val, _1, _3));
     qi::on_error<qi::fail>(rel_order, eh(_1, _3, _4));
+
     addition.name("addition");
+    qi::on_success(addition, ph(_val, _1, _3));
     qi::on_error<qi::fail>(addition, eh(_1, _3, _4));
+
     multiplication.name("multiplication");
+    qi::on_success(multiplication, ph(_val, _1, _3));
     qi::on_error<qi::fail>(multiplication, eh(_1, _3, _4));
 
     factor %= value | call | var_ref | (left_paren > expr > right_paren)
@@ -151,6 +166,7 @@ expressions::expressions()
             > factor[ at_c<1>(_val) = std::move(_1) ];
 
     unary.name("unary op");
+    qi::on_success(unary, ph(_val, _1, _3));
     qi::on_error<qi::fail>(unary, eh(_1, _3, _4));
 
     // TODO разделить пути поиска идентификатора на переменная.ид и класс.ид
@@ -162,6 +178,7 @@ expressions::expressions()
         >> right_paren >> *(dot > call[ at_c<2>(_val) = std::move(_1) ]);
 
     call.name("call");
+    qi::on_success(call, ph(_val, _1, _3));
     qi::on_error<qi::fail>(call, eh(_1, _3, _4));
 }
 

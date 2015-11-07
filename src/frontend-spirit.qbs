@@ -59,8 +59,6 @@ DynamicLibrary {
     }
 
     files: [
-        'frontend-spirit/spirit_parser.cpp',
-        'frontend-spirit/spirit_parser.h',
         'frontend-spirit/error_handler.cpp',
         'frontend-spirit/error_handler.h',
         'frontend-spirit/expressions.cpp',
@@ -71,8 +69,12 @@ DynamicLibrary {
         'frontend-spirit/keywords.h',
         'frontend-spirit/lex.cpp',
         'frontend-spirit/lex.h',
+        'frontend-spirit/position_handler.cpp',
+        'frontend-spirit/position_handler.h',
         'frontend-spirit/skipper.cpp',
         'frontend-spirit/skipper.h',
+        'frontend-spirit/spirit_parser.cpp',
+        'frontend-spirit/spirit_parser.h',
         'frontend-spirit/values.cpp',
         'frontend-spirit/values.h'
     ]

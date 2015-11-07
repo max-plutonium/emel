@@ -111,11 +111,13 @@ grammar::grammar() : grammar::base_type(root, "root")
         > end_class;
 
     class_def.name("class def");
+    qi::on_success(class_def, ph(_val, _1, _3));
 // TODO qi::on_error<qi::fail>(class_def, eh(_1, _3, _4));
 
     param_def = id[ at_c<0>(_val) = std::move(_1) ] >> -byref[ at_c<1>(_val) = true ];
 
     param_def.name("param def");
+    qi::on_success(param_def, ph(_val, _1, _3));
     qi::on_error<qi::fail>(param_def, eh(_1, _3, _4));
 
     method_def = (id[ at_c<0>(_val) = std::move(_1) ]
@@ -126,6 +128,7 @@ grammar::grammar() : grammar::base_type(root, "root")
         > right_brace;
 
     method_def.name("method def");
+    qi::on_success(method_def, ph(_val, _1, _3));
     qi::on_error<qi::fail>(method_def, eh(_1, _3, _4));
 
     exprs %= +block_expr;
@@ -159,6 +162,7 @@ grammar::grammar() : grammar::base_type(root, "root")
         > catch_;
 
     try_block.name("try block");
+    qi::on_success(try_block, ph(_val, _1, _3));
     qi::on_error<qi::fail>(try_block, eh(_1, _3, _4));
 
     case_branch = (+(case_ > value[ push_back(at_c<0>(_val), std::move(_1)) ] > colon)
@@ -166,6 +170,7 @@ grammar::grammar() : grammar::base_type(root, "root")
        >> -exprs[ at_c<1>(_val) = std::move(_1) ];
 
     case_branch.name("case branch");
+    qi::on_success(case_branch, ph(_val, _1, _3));
     qi::on_error<qi::fail>(case_branch, eh(_1, _3, _4));
 
     switch_branch = switch_ > left_paren
@@ -175,6 +180,7 @@ grammar::grammar() : grammar::base_type(root, "root")
         > end_switch;
 
     switch_branch.name("switch branch");
+    qi::on_success(switch_branch, ph(_val, _1, _3));
     qi::on_error<qi::fail>(switch_branch, eh(_1, _3, _4));
 
     if_branch = if_ > left_paren
@@ -185,6 +191,7 @@ grammar::grammar() : grammar::base_type(root, "root")
         > end_if;
 
     if_branch.name("if branch");
+    qi::on_success(if_branch, ph(_val, _1, _3));
     qi::on_error<qi::fail>(if_branch, eh(_1, _3, _4));
 
     for_loop = for_ > left_paren
@@ -196,6 +203,7 @@ grammar::grammar() : grammar::base_type(root, "root")
         > end_for;
 
     for_loop.name("for loop");
+    qi::on_success(for_loop, ph(_val, _1, _3));
     qi::on_error<qi::fail>(for_loop, eh(_1, _3, _4));
 
     while_loop = while_ > left_paren
@@ -205,15 +213,20 @@ grammar::grammar() : grammar::base_type(root, "root")
         > end_while;
 
     while_loop.name("while loop");
+    qi::on_success(while_loop, ph(_val, _1, _3));
     qi::on_error<qi::fail>(while_loop, eh(_1, _3, _4));
 
     continue_branch = continue_;
-    break_branch = break_;
-    return_branch = return_ >> -expr[ at_c<0>(_val) = std::move(_1) ];
-
     continue_branch.name("continue branch");
+    qi::on_success(continue_branch, ph(_val, _1, _3));
+
+    break_branch = break_;
     break_branch.name("break branch");
+    qi::on_success(break_branch, ph(_val, _1, _3));
+
+    return_branch = return_ >> -expr[ at_c<0>(_val) = std::move(_1) ];
     return_branch.name("return branch");
+    qi::on_success(return_branch, ph(_val, _1, _3));
 }
 
 } // namespace spirit_frontend

@@ -24,6 +24,7 @@
 #include "keywords.h"
 #include "values.h"
 #include "error_handler.h"
+#include "position_handler.h"
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/phoenix/function.hpp>
@@ -46,6 +47,7 @@ protected:
     qi::rule<iterator_type, ast::un_op(), skipper> unary;
     qi::rule<iterator_type, ast::call(), skipper> call;
 
+    boost::phoenix::function<position_handler> ph;
     boost::phoenix::function<error_handler> eh;
 
 public:

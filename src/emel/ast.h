@@ -20,16 +20,16 @@
 #ifndef AST_H
 #define AST_H
 
-#include "opcodes.h"
+#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
+#define BOOST_MPL_LIMIT_LIST_SIZE 30
+#define BOOST_MPL_LIMIT_VECTOR_SIZE 30
 
 #include <memory>
 #include <boost/variant/recursive_variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 #include <boost/variant/get.hpp>
 
-namespace emel EMEL_EXPORT {
-
-namespace ast EMEL_EXPORT {
+namespace emel EMEL_EXPORT { namespace ast EMEL_EXPORT {
 
 struct class_;
 struct param;
@@ -49,6 +49,26 @@ struct bin_op;
 struct variable;
 struct un_op;
 struct call;
+
+enum class op_kind {
+    or_ = 201, xor_, and_, eq, ne, lt, gt, lte, gte, add, sub, mul, div,
+    not_ = 101, neg
+};
+
+struct position {
+    std::shared_ptr<std::string> file;
+    std::size_t line, column;
+
+    position() = default;
+    position(const std::string &file, std::size_t line, std::size_t column = 0);
+};
+
+struct position_node {
+    position first, last;
+    void set_position(position first, position last) {
+        this->first = std::move(first); this->last = std::move(last);
+    }
+};
 
 using node = boost::make_recursive_variant<
         empty_value_type, std::string, double, bool,
@@ -71,20 +91,20 @@ using node = boost::make_recursive_variant<
         boost::recursive_wrapper<call>
     >::type;
 
-struct class_
+struct class_ : position_node
 {
     std::string name, base_name;
     std::vector<node> exprs;
     std::vector<method> methods;
 };
 
-struct param
+struct param : position_node
 {
     std::string name;
     bool by_ref = false;
 };
 
-struct method
+struct method : position_node
 {
     std::string name;
     std::vector<param> params;
@@ -97,58 +117,58 @@ struct method
     { }
 };
 
-struct while_
+struct while_ : position_node
 {
     node cond;
     std::vector<node> exprs;
 };
 
-struct for_
+struct for_ : position_node
 {
     node init, cond, step;
     std::vector<node> exprs;
 };
 
-struct if_
+struct if_ : position_node
 {
     node cond;
     std::vector<node> then_exprs, else_exprs;
 };
 
-struct case_
+struct case_ : position_node
 {
     std::vector<node> match_values;
     std::vector<node> exprs;
 };
 
-struct switch_
+struct switch_ : position_node
 {
     node cond;
     std::vector<node> blocks;
 };
 
-struct continue_ { };
-struct break_ { };
+struct continue_ : position_node { };
+struct break_ : position_node { };
 
-struct return_
+struct return_ : position_node
 {
     node e;
 };
 
-struct try_
+struct try_ : position_node
 {
     std::string var_name;
     std::vector<node> exprs;
 };
 
-struct assign
+struct assign : position_node
 {
     std::string var_name;
     node rhs;
     bool as_external = false;
 };
 
-struct ternary
+struct ternary : position_node
 {
     node cond, first, second;
 
@@ -157,7 +177,7 @@ struct ternary
     { }
 };
 
-struct bin_op
+struct bin_op : position_node
 {
     op_kind k;
     node lhs, rhs;
@@ -167,20 +187,20 @@ struct bin_op
     { }
 };
 
-struct variable
+struct variable : position_node
 {
     std::string name;
     bool ref_of = false;
     bool val_of = false;
 };
 
-struct un_op
+struct un_op : position_node
 {
     op_kind k;
     node rhs;
 };
 
-struct call
+struct call : position_node
 {
     std::vector<node> names, args;
     node chain_call;

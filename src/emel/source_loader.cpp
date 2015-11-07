@@ -138,8 +138,7 @@ std::vector<std::string> source_loader::names() const
 
 std::string source_loader::read_source(const std::string &class_name, const char *locale_name) const
 {
-    boost::locale::generator generator;
-    std::locale loc = generator(locale_name);
+    static boost::locale::generator generator;
 
     const auto path = get_path_for(class_name);
     if(path.empty()) {
@@ -161,7 +160,11 @@ std::string source_loader::read_source(const std::string &class_name, const char
         std::istreambuf_iterator<char>() };
 
     is.close();
-    return boost::locale::conv::to_utf<char>(ret, loc);
+
+    if(std::strstr(locale_name, "utf-8") != nullptr)
+        return ret;
+    else
+        return boost::locale::conv::to_utf<char>(ret, generator(locale_name));
 }
 
 } // namespace emel

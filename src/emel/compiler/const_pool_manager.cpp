@@ -19,7 +19,7 @@
  */
 #include "const_pool_manager.h"
 
-namespace emel { namespace bytecode {
+namespace emel { namespace compiler {
 
 const_pool_manager::const_pool_manager(std::vector<value_type> &cp)
     : pool_index(1), const_pool(cp)
@@ -56,12 +56,12 @@ std::size_t const_pool_manager::store_const(bool value)
 {
     auto &opt = value ? opt_true : opt_false;
     if(!opt) {
-        opt = std::experimental::make_optional(pool_index++);
+        opt = boost::make_optional(pool_index++);
         const_pool.emplace_back(value);
     }
     return opt.value();
 }
 
-} // namespace bytecode
+} // namespace compiler
 
 } // namespace emel

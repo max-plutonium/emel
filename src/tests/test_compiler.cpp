@@ -19,7 +19,7 @@
  */
 #include <gmock/gmock.h>
 
-#include "../emel/compiler.h"
+#include "../emel/compiler/compiler.h"
 
 using namespace emel;
 using namespace std::literals;
@@ -50,7 +50,7 @@ TEST(Compiler, SortClasses)
     cl.base_name = "";
     classes.push_back(cl);
 
-    auto ret = compiler::topological_sort(classes);
+    auto ret = compiler::compiler::topological_sort(classes);
     std::vector<std::string> names;
     names.reserve(ret.size());
 
@@ -74,10 +74,10 @@ TEST(Compiler, EmptyObjectClass)
     class_.name = "Object";
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -120,10 +120,10 @@ TEST(Compiler, EmptyClass)
 
     {
         auto module = std::make_shared<semantic::module>();
-        symbol_table syms;
+        compiler::symbol_table syms;
         semantic::graph_type graph;
         std::vector<value_type> const_pool;
-        codegen c("test", module, syms, graph, const_pool);
+        compiler::codegen c("test", module, syms, graph, const_pool);
 
         ASSERT_THROW(c(class_), std::runtime_error);
     }
@@ -132,10 +132,10 @@ TEST(Compiler, EmptyClass)
     obj_class_.name = "Object";
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(obj_class_);
     c(class_);
     auto res = c.get_result();
@@ -194,10 +194,10 @@ TEST(Compiler, EmptyClassWithBaseClass)
     base_class_.name = "BaseName";
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(obj_class_);
     c(base_class_);
     c(class_);
@@ -260,10 +260,10 @@ TEST(Compiler, Constants)
     class_.exprs.emplace_back(false);
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -321,10 +321,10 @@ TEST(Compiler, AssignsInCtor)
     class_.exprs.emplace_back(ast::assign { "ReusedName", 15.0 });
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -400,10 +400,10 @@ TEST(Compiler, UnaryOp)
     class_.exprs.emplace_back(ast::un_op { op_kind::neg, 1.23 });
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -459,10 +459,10 @@ TEST(Compiler, BinaryOp)
     });
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -525,10 +525,10 @@ TEST(Compiler, TernaryOp)
     });
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -608,10 +608,10 @@ TEST(Compiler, IfBlock)
     });
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -699,10 +699,10 @@ TEST(Compiler, ForLoop)
     class_.exprs.emplace_back(ast::for_ { empty_value, true, empty_value, { 1.23 } });
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -854,10 +854,10 @@ TEST(Compiler, WhileLoop)
     class_.exprs.emplace_back(ast::while_ { false, { -1.23 } });
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -960,10 +960,10 @@ TEST(Compiler, SwitchBlockWithNumbers)
     }});
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -1124,10 +1124,10 @@ TEST(Compiler, SwitchBlockWithStrings)
     }});
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -1273,10 +1273,10 @@ TEST(Compiler, SwitchBlockWithBooleans)
     }});
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -1432,10 +1432,10 @@ TEST(Compiler, SwitchBlockWithDefaults)
     }});
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 
@@ -1706,10 +1706,10 @@ TEST(Compiler, SwitchBlockWithMixedCases)
     }});
 
     auto module = std::make_shared<semantic::module>();
-    symbol_table syms;
+    compiler::symbol_table syms;
     semantic::graph_type graph;
     std::vector<value_type> const_pool;
-    codegen c("test", module, syms, graph, const_pool);
+    compiler::codegen c("test", module, syms, graph, const_pool);
     c(class_);
     auto res = c.get_result();
 

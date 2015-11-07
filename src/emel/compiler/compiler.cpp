@@ -21,7 +21,7 @@
 
 #include <boost/graph/topological_sort.hpp>
 
-namespace emel {
+namespace emel { namespace compiler {
 
 /*static*/
 std::vector<ast::class_>
@@ -83,5 +83,7 @@ compiler::topological_sort(std::vector<ast::class_> &classes)
     classes.erase(classes.begin(), classes.end());
     return result;
 }
+
+} // namespace compiler
 
 } // namespace emel

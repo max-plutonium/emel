@@ -23,17 +23,17 @@
 #include "../opcodes.h"
 
 #include <unordered_map>
+#include <boost/optional.hpp>
 #include <string>
 #include <vector>
-#include <experimental/optional>
 
-namespace emel { namespace bytecode {
+namespace emel { namespace compiler {
 
 class const_pool_manager
 {
     std::unordered_map<std::string, std::size_t> string_pool;
     std::unordered_map<double, std::size_t> number_pool;
-    std::experimental::optional<std::size_t> opt_true, opt_false;
+    boost::optional<std::size_t> opt_true, opt_false;
     std::size_t pool_index;
 
 protected:
@@ -47,7 +47,7 @@ public:
     std::size_t store_const(bool value);
 };
 
-} // namespace bytecode
+} // namespace compiler
 
 } // namespace emel
 

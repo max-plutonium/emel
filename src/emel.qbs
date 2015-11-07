@@ -73,10 +73,13 @@ DynamicLibrary {
 
     files: [
         'emel/ast.cpp',
-        'emel/bytecode/const_pool_manager.cpp',
-        'emel/bytecode/const_pool_manager.h',
-        'emel/compiler.cpp',
-        'emel/compiler.h',
+        'emel/compiler/codegen.cpp',
+        'emel/compiler/codegen.h',
+        'emel/compiler/compiler.cpp',
+        'emel/compiler/compiler.h',
+        'emel/compiler/const_pool_manager.cpp',
+        'emel/compiler/const_pool_manager.h',
+        'emel/compiler/symbol_table.h',
         'emel/opcodes.cpp',
         'emel/opcodes.h',
         'emel/parser.cpp',
@@ -85,7 +88,6 @@ DynamicLibrary {
         'emel/semantic.h',
         'emel/source_loader.cpp',
         'emel/source_loader.h',
-        'emel/symbol_table.h',
         'emel/tokens.cpp',
         'emel/tokens.h'
     ]

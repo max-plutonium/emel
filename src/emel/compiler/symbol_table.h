@@ -29,7 +29,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace emel {
+namespace emel { namespace compiler {
 
 template <typename Tp, typename Enum, std::size_t Size,
     typename = typename std::enable_if<std::is_integral<Enum>::value
@@ -188,6 +188,8 @@ public:
         return entries[static_cast<std::size_t>(type)].index_list.size();
     }
 };
+
+} // namespace compiler
 
 } // namespace emel
 

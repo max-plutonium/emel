@@ -76,18 +76,17 @@ enum class op_kind {
     or_ = 201, xor_, and_, eq, ne, lt, gt, lte, gte, add, sub, mul, div
 };
 
-std::pair<opcode, std::uint32_t> insn_decode(insn_type insn);
-
-insn_type insn_encode(opcode op, std::uint32_t idx = 0);
-insn_type insn_encode(opcode op, op_kind k);
+EMEL_EXPORT std::pair<opcode, std::uint32_t> insn_decode(insn_type insn);
+EMEL_EXPORT insn_type insn_encode(opcode op, std::uint32_t idx = 0);
+EMEL_EXPORT insn_type insn_encode(opcode op, op_kind k);
 
 const char *opcode_name(opcode op);
 const char *opkind_name(op_kind op);
 
 std::string insn_to_string(insn_type insn);
 
-std::ostream &operator <<(std::ostream &os, empty_value_type);
-std::ostream &operator <<(std::ostream &os, const insn_array &);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, empty_value_type);
+EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const insn_array &);
 
 } // namespace emel
 

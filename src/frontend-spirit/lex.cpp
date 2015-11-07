@@ -19,6 +19,8 @@
  */
 #include "lex.h"
 
+#include <boost/convert.hpp>
+#include <boost/convert/spirit.hpp>
 #include <boost/phoenix/object/construct.hpp>
 #include <boost/phoenix/bind/bind_function.hpp>
 
@@ -27,7 +29,8 @@ namespace emel { namespace spirit_frontend {
 using boost::phoenix::construct;
 
 static double get_double(pos_iter f, pos_iter l) {
-    return boost::lexical_cast<double>(std::string(f, l));
+    static boost::cnv::spirit converter;
+    return boost::convert<double>(std::string(f, l), converter).value();
 }
 
 lexer::lexer()

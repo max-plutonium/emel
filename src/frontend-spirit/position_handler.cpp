@@ -33,7 +33,7 @@ void position_handler::operator ()(ast::position_node &node, pos_iter pos1, pos_
 
 void position_handler::operator ()(ast::node &node, pos_iter pos1, pos_iter pos2) const
 {
-    if(node.which() > 2)
+    if(node.which() > 3)
         operator ()(boost::polymorphic_get<ast::position_node>(node), pos1, pos2);
 }
 

@@ -159,6 +159,7 @@ expressions::expressions()
               >> id[ at_c<0>(_val) = std::move(_1) ];
 
     var_ref.name("var ref");
+    qi::on_success(var_ref, ph(_val, _1, _3));
     qi::on_error<qi::fail>(var_ref, eh(_1, _3, _4));
 
     unary = (not_[ at_c<0>(_val) = op_kind::not_ ]

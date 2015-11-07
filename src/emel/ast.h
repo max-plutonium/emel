@@ -60,11 +60,17 @@ struct position {
     std::size_t line, column;
 
     position() = default;
+    position(const position &) = default;
+    position &operator =(const position &) = default;
+    position(position&&) = default;
+    position &operator =(position&&) = default;
+
     position(const std::string &file, std::size_t line, std::size_t column = 0);
 };
 
 struct position_node {
     position first, last;
+
     void set_position(position first, position last) {
         this->first = std::move(first); this->last = std::move(last);
     }
@@ -121,30 +127,68 @@ struct while_ : position_node
 {
     node cond;
     std::vector<node> exprs;
+
+    while_() = default;
+
+    while_(node cond, std::vector<node> exprs)
+        : cond(std::move(cond))
+        , exprs(std::move(exprs))
+    { }
 };
 
 struct for_ : position_node
 {
     node init, cond, step;
     std::vector<node> exprs;
+
+    for_() = default;
+
+    for_(node init, node cond, node step, std::vector<node> exprs)
+        : init(std::move(init))
+        , cond(std::move(cond))
+        , step(std::move(step))
+        , exprs(std::move(exprs))
+    { }
 };
 
 struct if_ : position_node
 {
     node cond;
     std::vector<node> then_exprs, else_exprs;
+
+    if_() = default;
+
+    if_(node cond, std::vector<node> then_exprs, std::vector<node> else_exprs)
+        : cond(std::move(cond))
+        , then_exprs(std::move(then_exprs))
+        , else_exprs(std::move(else_exprs))
+    { }
 };
 
 struct case_ : position_node
 {
     std::vector<node> match_values;
     std::vector<node> exprs;
+
+    case_() = default;
+
+    case_(std::vector<node> match_values, std::vector<node> exprs)
+        : match_values(std::move(match_values))
+        , exprs(std::move(exprs))
+    { }
 };
 
 struct switch_ : position_node
 {
     node cond;
     std::vector<node> blocks;
+
+    switch_() = default;
+
+    switch_(node cond, std::vector<node> blocks)
+        : cond(std::move(cond))
+        , blocks(std::move(blocks))
+    { }
 };
 
 struct continue_ : position_node { };
@@ -166,6 +210,11 @@ struct assign : position_node
     std::string var_name;
     node rhs;
     bool as_external = false;
+
+    assign() = default;
+
+    assign(const std::string &name, node rhs)
+        : var_name(name), rhs(std::move(rhs)) { }
 };
 
 struct ternary : position_node
@@ -198,6 +247,11 @@ struct un_op : position_node
 {
     op_kind k;
     node rhs;
+
+    un_op() = default;
+
+    un_op(op_kind k, node rhs)
+        : k(k), rhs(std::move(rhs)) { }
 };
 
 struct call : position_node

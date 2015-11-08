@@ -26,6 +26,8 @@ include_directories(SYSTEM ${GMOCK_PATH})
 
 set(SOURCES
     main.cpp
+    test_compiler.cpp
+    test_opcodes.cpp
     test_parser.cpp
     ${GMOCK_PATH}/gmock-gtest-all.cc
 )

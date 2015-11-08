@@ -29,22 +29,34 @@ find_package(Boost 1.59.0 REQUIRED system filesystem locale)
 
 set(PUBLIC_HEADERS
     ast.h
+    compiler/compiler.h
     parser.h
     plugins.h
 )
 
 set(HEADERS
     ast.h
+    compiler/codegen.h
+    compiler/compiler.h
+    compiler/const_pool_manager.h
+    compiler/symbol_table.h
+    opcodes.h
     parser.h
     plugins.h
+    semantic.h
     source_loader.h
     tokens.h
 )
 
 set(SOURCES
     ast.cpp
+    compiler/codegen.cpp
+    compiler/compiler.cpp
+    compiler/const_pool_manager.cpp
+    opcodes.cpp
     parser.cpp
     plugins.cpp
+    semantic.cpp
     source_loader.cpp
     tokens.cpp
 )

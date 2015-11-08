@@ -162,14 +162,16 @@ std::pair<plugin::version, void *>
 plugin::load_name(const std::string &name) const
 {
     std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
-
-    lib_entry &le = g_libs_map.at(type_name);
-    auto it = le.names_map.find(name);
-
-    if(le.names_map.end() == it)
+    auto it = g_libs_map.find(type_name);
+    if(g_libs_map.end() == it)
         return std::make_pair<plugin::version>({0, 0, 0}, nullptr);
 
-    auto &lib = it->second;
+    lib_entry &le = it->second;
+    auto it2 = le.names_map.find(name);
+    if(le.names_map.end() == it2)
+        return std::make_pair<plugin::version>({0, 0, 0}, nullptr);
+
+    auto &lib = it2->second;
     auto version = lib->get_alias<const char *>("emel_plugin_version");
     auto instance = lib->get_alias<void *()>("emel_plugin_instance");
     return std::make_pair(parse_version(version), instance());
@@ -178,16 +180,25 @@ plugin::load_name(const std::string &name) const
 std::size_t plugin::names_count(const std::string &name) const
 {
     std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+    auto it = g_libs_map.find(type_name);
+    if(g_libs_map.end() == it)
+        return 0;
+
     return g_libs_map.at(type_name).names_map.count(name);
 }
 
 std::vector<std::string> plugin::names() const
 {
+    std::vector<std::string> ret;
     std::set<std::string> set;
 
     {
         std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
-        lib_entry &le = g_libs_map.at(type_name);
+        auto it = g_libs_map.find(type_name);
+        if(g_libs_map.end() == it)
+            return ret;
+
+        lib_entry &le = it->second;
         std::transform(le.names_map.cbegin(),
                 le.names_map.cend(), std::inserter(set, set.begin()),
             [](const std::pair<std::string, library_ptr> &entry) {
@@ -195,7 +206,6 @@ std::vector<std::string> plugin::names() const
             });
     }
 
-    std::vector<std::string> ret;
     ret.reserve(set.size());
     std::copy(set.begin(), set.end(), std::back_inserter(ret));
     return ret;
@@ -205,13 +215,16 @@ std::pair<std::string, void *>
 plugin::load_version(plugin::version ver) const
 {
     std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+    auto it = g_libs_map.find(type_name);
+    if(g_libs_map.end() == it)
+        return std::make_pair(std::string(), nullptr);
 
-    lib_entry &le = g_libs_map.at(type_name);
-    auto it = le.instances.find(ver);
-    if(le.instances.end() == it)
-        return std::make_pair<std::string>({ }, nullptr);
+    lib_entry &le = it->second;
+    auto it2 = le.instances.find(ver);
+    if(le.instances.end() == it2)
+        return std::make_pair(std::string(), nullptr);
 
-    auto &lib = it->second;
+    auto &lib = it2->second;
     auto name = lib->get_alias<const char *>("emel_plugin_name");
     auto instance = lib->get_alias<void *()>("emel_plugin_instance");
     return std::make_pair(name, instance());
@@ -220,16 +233,25 @@ plugin::load_version(plugin::version ver) const
 std::size_t plugin::versions_count(plugin::version ver) const
 {
     std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
-    return g_libs_map.at(type_name).instances.count(ver);
+    auto it = g_libs_map.find(type_name);
+    if(g_libs_map.end() == it)
+        return 0;
+
+    return it->second.instances.count(ver);
 }
 
 std::vector<plugin::version> plugin::versions() const
 {
+    std::vector<version> ret;
     std::set<version, version_compare> set;
 
     {
         std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
-        lib_entry &le = g_libs_map.at(type_name);
+        auto it = g_libs_map.find(type_name);
+        if(g_libs_map.end() == it)
+            return ret;
+
+        lib_entry &le = it->second;
         std::transform(le.instances.cbegin(),
                 le.instances.cend(), std::inserter(set, set.begin()),
             [](const std::pair<version, library_ptr> &entry) {
@@ -237,7 +259,6 @@ std::vector<plugin::version> plugin::versions() const
             });
     }
 
-    std::vector<version> ret;
     ret.reserve(set.size());
     std::copy(set.begin(), set.end(), std::back_inserter(ret));
     return ret;

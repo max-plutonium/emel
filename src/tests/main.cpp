@@ -17,7 +17,7 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include <iostream>
+#include <cstdio>
 #include <gmock/gmock.h>
 
 int main(int argc, const char **argv)

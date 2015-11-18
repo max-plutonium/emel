@@ -55,7 +55,7 @@ TEST(Parser, ParseDir)
     std::vector<ast::node> ret;
 
     EXPECT_CALL(prsr, parse(_, _, EndsWith(".emel"), _)).WillRepeatedly(Return(true));
-    ret = prsr.parse_dir("test-data");
+    ret = prsr.parse_dir();
     EXPECT_FALSE(ret.empty());
 }
 

@@ -24,5 +24,9 @@ int main(int argc, const char **argv)
 {
     std::printf("emel gtest\n");
     testing::InitGoogleMock(&argc, const_cast<char **>(argv));
+
+    setenv("EMEL_HOME", "../../test-data", 1);
+    setenv("LD_LIBRARY_PATH", (std::string(getenv("LD_LIBRARY_PATH")) + ":../frontend-spirit").c_str(), 1);
+
     return RUN_ALL_TESTS();
 }

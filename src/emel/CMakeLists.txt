@@ -25,7 +25,7 @@ add_definitions("-DEMEL_VERSION=${VERSION}")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} \
     -fvisibility=hidden -fvisibility-inlines-hidden")
 
-find_package(Boost 1.59.0 REQUIRED system filesystem locale)
+find_package(Boost 1.59.0 REQUIRED system thread filesystem locale)
 
 set(PUBLIC_HEADERS
     ast.h
@@ -63,7 +63,7 @@ set(SOURCES
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION "${VERSION}" SOVERSION "0")
-target_link_libraries(${PROJECT_NAME} pthread stdc++ ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} pthread stdc++ dl ${Boost_LIBRARIES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "-debug")
 

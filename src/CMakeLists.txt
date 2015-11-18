@@ -25,6 +25,7 @@ add_definitions("-DEMEL_EXPORT=__attribute__((visibility (\"default\")))")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -fstack-check")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
+include_directories(${Boost_INCLUDE_DIR})
 include_directories(boost-dll/include)
 
 add_subdirectory(emel)

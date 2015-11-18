@@ -23,10 +23,10 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 #include <map>
 #include <set>
-#include <shared_mutex>
 #include <unordered_map>
 
 namespace emel {
@@ -51,7 +51,7 @@ struct lib_entry {
     std::unordered_multimap<std::string, library_ptr> names_map;
 };
 
-static std::shared_timed_mutex g_libs_lock;
+static boost::shared_mutex g_libs_lock;
 static std::unordered_map<std::string, lib_entry> g_libs_map;
 
 static std::vector<std::string> get_paths(const std::string &dir_name)
@@ -137,7 +137,7 @@ std::size_t plugin::load_dir(const std::string &dir_name)
             auto name = lib->get_alias<const char *>("emel_plugin_name");
             auto version = lib->get_alias<const char *>("emel_plugin_version");
 
-            std::unique_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+            boost::unique_lock<decltype(g_libs_lock)> lk(g_libs_lock);
             auto it = g_libs_map.find(type);
 
             if(g_libs_map.end() == it) {
@@ -161,7 +161,7 @@ std::size_t plugin::load_dir(const std::string &dir_name)
 std::pair<plugin::version, void *>
 plugin::load_name(const std::string &name) const
 {
-    std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+    boost::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
     auto it = g_libs_map.find(type_name);
     if(g_libs_map.end() == it)
         return std::make_pair<plugin::version>({0, 0, 0}, nullptr);
@@ -179,7 +179,7 @@ plugin::load_name(const std::string &name) const
 
 std::size_t plugin::names_count(const std::string &name) const
 {
-    std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+    boost::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
     auto it = g_libs_map.find(type_name);
     if(g_libs_map.end() == it)
         return 0;
@@ -193,7 +193,7 @@ std::vector<std::string> plugin::names() const
     std::set<std::string> set;
 
     {
-        std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+        boost::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
         auto it = g_libs_map.find(type_name);
         if(g_libs_map.end() == it)
             return ret;
@@ -214,7 +214,7 @@ std::vector<std::string> plugin::names() const
 std::pair<std::string, void *>
 plugin::load_version(plugin::version ver) const
 {
-    std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+    boost::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
     auto it = g_libs_map.find(type_name);
     if(g_libs_map.end() == it)
         return std::make_pair(std::string(), nullptr);
@@ -232,7 +232,7 @@ plugin::load_version(plugin::version ver) const
 
 std::size_t plugin::versions_count(plugin::version ver) const
 {
-    std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+    boost::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
     auto it = g_libs_map.find(type_name);
     if(g_libs_map.end() == it)
         return 0;
@@ -246,7 +246,7 @@ std::vector<plugin::version> plugin::versions() const
     std::set<version, version_compare> set;
 
     {
-        std::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
+        boost::shared_lock<decltype(g_libs_lock)> lk(g_libs_lock);
         auto it = g_libs_map.find(type_name);
         if(g_libs_map.end() == it)
             return ret;

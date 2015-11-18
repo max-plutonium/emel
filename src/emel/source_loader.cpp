@@ -30,9 +30,15 @@ namespace emel {
 
 namespace bfs = boost::filesystem;
 
-static std::vector<std::string> get_paths(const std::string &dir_name, char sep = ':')
+static std::vector<std::string> get_paths(const std::string &dir_name)
 {
     std::vector<std::string> paths;
+    constexpr char sep =
+#ifdef __linux__
+        ':';
+#else
+        ';';
+#endif
 
     if(dir_name.empty()) {
         paths.push_back(bfs::current_path().string());

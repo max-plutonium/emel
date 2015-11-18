@@ -32,6 +32,8 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 set(SOURCES
     main.cc
     test-compiler.cc
+    test-interp.cc
+    test-object.cc
     test-opcodes.cc
     test-parser.cc
 )

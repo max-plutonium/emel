@@ -19,8 +19,11 @@
  */
 #include "object.h"
 
-#include <boost/lexical_cast.hpp>
+#include <boost/convert.hpp>
+#include <boost/convert/spirit.hpp>
 #include <boost/algorithm/string.hpp>
+
+struct boost::cnv::by_default : boost::cnv::spirit { };
 
 namespace emel { namespace runtime {
 
@@ -257,7 +260,9 @@ object::operator std::string() const
             + " elements";
 
         case is_string: return s;
-        case is_number: return boost::lexical_cast<std::string>(d);
+        case is_number:
+            return boost::convert<std::string>(d).value();
+
         case is_boolean: return b ? "true" : "false";
         case is_ref: return ref->operator std::string();
     }
@@ -270,12 +275,9 @@ object::operator double() const
     switch(t) {
         case is_empty: return 0.0;
         case is_array: return a.size();
-        case is_string: {
-            double res = 0.0;
-            if(boost::conversion::try_lexical_convert<double>(s, res))
-                return res;
-            return std::numeric_limits<double>::quiet_NaN();
-        }
+        case is_string:
+            return boost::convert<double>(s)
+                    .value_or(std::numeric_limits<double>::quiet_NaN());
 
         case is_number: return d;
         case is_boolean: return b ? 1 : 0;
@@ -545,41 +547,41 @@ object object::operator[](std::size_t i) const
     }
 }
 
-optional<array> object::as_array() const
+boost::optional<array> object::as_array() const
 {
-    optional<array> ret;
+    boost::optional<array> ret;
     if(is_array == t)
         ret = a;
     return ret;
 }
 
-optional<std::string> object::as_string() const
+boost::optional<std::string> object::as_string() const
 {
-    optional<std::string> ret;
+    boost::optional<std::string> ret;
     if(is_string == t)
         ret = s;
     return ret;
 }
 
-optional<double> object::as_number() const
+boost::optional<double> object::as_number() const
 {
-    optional<double> ret;
+    boost::optional<double> ret;
     if(is_number == t)
         ret = d;
     return ret;
 }
 
-optional<bool> object::as_bool() const
+boost::optional<bool> object::as_bool() const
 {
-    optional<bool> ret;
+    boost::optional<bool> ret;
     if(is_boolean == t)
         ret = b;
     return ret;
 }
 
-optional<reference> object::as_ref() const
+boost::optional<reference> object::as_ref() const
 {
-    optional<reference> ret;
+    boost::optional<reference> ret;
     if(is_ref == t)
         ret = ref;
     return ret;

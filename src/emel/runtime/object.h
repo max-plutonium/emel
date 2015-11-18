@@ -26,7 +26,7 @@
 #include <memory>
 #include <string>
 
-#include <experimental/optional>
+#include <boost/optional.hpp>
 #include <boost/pool/pool_alloc.hpp>
 
 namespace emel EMEL_EXPORT { namespace runtime EMEL_EXPORT {
@@ -34,9 +34,6 @@ namespace emel EMEL_EXPORT { namespace runtime EMEL_EXPORT {
 class object;
 using reference = std::shared_ptr<object>;
 using const_reference = std::shared_ptr<const object>;
-
-template <typename Tp>
-  using optional = std::experimental::optional<Tp>;
 
 template <typename... Args>
   inline reference make_object(Args &&...args) {
@@ -117,11 +114,11 @@ public:
     object operator[](std::size_t);
     object operator[](std::size_t) const;
 
-    optional<array> as_array() const;
-    optional<std::string> as_string() const;
-    optional<double> as_number() const;
-    optional<bool> as_bool() const;
-    optional<reference> as_ref() const;
+    boost::optional<array> as_array() const;
+    boost::optional<std::string> as_string() const;
+    boost::optional<double> as_number() const;
+    boost::optional<bool> as_bool() const;
+    boost::optional<reference> as_ref() const;
 };
 
 EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const object &arg);

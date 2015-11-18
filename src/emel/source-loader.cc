@@ -19,11 +19,12 @@
  */
 #include "source-loader.h"
 
-#include <set>
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/operations.hpp>
 #include <fstream>
 #include <iostream>
+#include <set>
+
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/locale.hpp>
 
 namespace emel {

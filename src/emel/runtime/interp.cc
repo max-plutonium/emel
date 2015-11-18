@@ -17,7 +17,6 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "interp.h"
 
 namespace emel { namespace runtime {
 

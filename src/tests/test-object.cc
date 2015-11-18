@@ -1303,7 +1303,7 @@ TEST(Object, PlusString)
     EXPECT_EQ(runtime::object("stringfalse"), string1 + string_false);
     EXPECT_EQ(runtime::object("string1.23"), string1 + number1);
     EXPECT_EQ(runtime::object("string1.23"), string1 + number2);
-    EXPECT_EQ(runtime::object("string0"), string1 + number3);
+    EXPECT_EQ(runtime::object("string0.0"), string1 + number3);
     EXPECT_EQ(runtime::object("stringtrue"), string1 + true_);
     EXPECT_EQ(runtime::object("stringfalse"), string1 + false_);
 

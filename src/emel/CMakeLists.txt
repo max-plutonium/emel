@@ -60,6 +60,9 @@ set(SOURCES
     compiler/codegen.cc
     compiler/compiler.cc
     compiler/const-pool-manager.cc
+    runtime/array.cc
+    runtime/interp.cc
+    runtime/object.cc
     opcodes.cc
     parser.cc
     plugins.cc

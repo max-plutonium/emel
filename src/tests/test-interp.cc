@@ -443,7 +443,7 @@ TEST(Interp, DupAndPop)
 
     auto res = interp.run();
     ASSERT_FALSE(res.empty());
-    EXPECT_EQ("testtesttest63", res.as_string().value());
+    EXPECT_EQ("testtesttest6.03.0", res.as_string().value());
 }
 
 TEST(Interp, Swap)

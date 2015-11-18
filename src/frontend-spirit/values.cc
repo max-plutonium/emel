@@ -23,11 +23,12 @@
 #include <boost/convert/spirit.hpp>
 #include <boost/phoenix/phoenix.hpp>
 
+struct boost::cnv::by_default : boost::cnv::spirit { };
+
 namespace emel { namespace spirit_frontend {
 
 static double get_double(pos_iter f, pos_iter l) {
-    static boost::cnv::spirit converter;
-    return boost::convert<double>(std::string(f, l), converter).value();
+    return boost::convert<double>(std::string(f, l)).value();
 }
 
 values::values()

@@ -20,20 +20,18 @@
 project(emel-tests)
 cmake_minimum_required(VERSION 3.0)
 
-set(GMOCK_PATH "../../../gmock-1.7.0/fused-src")
-
-include_directories(SYSTEM ${GMOCK_PATH})
+include_directories(SYSTEM ../googletest/googletest/include)
+include_directories(SYSTEM ../googletest/googlemock/include)
 
 set(SOURCES
     main.cpp
     test_compiler.cpp
     test_opcodes.cpp
     test_parser.cpp
-    ${GMOCK_PATH}/gmock-gtest-all.cc
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} emel)
+target_link_libraries(${PROJECT_NAME} emel gmock)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "-debug")
 

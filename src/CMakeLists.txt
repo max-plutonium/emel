@@ -30,4 +30,5 @@ include_directories(boost-dll/include)
 
 add_subdirectory(emel)
 add_subdirectory(frontend-spirit)
+add_subdirectory(googletest/googlemock)
 add_subdirectory(tests)

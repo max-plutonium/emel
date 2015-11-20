@@ -41,7 +41,7 @@ static std::vector<std::string> get_paths(const std::string &dir_name)
 #endif
 
     if(dir_name.empty()) {
-        paths.push_back(bfs::current_path().string());
+        //paths.push_back(bfs::current_path().string());
 
         if(const char *env = std::getenv("EMEL_HOME")) {
             const std::string lp(env);

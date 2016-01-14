@@ -106,11 +106,11 @@ std::size_t source_loader::scan_dir(const std::string &dir_name)
             if(!class_name.empty())
                 class_name.append(".");
 
-            const auto fname = entry.second.path().filename().string();
-            const auto pos = fname.find_first_of('.');
+            const auto filename = entry.second.path().filename().string();
+            const auto pos = filename.find_first_of('.');
             assert(std::string::npos != pos);
-            class_name.append(fname.substr(0, pos));
-            locations_map.emplace(class_name, bfs::absolute(entry.second.path()).string());
+            class_name.append(filename.substr(0, pos));
+            locations_map.emplace(std::move(class_name), bfs::absolute(entry.second.path()).string());
             ++ret;
         }
     }

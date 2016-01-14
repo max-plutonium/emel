@@ -22,11 +22,20 @@
 
 int main(int argc, const char **argv)
 {
-    std::printf("emel gtest\n");
     testing::InitGoogleMock(&argc, const_cast<char **>(argv));
 
-    setenv("EMEL_HOME", "test-data", 1);
-    setenv("LD_LIBRARY_PATH", "../emel-build/src/frontend-spirit", 1);
+    std::string test_src_dir(TESTS_SRC_DIR);
+
+    std::string pwd(argv[0]);
+    const auto pos = pwd.rfind('/');
+    assert(std::string::npos != pos);
+    pwd = pwd.substr(0, pos);
+
+    std::printf("emel gtest\nTEST_DIR = %s\nPWD = %s\n",
+                test_src_dir.c_str(), pwd.c_str());
+
+    setenv("EMEL_HOME", test_src_dir.append("/../../test-data").c_str(), 1);
+    setenv("LD_LIBRARY_PATH", pwd.append("/../frontend-spirit").c_str(), 1);
 
     return RUN_ALL_TESTS();
 }

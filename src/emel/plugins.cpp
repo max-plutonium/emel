@@ -20,14 +20,10 @@
 #include "plugins.h"
 
 #include <boost/dll/import.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/operations.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
-#include <map>
 #include <set>
-#include <unordered_map>
 
 namespace emel {
 
@@ -93,9 +89,9 @@ static std::vector<bfs::directory_entry> find_libs(const std::string &path)
 
     std::copy_if(dir_begin, dir_end, std::back_inserter(files),
         [](const bfs::directory_entry &entry) {
-            const auto fname = entry.path().filename().string();
-            return ((fname.find("libemel") != std::string::npos)
-                && (fname.rfind(dll::shared_library::suffix().string()) != std::string::npos));
+            const auto filename = entry.path().filename().string();
+            return ((filename.find("libemel") != std::string::npos)
+                && (filename.rfind(dll::shared_library::suffix().string()) != std::string::npos));
         });
 
     return files;

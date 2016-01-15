@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,22 +17,24 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef SPIRIT_PARSER_H
-#define SPIRIT_PARSER_H
+#pragma once
 
-#include "../emel/parser.h"
+#include <boost/spirit/include/classic_position_iterator.hpp>
+#include <boost/spirit/home/support/info.hpp>
 
 namespace emel { namespace spirit_frontend {
 
-class spirit_parser : public parser
+using source_iter = std::string::const_iterator;
+using pos_iter = boost::spirit::classic::position_iterator<source_iter>;
+
+class error_handler
 {
 public:
-    virtual bool parse(source_iter first, source_iter last,
-        const std::string &file_name, ast::node &ret) const override;
+    using result = void;
+
+    void operator ()(pos_iter pos1, pos_iter pos2, const boost::spirit::info &info) const;
 };
 
 } // namespace spirit_frontend
 
 } // namespace emel
-
-#endif // SPIRIT_PARSER_H

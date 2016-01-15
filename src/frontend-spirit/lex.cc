@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -22,7 +22,6 @@
 #include <boost/convert.hpp>
 #include <boost/convert/spirit.hpp>
 #include <boost/phoenix/object/construct.hpp>
-#include <boost/phoenix/bind/bind_function.hpp>
 
 namespace emel { namespace spirit_frontend {
 

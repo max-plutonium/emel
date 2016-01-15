@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+# Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
 #
 # This file is part of the EMEL library.
 #
@@ -38,27 +38,27 @@ set(HEADERS
     ast.h
     compiler/codegen.h
     compiler/compiler.h
-    compiler/const_pool_manager.h
+    compiler/const-pool-manager.h
     compiler/symbol_table.h
     opcodes.h
     parser.h
     plugins.h
     semantic.h
-    source_loader.h
+    source-loader.h
     tokens.h
 )
 
 set(SOURCES
-    ast.cpp
-    compiler/codegen.cpp
-    compiler/compiler.cpp
-    compiler/const_pool_manager.cpp
-    opcodes.cpp
-    parser.cpp
-    plugins.cpp
-    semantic.cpp
-    source_loader.cpp
-    tokens.cpp
+    ast.cc
+    compiler/codegen.cc
+    compiler/compiler.cc
+    compiler/const-pool-manager.cc
+    opcodes.cc
+    parser.cc
+    plugins.cc
+    semantic.cc
+    source-loader.cc
+    tokens.cc
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})

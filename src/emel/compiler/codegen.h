@@ -22,7 +22,7 @@
 
 #include "../ast.h"
 #include "../semantic.h"
-#include "const_pool_manager.h"
+#include "const-pool-manager.h"
 #include "symbol_table.h"
 
 namespace emel { namespace compiler {

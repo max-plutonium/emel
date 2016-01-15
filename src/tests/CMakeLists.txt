@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+# Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
 #
 # This file is part of the test suite of the EMEL library.
 #
@@ -26,10 +26,10 @@ include_directories(SYSTEM ../googletest/googletest/include)
 include_directories(SYSTEM ../googletest/googlemock/include)
 
 set(SOURCES
-    main.cpp
-    test_compiler.cpp
-    test_opcodes.cpp
-    test_parser.cpp
+    main.cc
+    test-compiler.cc
+    test-opcodes.cc
+    test-parser.cc
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

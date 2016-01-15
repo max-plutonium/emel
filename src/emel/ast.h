@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,8 +17,7 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef AST_H
-#define AST_H
+#pragma once
 
 #define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 #define BOOST_MPL_LIMIT_LIST_SIZE 30
@@ -285,5 +284,3 @@ EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const std::vector<ast::n
 } // namespace ast
 
 } // namespace emel
-
-#endif // AST_H

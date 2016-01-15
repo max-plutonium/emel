@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,17 +17,18 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "skipper.h"
+#pragma once
+
+#include "../emel/parser.h"
 
 namespace emel { namespace spirit_frontend {
 
-skipper::skipper() : skipper::base_type(root)
+class spirit_parser : public parser
 {
-    root = qi::space | block_comment | line_comment | emel_comment;
-    block_comment = qi::lit("/*") >> *(qi::char_ - "*/") >> "*/";
-    line_comment = qi::lit("//") >> qi::no_skip[ *(qi::char_ - qi::eol) >> qi::eol ];
-    emel_comment = qi::lit("\'") >> *(qi::char_ - "\'") >> "\'";
-}
+public:
+    virtual bool parse(source_iter first, source_iter last,
+        const std::string &file_name, ast::node &ret) const override;
+};
 
 } // namespace spirit_frontend
 

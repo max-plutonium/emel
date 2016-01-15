@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,8 +17,7 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef SKIPPER_H
-#define SKIPPER_H
+#pragma once
 
 #include <boost/spirit/include/classic_position_iterator.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -42,5 +41,3 @@ public:
 } // namespace spirit_frontend
 
 } // namespace emel
-
-#endif // SKIPPER_H

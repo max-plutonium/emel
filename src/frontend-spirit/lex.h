@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,8 +17,7 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef LEX_H
-#define LEX_H
+#pragma once
 
 #include "../emel/tokens.h"
 
@@ -34,7 +33,7 @@ using boost::spirit::utf8_char;
 
 using token_type = lex::lexertl::token<
     pos_iter, boost::mpl::vector<std::string, double, bool>,
-    boost::mpl::false_, token>;
+        boost::mpl::false_, token>;
 
 using lexer_type = lex::lexertl::actor_lexer<token_type>;
 
@@ -75,5 +74,3 @@ public:
 } // namespace spirit_frontend
 
 } // namespace emel
-
-#endif // LEX_H

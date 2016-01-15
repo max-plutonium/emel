@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,29 +17,18 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef POSITION_HANDLER_H
-#define POSITION_HANDLER_H
-
-#include "../emel/ast.h"
-
-#include <boost/spirit/include/classic_position_iterator.hpp>
+#include "skipper.h"
 
 namespace emel { namespace spirit_frontend {
 
-using source_iter = std::string::const_iterator;
-using pos_iter = boost::spirit::classic::position_iterator<source_iter>;
-
-class position_handler
+skipper::skipper() : skipper::base_type(root)
 {
-public:
-    using result = void;
-
-    void operator ()(ast::position_node &node, pos_iter pos1, pos_iter pos2) const;
-    void operator ()(ast::node &node, pos_iter pos1, pos_iter pos2) const;
-};
+    root = qi::space | block_comment | line_comment | emel_comment;
+    block_comment = qi::lit("/*") >> *(qi::char_ - "*/") >> "*/";
+    line_comment = qi::lit("//") >> qi::no_skip[ *(qi::char_ - qi::eol) >> qi::eol ];
+    emel_comment = qi::lit("\'") >> *(qi::char_ - "\'") >> "\'";
+}
 
 } // namespace spirit_frontend
 
 } // namespace emel
-
-#endif // POSITION_HANDLER_H

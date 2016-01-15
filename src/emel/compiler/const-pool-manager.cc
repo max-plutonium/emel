@@ -17,7 +17,7 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "const_pool_manager.h"
+#include "const-pool-manager.h"
 
 namespace emel { namespace compiler {
 

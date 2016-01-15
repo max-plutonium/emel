@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,11 +17,10 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef PARSER_H
-#define PARSER_H
+#pragma once
 
 #include "ast.h"
-#include "source_loader.h"
+#include "source-loader.h"
 
 namespace emel EMEL_EXPORT {
 
@@ -43,5 +42,3 @@ public:
 };
 
 } // namespace emel
-
-#endif // PARSER_H

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+# Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
 #
 # This file is part of the EMEL library.
 #
@@ -28,27 +28,27 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
 find_package(Boost 1.59.0 REQUIRED system)
 
 set(HEADERS
-    error_handler.h
+    error-handler.h
     expressions.h
     grammar.h
     keywords.h
     lex.h
-    position_handler.h
+    position-handler.h
     skipper.h
-    spirit_parser.h
+    spirit-parser.h
     values.h
 )
 
 set(SOURCES
-    error_handler.cpp
-    expressions.cpp
-    grammar.cpp
-    keywords.cpp
-    lex.cpp
-    position_handler.cpp
-    skipper.cpp
-    spirit_parser.cpp
-    values.cpp
+    error-handler.cc
+    expressions.cc
+    grammar.cc
+    keywords.cc
+    lex.cc
+    position-handler.cc
+    skipper.cc
+    spirit-parser.cc
+    values.cc
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})

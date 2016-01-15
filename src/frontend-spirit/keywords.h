@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,8 +17,7 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef KEYWORDS_H
-#define KEYWORDS_H
+#pragma once
 
 #include "skipper.h"
 
@@ -60,5 +59,3 @@ public:
 } // namespace spirit_frontend
 
 } // namespace emel
-
-#endif // KEYWORDS_H

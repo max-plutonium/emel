@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,28 +17,26 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef SOURCE_LOADER_H
-#define SOURCE_LOADER_H
+#pragma once
 
-#include <unordered_map>
-#include <string>
-#include <vector>
+#include "../emel/ast.h"
 
-namespace emel {
+#include <boost/spirit/include/classic_position_iterator.hpp>
 
-class source_loader
+namespace emel { namespace spirit_frontend {
+
+using source_iter = std::string::const_iterator;
+using pos_iter = boost::spirit::classic::position_iterator<source_iter>;
+
+class position_handler
 {
-protected:
-    std::unordered_map<std::string, std::string> locations_map;
-
 public:
-    std::size_t scan_dir(const std::string &dir_name = std::string());
-    std::string get_path_for(const std::string &class_name) const;
-    std::vector<std::string> names() const;
-    std::string read_source(const std::string &class_name,
-        const char *locale_name = "ru_RU.utf-8") const;
+    using result = void;
+
+    void operator ()(ast::position_node &node, pos_iter pos1, pos_iter pos2) const;
+    void operator ()(ast::node &node, pos_iter pos1, pos_iter pos2) const;
 };
 
-} // namespace emel
+} // namespace spirit_frontend
 
-#endif // SOURCE_LOADER_H
+} // namespace emel

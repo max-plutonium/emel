@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,14 +17,13 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef EXPRESSIONS_H
-#define EXPRESSIONS_H
+#pragma once
 
 #include "../emel/ast.h"
 #include "keywords.h"
 #include "values.h"
-#include "error_handler.h"
-#include "position_handler.h"
+#include "error-handler.h"
+#include "position-handler.h"
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/phoenix/function.hpp>
@@ -57,5 +56,3 @@ public:
 } // namespace spirit_frontend
 
 } // namespace emel
-
-#endif // EXPRESSIONS_H

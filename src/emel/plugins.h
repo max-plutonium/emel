@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,8 +17,7 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef PLUGINS_H
-#define PLUGINS_H
+#pragma once
 
 #include "parser.h"
 
@@ -73,5 +72,3 @@ public:
 extern typed_plugin<parser> frontend;
 
 } // namespace emel
-
-#endif // PLUGINS_H

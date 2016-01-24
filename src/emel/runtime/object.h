@@ -24,40 +24,29 @@
 #include "array.h"
 
 #include <memory>
-#include <string>
 
 #include <boost/optional.hpp>
-#include <boost/pool/pool_alloc.hpp>
 
 namespace emel EMEL_EXPORT { namespace runtime EMEL_EXPORT {
 
 class object;
-using reference = std::shared_ptr<object>;
-using const_reference = std::shared_ptr<const object>;
-
-template <typename... Args>
-  inline reference make_object(Args &&...args) {
-      return std::allocate_shared<object>(boost::pool_allocator<object>(),
-          std::forward<Args>(args)...);
-  }
+using reference = object *;
+using const_reference = const object *;
 
 class object
 {
 public:
-    enum type {
-        is_empty, is_array, is_string, is_number, is_boolean, is_ref
-    };
+    void *operator new(std::size_t size);
+    void operator delete(void *ptr);
+
+	enum type {
+		is_empty = 0, is_bool, is_num, is_str, is_array, is_ref
+	};
 
 protected:
-    type t;
-
-    union {
-        array a;
-        std::string s;
-        double d;
-        bool b;
-        reference ref;
-    };
+	class data;
+	std::shared_ptr<data> d;
+    explicit object(std::shared_ptr<data> d);
 
 public:
     object();
@@ -68,7 +57,7 @@ public:
     object(std::vector<object> &&vec);
     object(const std::string &s);
     object(const char *s);
-    object(double d);
+    object(double num);
     object(bool b);
     object(reference ref);
 
@@ -83,15 +72,15 @@ public:
     object &operator =(array a);
     object &operator =(const std::string &s);
     object &operator =(const char *s);
-    object &operator =(double d);
+    object &operator =(double num);
     object &operator =(bool b);
     object &operator =(reference ref);
 
-    type get_type() const { return t; }
-    bool empty() const { return t == is_empty; }
+    type get_type() const;
+    bool empty() const;
 
-    virtual object share();
     virtual object clone();
+	void detach();
 
     virtual ~object();
     virtual operator std::string() const;

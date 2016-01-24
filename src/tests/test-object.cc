@@ -33,19 +33,19 @@ TEST(Object, Creation)
     runtime::object obj4(1.23);
     runtime::object obj5(true);
     runtime::object obj6(false);
-    runtime::object obj7(runtime::make_object("test"));
+    runtime::object obj7(new runtime::object("test"));
 
     EXPECT_EQ(runtime::object::is_empty, obj1.get_type());
     EXPECT_TRUE(obj1.empty());
     EXPECT_EQ(runtime::object::is_empty, obj2.get_type());
     EXPECT_TRUE(obj2.empty());
-    EXPECT_EQ(runtime::object::is_string, obj3.get_type());
+    EXPECT_EQ(runtime::object::is_str, obj3.get_type());
     EXPECT_FALSE(obj3.empty());
-    EXPECT_EQ(runtime::object::is_number, obj4.get_type());
+    EXPECT_EQ(runtime::object::is_num, obj4.get_type());
     EXPECT_FALSE(obj4.empty());
-    EXPECT_EQ(runtime::object::is_boolean, obj5.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj5.get_type());
     EXPECT_FALSE(obj5.empty());
-    EXPECT_EQ(runtime::object::is_boolean, obj6.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj6.get_type());
     EXPECT_FALSE(obj6.empty());
     EXPECT_EQ(runtime::object::is_ref, obj7.get_type());
     EXPECT_FALSE(obj7.empty());
@@ -53,7 +53,7 @@ TEST(Object, Creation)
 
 TEST(Object, Copy)
 {
-    auto ptr = runtime::make_object("test");
+    auto ptr = new runtime::object("test");
 
     runtime::object obj1;
     runtime::object obj2(empty_value);
@@ -76,19 +76,19 @@ TEST(Object, Copy)
     EXPECT_EQ(runtime::object::is_empty, obj2.get_type());
     EXPECT_TRUE(obj2.empty());
 
-    EXPECT_EQ(runtime::object::is_string, obj3.get_type());
+    EXPECT_EQ(runtime::object::is_str, obj3.get_type());
     EXPECT_FALSE(obj3.empty());
     EXPECT_EQ("string", static_cast<std::string>(obj3));
 
-    EXPECT_EQ(runtime::object::is_number, obj4.get_type());
+    EXPECT_EQ(runtime::object::is_num, obj4.get_type());
     EXPECT_FALSE(obj4.empty());
     EXPECT_EQ(1.23, static_cast<double>(obj4));
 
-    EXPECT_EQ(runtime::object::is_boolean, obj5.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj5.get_type());
     EXPECT_FALSE(obj5.empty());
     EXPECT_TRUE(static_cast<bool>(obj5));
 
-    EXPECT_EQ(runtime::object::is_boolean, obj6.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj6.get_type());
     EXPECT_FALSE(obj6.empty());
     EXPECT_FALSE(static_cast<bool>(obj6));
 
@@ -102,19 +102,19 @@ TEST(Object, Copy)
     EXPECT_EQ(runtime::object::is_empty, obj9.get_type());
     EXPECT_TRUE(obj9.empty());
 
-    EXPECT_EQ(runtime::object::is_string, obj10.get_type());
+    EXPECT_EQ(runtime::object::is_str, obj10.get_type());
     EXPECT_FALSE(obj10.empty());
     EXPECT_EQ("string", static_cast<std::string>(obj10));
 
-    EXPECT_EQ(runtime::object::is_number, obj11.get_type());
+    EXPECT_EQ(runtime::object::is_num, obj11.get_type());
     EXPECT_FALSE(obj11.empty());
     EXPECT_EQ(1.23, static_cast<double>(obj11));
 
-    EXPECT_EQ(runtime::object::is_boolean, obj12.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj12.get_type());
     EXPECT_FALSE(obj12.empty());
     EXPECT_TRUE(static_cast<bool>(obj12));
 
-    EXPECT_EQ(runtime::object::is_boolean, obj13.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj13.get_type());
     EXPECT_FALSE(obj13.empty());
     EXPECT_FALSE(static_cast<bool>(obj13));
 
@@ -125,7 +125,7 @@ TEST(Object, Copy)
 
 TEST(Object, CopyAssign)
 {
-    auto ptr = runtime::make_object("test");
+    auto ptr = new runtime::object("test");
 
     runtime::object obj1;
     runtime::object obj2(empty_value);
@@ -140,22 +140,22 @@ TEST(Object, CopyAssign)
     EXPECT_TRUE(obj1.empty());
 
     obj1 = obj3;
-    EXPECT_EQ(runtime::object::is_string, obj1.get_type());
+    EXPECT_EQ(runtime::object::is_str, obj1.get_type());
     EXPECT_FALSE(obj1.empty());
     EXPECT_EQ("string", static_cast<std::string>(obj1));
 
     obj1 = obj4;
-    EXPECT_EQ(runtime::object::is_number, obj1.get_type());
+    EXPECT_EQ(runtime::object::is_num, obj1.get_type());
     EXPECT_FALSE(obj1.empty());
     EXPECT_EQ(1.23, static_cast<double>(obj1));
 
     obj1 = obj5;
-    EXPECT_EQ(runtime::object::is_boolean, obj1.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj1.get_type());
     EXPECT_FALSE(obj1.empty());
     EXPECT_TRUE(static_cast<bool>(obj1));
 
     obj1 = obj6;
-    EXPECT_EQ(runtime::object::is_boolean, obj1.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj1.get_type());
     EXPECT_FALSE(obj1.empty());
     EXPECT_FALSE(static_cast<bool>(obj1));
 
@@ -168,19 +168,19 @@ TEST(Object, CopyAssign)
     EXPECT_EQ(runtime::object::is_empty, obj2.get_type());
     EXPECT_TRUE(obj2.empty());
 
-    EXPECT_EQ(runtime::object::is_string, obj3.get_type());
+    EXPECT_EQ(runtime::object::is_str, obj3.get_type());
     EXPECT_FALSE(obj3.empty());
     EXPECT_EQ("string", static_cast<std::string>(obj3));
 
-    EXPECT_EQ(runtime::object::is_number, obj4.get_type());
+    EXPECT_EQ(runtime::object::is_num, obj4.get_type());
     EXPECT_FALSE(obj4.empty());
     EXPECT_EQ(1.23, static_cast<double>(obj4));
 
-    EXPECT_EQ(runtime::object::is_boolean, obj5.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj5.get_type());
     EXPECT_FALSE(obj5.empty());
     EXPECT_TRUE(static_cast<bool>(obj5));
 
-    EXPECT_EQ(runtime::object::is_boolean, obj6.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj6.get_type());
     EXPECT_FALSE(obj6.empty());
     EXPECT_FALSE(static_cast<bool>(obj6));
 
@@ -191,7 +191,7 @@ TEST(Object, CopyAssign)
 
 TEST(Object, Move)
 {
-    auto ptr = runtime::make_object("test");
+    auto ptr = new runtime::object("test");
 
     runtime::object obj1;
     runtime::object obj2(empty_value);
@@ -230,19 +230,19 @@ TEST(Object, Move)
     EXPECT_EQ(runtime::object::is_empty, obj9.get_type());
     EXPECT_TRUE(obj9.empty());
 
-    EXPECT_EQ(runtime::object::is_string, obj10.get_type());
+    EXPECT_EQ(runtime::object::is_str, obj10.get_type());
     EXPECT_FALSE(obj10.empty());
     EXPECT_EQ("string", static_cast<std::string>(obj10));
 
-    EXPECT_EQ(runtime::object::is_number, obj11.get_type());
+    EXPECT_EQ(runtime::object::is_num, obj11.get_type());
     EXPECT_FALSE(obj11.empty());
     EXPECT_EQ(1.23, static_cast<double>(obj11));
 
-    EXPECT_EQ(runtime::object::is_boolean, obj12.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj12.get_type());
     EXPECT_FALSE(obj12.empty());
     EXPECT_TRUE(static_cast<bool>(obj12));
 
-    EXPECT_EQ(runtime::object::is_boolean, obj13.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj13.get_type());
     EXPECT_FALSE(obj13.empty());
     EXPECT_FALSE(static_cast<bool>(obj13));
 
@@ -253,7 +253,7 @@ TEST(Object, Move)
 
 TEST(Object, MoveAssign)
 {
-    auto ptr = runtime::make_object("test");
+    auto ptr = new runtime::object("test");
 
     runtime::object obj1;
     runtime::object obj2(empty_value);
@@ -268,22 +268,22 @@ TEST(Object, MoveAssign)
     EXPECT_TRUE(obj1.empty());
 
     obj1 = std::move(obj3);
-    EXPECT_EQ(runtime::object::is_string, obj1.get_type());
+    EXPECT_EQ(runtime::object::is_str, obj1.get_type());
     EXPECT_FALSE(obj1.empty());
     EXPECT_EQ("string", static_cast<std::string>(obj1));
 
     obj1 = std::move(obj4);
-    EXPECT_EQ(runtime::object::is_number, obj1.get_type());
+    EXPECT_EQ(runtime::object::is_num, obj1.get_type());
     EXPECT_FALSE(obj1.empty());
     EXPECT_EQ(1.23, static_cast<double>(obj1));
 
     obj1 = std::move(obj5);
-    EXPECT_EQ(runtime::object::is_boolean, obj1.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj1.get_type());
     EXPECT_FALSE(obj1.empty());
     EXPECT_TRUE(static_cast<bool>(obj1));
 
     obj1 = std::move(obj6);
-    EXPECT_EQ(runtime::object::is_boolean, obj1.get_type());
+    EXPECT_EQ(runtime::object::is_bool, obj1.get_type());
     EXPECT_FALSE(obj1.empty());
     EXPECT_FALSE(static_cast<bool>(obj1));
 
@@ -309,7 +309,7 @@ TEST(Object, MoveAssign)
 
 TEST(Object, CastToString)
 {
-    auto ptr = runtime::make_object("test");
+    auto ptr = new runtime::object("test");
 
     runtime::object obj1;
     runtime::object obj2(empty_value);
@@ -330,7 +330,7 @@ TEST(Object, CastToString)
 
 TEST(Object, CastToDouble)
 {
-    auto ptr = runtime::make_object("2.34");
+    auto ptr = new runtime::object("2.34");
 
     runtime::object obj1;
     runtime::object obj2(empty_value);
@@ -351,7 +351,7 @@ TEST(Object, CastToDouble)
 
 TEST(Object, CastToBoolean)
 {
-    auto ptr = runtime::make_object("");
+    auto ptr = new runtime::object("");
 
     runtime::object obj1;
     runtime::object obj2(empty_value);
@@ -1926,7 +1926,7 @@ TEST(Object, Arrays)
         runtime::object(1.23),
         runtime::object(true),
         runtime::object(false),
-        runtime::object(runtime::make_object("test")),
+        runtime::object(new runtime::object("test")),
     };
 
     runtime::object array(std::move(vec));

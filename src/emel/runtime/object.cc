@@ -17,254 +17,227 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "object.h"
+#include "object-data.h"
 
+#include <boost/algorithm/string.hpp>
 #include <boost/convert.hpp>
 #include <boost/convert/spirit.hpp>
-#include <boost/algorithm/string.hpp>
 
 struct boost::cnv::by_default : boost::cnv::spirit { };
 
 namespace emel { namespace runtime {
 
-object::object() : t(is_empty), d(0)
+void *object::operator new(std::size_t size)
+{
+	return memory::alloc<object>(size);
+}
+
+void object::operator delete(void *ptr)
+{
+	memory::gc::deallocate(ptr);
+}
+
+object::object(std::shared_ptr<data> d) : d(std::move(d))
+{
+	assert(this->d);
+}
+
+object::object()
+	: object(std::allocate_shared<data>(memory::rt_allocator<data>()))
 {
 }
 
-object::object(empty_value_type) : t(is_empty), d(0)
+object::object(empty_value_type) : object()
 {
 }
 
-object::object(array a) : t(is_array), a(std::move(a))
+object::object(array a) : object()
 {
+	d->u = std::move(a);
 }
 
-object::object(object *ptr, std::size_t len) : t(is_array), a(ptr, len)
+object::object(object *ptr, std::size_t len) : object()
 {
+	d->u = array(ptr, len);
 }
 
-object:: object(const std::vector<object> &vec) : t(is_array), a(vec)
+object:: object(const std::vector<object> &vec) : object()
 {
+	d->u = array(vec);
 }
 
-object::object(std::vector<object> &&vec) : t(is_array), a(std::move(vec))
+object::object(std::vector<object> &&vec) : object()
 {
+	d->u = array(std::move(vec));
 }
 
-object::object(const std::string &s) : t(is_string), s(s)
+object::object(const std::string &s) : object()
 {
+	d->u = s;
 }
 
-object::object(const char *s) : t(is_string), s(s)
+object::object(const char *s) : object()
 {
+	d->u = std::string(s);
 }
 
-object::object(double d) : t(is_number), d(d)
+object::object(double num) : object()
 {
+	d->u = num;
 }
 
-object::object(bool b) : t(is_boolean), b(b)
+object::object(bool b) : object()
 {
+	d->u = b;
 }
 
-object::object(reference ref) : t(is_ref), ref(ref)
+object::object(reference ref) : object()
 {
+	d->u = ref;
 }
 
-object::object(const object &other) : t(other.t), d(0)
+object::object(const object &other) : object()
 {
-    switch(t) {
-        case is_empty: break;
-        case is_array: new (&a) array(other.a); break;
-        case is_string: new (&s) std::string(other.s); break;
-        case is_number: new (&d) double(other.d); break;
-        case is_boolean: new (&b) bool(other.b); break;
-        case is_ref: new (&ref) reference(other.ref); break;
-    }
+	assert(other.d);
+	d->u = other.d->u;
 }
 
 object &object::operator =(const object &other)
 {
-    if(this != &other)
-        object(other).swap(*this);
+	if(this != &other)
+		object(other).swap(*this);
     return *this;
 }
 
-object::object(object &&other) : t(other.t), d(0)
+object::object(object &&other) : object()
 {
-    switch(t) {
-        case is_empty: break;
-        case is_array: new (&a) array(std::move(other.a)); break;
-        case is_string: new (&s) std::string(std::move(other.s)); break;
-        case is_number: new (&d) double(other.d); break;
-        case is_boolean: new (&b) bool(other.b); break;
-        case is_ref: new (&ref) reference(std::move(other.ref)); break;
-    }
-
-    other.d = 0;
-    other.t = is_empty;
+	assert(other.d);
+	std::swap(d, other.d);
 }
 
 object &object::operator =(object &&other)
 {
-    if(this != &other)
-        object(std::move(other)).swap(*this);
+	if(this != &other)
+		object(std::move(other)).swap(*this);
     return *this;
 }
 
 void object::swap(object &other)
 {
-    if(t == other.t) {
-        switch(t) {
-            case is_empty: break;
-            case is_array: std::swap(a, other.a); break;
-            case is_string: std::swap(s, other.s); break;
-            case is_number: std::swap(d, other.d); break;
-            case is_boolean: std::swap(b, other.b); break;
-            case is_ref: std::swap(ref, other.ref); break;
-        }
-
-        return;
-    }
-
-    union U {
-        array a;
-        std::string s;
-        double d;
-        bool b;
-        reference ref;
-        U(const std::string &str) : s(str) { }
-        ~U() { }
-    } tmp("");
-
-    switch(other.t) {
-        case is_empty: break;
-        case is_array: new (&tmp.a) array(std::move(other.a)); break;
-        case is_string: new (&tmp.s) std::string(std::move(other.s)); break;
-        case is_number: new (&tmp.d) double(other.d); break;
-        case is_boolean: new (&tmp.b) bool(other.b); break;
-        case is_ref: new (&tmp.ref) reference(std::move(other.ref)); break;
-    }
-
-    switch(t) {
-        case is_empty: break;
-        case is_array: new (&other.a) array(std::move(a)); break;
-        case is_string: new (&other.s) std::string(std::move(s)); break;
-        case is_number: new (&other.d) double(d); break;
-        case is_boolean: new (&other.b) bool(b); break;
-        case is_ref: new (&other.ref) reference(std::move(ref)); break;
-    }
-
-    switch(other.t) {
-        case is_empty: break;
-        case is_array: new (&a) array(std::move(tmp.a)); break;
-        case is_string: new (&s) std::string(std::move(tmp.s)); break;
-        case is_number: new (&d) double(tmp.d); break;
-        case is_boolean: new (&b) bool(tmp.b); break;
-        case is_ref: new (&ref) reference(std::move(tmp.ref)); break;
-    }
-
-    std::swap(t, other.t);
+    std::swap(d, other.d);
 }
 
 object &object::operator =(empty_value_type)
 {
-    return ((is_ref == t) ? *ref : *this) = object(empty_value);
+	assert(d);
+    return ((is_ref == d->u.which())
+			? *boost::get<reference>(d->u) : *this) = object(empty_value);
 }
 
 object &object::operator =(array a)
 {
-    return ((is_ref == t) ? *ref : *this) = object(std::move(a));
+	assert(d);
+    return ((is_ref == d->u.which())
+			? *boost::get<reference>(d->u) : *this) = object(std::move(a));
 }
 
 object &object::operator =(const std::string &s)
 {
-    return ((is_ref == t) ? *ref : *this) = object(s);
+	assert(d);
+    return ((is_ref == d->u.which())
+			? *boost::get<reference>(d->u) : *this) = object(s);
 }
 
 object &object::operator=(const char *s)
 {
-    return ((is_ref == t) ? *ref : *this) = object(s);
+	assert(d);
+    return ((is_ref == d->u.which())
+			? *boost::get<reference>(d->u) : *this) = object(s);
 }
 
-object &object::operator =(double d)
+object &object::operator =(double num)
 {
-    return ((is_ref == t) ? *ref : *this) = object(d);
+	assert(d);
+    return ((is_ref == d->u.which())
+			? *boost::get<reference>(d->u) : *this) = object(num);
 }
 
 object &object::operator =(bool b)
 {
-    return ((is_ref == t) ? *ref : *this) = object(b);
+	assert(d);
+    return ((is_ref == d->u.which())
+			? *boost::get<reference>(d->u) : *this) = object(b);
 }
 
 object &object::operator =(reference ref)
 {
-    return ((is_ref == t) ? *ref : *this) = object(ref);
+	assert(d);
+    return ((is_ref == d->u.which())
+			? *boost::get<reference>(d->u) : *this) = object(ref);
 }
 
-// TODO split object types to is_ref and rest types
-// TODO detach() for copy elision
-// TODO if is_ref - we always have to change the pointee object
-// TODO if rest - we always have to change local data or
-// call detach() and change one if is_ref
-
-object object::share()
+object::type object::get_type() const
 {
-    reference ret;
+	assert(d);
+	return type(d->u.which());
+}
 
-    switch(t) {
-        case is_empty: return empty_value;
-        case is_array: ret = make_object(std::move(a)); break;
-        case is_string: ret = make_object(std::move(s)); break;
-        case is_number: ret = make_object(std::move(d)); break;
-        case is_boolean: ret = make_object(std::move(b)); break;
-        case is_ref: return ref;
-    }
-
-    return *this = object(ret);
+bool object::empty() const
+{
+	assert(d);
+	return type(is_empty == d->u.which());
 }
 
 object object::clone()
 {
-    switch(t) {
-        case is_empty: return empty_value;
-        case is_array: return a; break;
-        case is_string: return s; break;
-        case is_number: return d; break;
-        case is_boolean: return b; break;
-        case is_ref: return ref->clone();
-    }
+	assert(d);
+	return object(d);
+}
+
+void object::detach()
+{
+	assert(d);
+
+	if(!d.unique()) {
+		auto old_d = std::move(d);
+		d = std::allocate_shared<data>(memory::rt_allocator<data>());
+		d->u = old_d->u;
+	}
 }
 
 object::~object()
 {
-    switch(t) {
-        case is_empty: break;
-        case is_array: a.~array(); break;
-        case is_string: s.~basic_string(); break;
-        case is_number: break;
-        case is_boolean: break;
-        case is_ref: ref.~reference(); break;
-    }
-
-    d = 0;
-    t = is_empty;
+    d = nullptr;
 }
 
 object::operator std::string() const
 {
-    switch(t) {
-        case is_empty: return std::string();
-        case is_array:
-            return std::string("array of ") + std::to_string(a.size())
-            + " elements";
+	assert(d);
 
-        case is_string: return s;
-        case is_number:
-            return boost::convert<std::string>(d).value();
+    switch(d->u.which())
+	{
+		case is_empty:
+			return std::string();
 
-        case is_boolean: return b ? "true" : "false";
-        case is_ref: return ref->operator std::string();
+        case is_array: {
+			const array &a = boost::get<array>(d->u);
+			return std::string("array of ") + std::to_string(a.size())
+				   + " elements";
+		}
+
+        case is_str:
+			return boost::get<std::string>(d->u);
+
+        case is_num: {
+			const double &num = boost::get<double>(d->u);
+			return boost::convert<std::string>(num).value();
+		}
+
+        case is_bool:
+			return boost::get<bool>(d->u) ? "true" : "false";
+
+        case is_ref:
+			return boost::get<reference>(d->u)->operator std::string();
     }
 
     return std::string();
@@ -272,16 +245,28 @@ object::operator std::string() const
 
 object::operator double() const
 {
-    switch(t) {
-        case is_empty: return 0.0;
-        case is_array: return a.size();
-        case is_string:
-            return boost::convert<double>(s)
+	assert(d);
+
+    switch(d->u.which())
+	{
+        case is_empty:
+			return 0.0;
+
+        case is_array:
+			return boost::get<array>(d->u).size();
+
+        case is_str:
+            return boost::convert<double>(boost::get<std::string>(d->u))
                     .value_or(std::numeric_limits<double>::quiet_NaN());
 
-        case is_number: return d;
-        case is_boolean: return b ? 1 : 0;
-        case is_ref: return ref->operator double();
+        case is_num:
+			return boost::get<double>(d->u);
+
+        case is_bool:
+			return boost::get<bool>(d->u) ? 1.0 : 0.0;
+
+        case is_ref:
+			return boost::get<reference>(d->u)->operator double();
     }
 
     return 0.0;
@@ -289,19 +274,33 @@ object::operator double() const
 
 object::operator bool() const
 {
-    switch(t) {
-        case is_empty: return false;
-        case is_array: return !a.empty();
-        case is_string: {
-            auto str = s;
+	assert(d);
+
+	switch(d->u.which())
+	{
+        case is_empty:
+			return false;
+
+        case is_array: {
+			const array &a = boost::get<array>(d->u);
+			return !a.empty();
+		}
+
+        case is_str: {
+            auto str = boost::get<std::string>(d->u);
             boost::algorithm::trim(str);
             //boost::algorithm::erase_all(str, " \n\t\r\0");
             return !str.empty() && !boost::iequals("false", str);
         }
 
-        case is_number: return static_cast<bool>(d);
-        case is_boolean: return b;
-        case is_ref: return ref->operator bool();
+        case is_num:
+			return static_cast<bool>(boost::get<double>(d->u));
+
+        case is_bool:
+			return boost::get<bool>(d->u);
+
+        case is_ref:
+			return boost::get<reference>(d->u)->operator bool();
     }
 
     return false;
@@ -309,29 +308,37 @@ object::operator bool() const
 
 object::operator reference() const
 {
-    switch(t) {
-        case is_empty:
-        case is_array:
-        case is_string:
-        case is_number:
-        case is_boolean:
-            return nullptr;
+	assert(d);
 
-        case is_ref: return ref;
-    }
+	if(is_ref == d->u.which())
+		return boost::get<reference>(d->u);
 
     return nullptr;
 }
 
 bool object::operator ==(const object &other) const
 {
-    switch(t) {
-        case is_empty: return other.get_type() == is_empty;
-        case is_array: return false;
-        case is_string: return s == static_cast<std::string>(other);
-        case is_number: return d == static_cast<double>(other);
-        case is_boolean: return b == static_cast<bool>(other);
-        case is_ref: return ref->operator ==(other);
+	assert(d);
+
+    switch(d->u.which())
+	{
+        case is_empty:
+			return other.get_type() == is_empty;
+
+        case is_array:
+			return false;
+
+        case is_str:
+			return boost::get<std::string>(d->u) == static_cast<std::string>(other);
+
+        case is_num:
+			return boost::get<double>(d->u) == static_cast<double>(other);
+
+        case is_bool:
+			return boost::get<bool>(d->u) == static_cast<bool>(other);
+
+        case is_ref:
+			return boost::get<reference>(d->u)->operator ==(other);
     }
 
     return false;
@@ -344,13 +351,23 @@ bool object::operator !=(const object &other) const
 
 bool object::operator <(const object &other) const
 {
-    switch(t) {
+	assert(d);
+
+    switch(d->u.which())
+	{
         case is_empty: return false;
         case is_array: return false;
-        case is_string: return s.compare(static_cast<std::string>(other)) < 0;
-        case is_number: return d < static_cast<double>(other);
-        case is_boolean: return false;
-        case is_ref: return ref->operator <(other);
+
+        case is_str:
+			return boost::get<std::string>(d->u).compare(static_cast<std::string>(other)) < 0;
+
+        case is_num:
+			return boost::get<double>(d->u) < static_cast<double>(other);
+
+        case is_bool: return false;
+
+        case is_ref:
+			return boost::get<reference>(d->u)->operator <(other);
     }
 
     return false;
@@ -358,13 +375,23 @@ bool object::operator <(const object &other) const
 
 bool object::operator >(const object &other) const
 {
-    switch(t) {
+	assert(d);
+
+    switch(d->u.which())
+	{
         case is_empty: return false;
         case is_array: return false;
-        case is_string: return s.compare(static_cast<std::string>(other)) > 0;
-        case is_number: return d > static_cast<double>(other);
-        case is_boolean: return false;
-        case is_ref: return ref->operator >(other);
+
+        case is_str:
+			return boost::get<std::string>(d->u).compare(static_cast<std::string>(other)) > 0;
+
+        case is_num:
+			return boost::get<double>(d->u) > static_cast<double>(other);
+
+        case is_bool: return false;
+
+        case is_ref:
+			return boost::get<reference>(d->u)->operator >(other);
     }
 
     return false;
@@ -372,51 +399,81 @@ bool object::operator >(const object &other) const
 
 bool object::operator <=(const object &other) const
 {
-    switch(t) {
-        case is_empty: return false;
-        case is_array: return false;
-        case is_string: return s.compare(static_cast<std::string>(other)) <= 0;
-        case is_number: return d <= static_cast<double>(other);
-        case is_boolean: return false;
-        case is_ref: return ref->operator <=(other);
-    }
+	assert(d);
+
+	switch(d->u.which())
+	{
+		case is_empty: return false;
+		case is_array: return false;
+
+		case is_str:
+			return boost::get<std::string>(d->u).compare(static_cast<std::string>(other)) <= 0;
+
+		case is_num:
+			return boost::get<double>(d->u) <= static_cast<double>(other);
+
+		case is_bool: return false;
+
+		case is_ref:
+			return boost::get<reference>(d->u)->operator <=(other);
+	}
 
     return false;
 }
 
 bool object::operator >=(const object &other) const
 {
-    switch(t) {
-        case is_empty: return false;
-        case is_array: return false;
-        case is_string: return s.compare(static_cast<std::string>(other)) >= 0;
-        case is_number: return d >= static_cast<double>(other);
-        case is_boolean: return false;
-        case is_ref: return ref->operator >=(other);
-    }
+	assert(d);
+
+	switch(d->u.which())
+	{
+		case is_empty: return false;
+		case is_array: return false;
+
+		case is_str:
+			return boost::get<std::string>(d->u).compare(static_cast<std::string>(other)) >= 0;
+
+		case is_num:
+			return boost::get<double>(d->u) >= static_cast<double>(other);
+
+		case is_bool: return false;
+
+		case is_ref:
+			return boost::get<reference>(d->u)->operator >=(other);
+	}
 
     return false;
 }
 
 object object::operator +(const object &other) const
 {
-    switch(t) {
-        case is_empty: return empty_value;
-        case is_array: {
-                std::vector<object> vec = a.to_vector();
-                vec.push_back(other);
-                return object(std::move(vec));
-            }
+	assert(d);
 
-        case is_string: return s + static_cast<std::string>(other);
-        case is_number:
-            if(other.get_type() == is_string)
+    switch(d->u.which())
+	{
+        case is_empty:
+			return empty_value;
+
+        case is_array: {
+			std::vector<object> vec = boost::get<array>(d->u).to_vector();
+			vec.push_back(other);
+			return object(std::move(vec));
+		}
+
+        case is_str:
+			return boost::get<std::string>(d->u) + static_cast<std::string>(other);
+
+        case is_num:
+            if(other.get_type() == is_str)
                 return static_cast<std::string>(*this)
                         + static_cast<std::string>(other);
-            return d + static_cast<double>(other);
+            return boost::get<double>(d->u) + static_cast<double>(other);
 
-        case is_boolean: return b;
-        case is_ref: return ref->operator +(other);
+        case is_bool:
+			return boost::get<bool>(d->u);
+
+        case is_ref:
+			return boost::get<reference>(d->u)->operator +(other);
     }
 
     return empty_value;
@@ -424,34 +481,44 @@ object object::operator +(const object &other) const
 
 object object::operator -(const object &other) const
 {
-    switch(t) {
-        case is_empty: return empty_value;
+	assert(d);
+
+    switch(d->u.which())
+	{
+        case is_empty:
+			return empty_value;
+
         case is_array: {
-                std::vector<object> vec = a.to_vector();
-                for(auto i = vec.begin(); i != vec.end(); ++i)
-                    if(*i == other) {
-                        vec.erase(i);
-                        break;
-                    }
+			std::vector<object> vec = boost::get<array>(d->u).to_vector();
+			for(auto i = vec.begin(); i != vec.end(); ++i)
+				if(*i == other) {
+					vec.erase(i);
+					break;
+				}
 
-                return object(std::move(vec));
-            }
+			return object(std::move(vec));
+		}
 
-        case is_string: {
-                const auto str = static_cast<std::string>(other);
-                const auto idx = s.find(str);
-                if(idx != std::string::npos)
-                    return std::string(s).erase(idx, str.size());
-                return s;
-            }
+        case is_str: {
+			auto str = boost::get<std::string>(d->u);
+			const auto ostr = static_cast<std::string>(other);
+			const auto idx = str.find(ostr);
+			if(idx != std::string::npos)
+				return str.erase(idx, ostr.size());
+			return str;
+		}
 
-        case is_number: {
-            double rhs = static_cast<double>(other);
-            return std::isnan(rhs) ? d : d - rhs;
+        case is_num: {
+			const double lhs = boost::get<double>(d->u);
+            const double rhs = static_cast<double>(other);
+            return std::isnan(rhs) ? lhs : lhs - rhs;
         }
 
-        case is_boolean: return b;
-        case is_ref: return ref->operator -(other);
+        case is_bool:
+			return boost::get<bool>(d->u);
+
+        case is_ref:
+			return boost::get<reference>(d->u)->operator -(other);
     }
 
     return empty_value;
@@ -459,31 +526,42 @@ object object::operator -(const object &other) const
 
 object object::operator *(const object &other) const
 {
-    switch(t) {
-        case is_empty: return empty_value;
-        case is_array: return *this;
+	assert(d);
 
-        case is_string: {
-                if(other.get_type() != is_number)
-                    return s;
-                int i = static_cast<double>(other);
-                if(i < 1000) {
-                    decltype(s) str;
-                    str.reserve(s.size() * i);
-                    while(i-- > 0)
-                        str.append(s);
-                    return str;
-                }
-                return s;
-            }
+	switch(d->u.which())
+	{
+        case is_empty:
+			return empty_value;
 
-        case is_number: {
-            double rhs = static_cast<double>(other);
-            return std::isnan(rhs) ? d : d * rhs;
+        case is_array:
+			return *this;
+
+        case is_str: {
+			const auto str = boost::get<std::string>(d->u);
+			if(other.get_type() != is_num)
+				return str;
+			int i = static_cast<int>(static_cast<double>(other));
+			if(i < 1000) {
+				std::string new_str;
+				new_str.reserve(str.size() * i);
+				while(i-- > 0) // TODO test for i == 1
+					new_str.append(str);
+				return new_str;
+			}
+			return str;
+		}
+
+        case is_num: {
+			const double lhs = boost::get<double>(d->u);
+            const double rhs = static_cast<double>(other);
+            return std::isnan(rhs) ? lhs : lhs * rhs;
         }
 
-        case is_boolean: return b;
-        case is_ref: return ref->operator *(other);
+        case is_bool:
+			return boost::get<bool>(d->u);
+
+        case is_ref:
+			return boost::get<reference>(d->u)->operator *(other);
     }
 
     return empty_value;
@@ -491,17 +569,30 @@ object object::operator *(const object &other) const
 
 object object::operator /(const object &other) const
 {
-    switch(t) {
-        case is_empty: return empty_value;
-        case is_array: return *this;
-        case is_string: return s;
-        case is_number: {
-            double rhs = static_cast<double>(other);
-            return std::isnan(rhs) ? d : d / rhs;
+	assert(d);
+
+    switch(d->u.which())
+	{
+        case is_empty:
+			return empty_value;
+
+        case is_array:
+			return *this;
+
+        case is_str:
+			return boost::get<std::string>(d->u);
+
+        case is_num: {
+			const double lhs = boost::get<double>(d->u);
+            const double rhs = static_cast<double>(other);
+            return std::isnan(rhs) ? lhs : lhs / rhs;
         }
 
-        case is_boolean: return b;
-        case is_ref: return ref->operator /(other);
+        case is_bool:
+			return boost::get<bool>(d->u);
+
+        case is_ref:
+			return boost::get<reference>(d->u)->operator /(other);
     }
 
     return empty_value;
@@ -509,15 +600,17 @@ object object::operator /(const object &other) const
 
 std::size_t object::size() const
 {
-    switch(t) {
+	assert(d);
+
+    switch(d->u.which()) {
         case is_empty: return 0;
-        case is_array: return a.size();
-        case is_string: return s.size();
-        case is_number:
-        case is_boolean:
+        case is_array: return boost::get<array>(d->u).size();
+        case is_str: return boost::get<std::string>(d->u).size();
+        case is_num:
+        case is_bool:
             return 1;
 
-        case is_ref: return ref->size();
+        case is_ref: return boost::get<reference>(d->u)->size();
     }
 
     return 0;
@@ -525,65 +618,78 @@ std::size_t object::size() const
 
 object object::operator[](std::size_t i)
 {
-    switch(t) {
+	assert(d);
+
+	switch(d->u.which()) {
         case is_empty: return empty_value;
-        case is_array: return a[i].share();
-        case is_string: return std::string(1, s[i]);
-        case is_number: return d;
-        case is_boolean: return b;
-        case is_ref: return ref->operator[](i);
+        case is_array: return boost::get<array>(d->u)[i];
+        case is_str: return std::string(1, boost::get<std::string>(d->u)[i]);
+        case is_num: return boost::get<double>(d->u);
+        case is_bool: return boost::get<bool>(d->u);
+        case is_ref: return boost::get<reference>(d->u)->operator[](i);
     }
+
+	return empty_value;
 }
 
 object object::operator[](std::size_t i) const
 {
-    switch(t) {
-        case is_empty: return empty_value;
-        case is_array: return a[i];
-        case is_string: return std::string(1, s[i]);
-        case is_number: return d;
-        case is_boolean: return b;
-        case is_ref: return ref->operator[](i);
-    }
+	assert(d);
+
+	switch(d->u.which()) {
+		case is_empty: return empty_value;
+		case is_array: return boost::get<array>(d->u)[i];
+		case is_str: return std::string(1, boost::get<std::string>(d->u)[i]);
+		case is_num: return boost::get<double>(d->u);
+		case is_bool: return boost::get<bool>(d->u);
+		case is_ref: return boost::get<reference>(d->u)->operator[](i);
+	}
+
+	return empty_value;
 }
 
 boost::optional<array> object::as_array() const
 {
+	assert(d);
     boost::optional<array> ret;
-    if(is_array == t)
-        ret = a;
+    if(is_array == d->u.which())
+        ret = boost::get<array>(d->u);
     return ret;
 }
 
 boost::optional<std::string> object::as_string() const
 {
+	assert(d);
     boost::optional<std::string> ret;
-    if(is_string == t)
-        ret = s;
+    if(is_str == d->u.which())
+        ret = boost::get<std::string>(d->u);
     return ret;
 }
 
 boost::optional<double> object::as_number() const
 {
+	assert(d);
     boost::optional<double> ret;
-    if(is_number == t)
-        ret = d;
+    if(is_num == d->u.which())
+        ret = boost::get<double>(d->u);
     return ret;
 }
 
 boost::optional<bool> object::as_bool() const
 {
+	assert(d);
     boost::optional<bool> ret;
-    if(is_boolean == t)
-        ret = b;
+    if(is_bool == d->u.which())
+        ret = boost::get<bool>(d->u);
     return ret;
 }
 
 boost::optional<reference> object::as_ref() const
 {
+	assert(d);
     boost::optional<reference> ret;
-    if(is_ref == t)
-        ret = ref;
+    if(is_ref == d->u.which())
+        ret = boost::get<reference>(d->u);
     return ret;
 }
 

@@ -25,9 +25,9 @@ add_definitions("-DEMEL_EXPORT=__attribute__((visibility (\"default\")))")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra -Wpedantic -fstack-check")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -march=native")
 
-include_directories(src/boost-dll/include)
+include_directories(SYSTEM src/boost-dll/include)
 
-include_directories(src/gc/include)
+include_directories(SYSTEM src/gc/include)
 
 set(enable_threads YES)
 set(enable_cplusplus YES)

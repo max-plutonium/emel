@@ -27,41 +27,41 @@ BOOST_FUSION_ADAPT_STRUCT(
         (std::string, var_name)
         (emel::ast::node, rhs)
         (bool, as_external)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::ternary,
         (emel::ast::node, cond)
         (emel::ast::node, first)
         (emel::ast::node, second)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::bin_op,
         (emel::op_kind, k)
         (emel::ast::node, lhs)
         (emel::ast::node, rhs)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::variable,
         (std::string, name)
         (bool, ref_of)
         (bool, val_of)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::un_op,
         (emel::op_kind, k)
         (emel::ast::node, rhs)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::call,
         (std::vector<emel::ast::node>, names)
         (std::vector<emel::ast::node>, args)
         (emel::ast::node, chain_call)
-    );
+    )
 
 namespace emel { namespace spirit_frontend {
 

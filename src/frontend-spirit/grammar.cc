@@ -28,45 +28,45 @@ BOOST_FUSION_ADAPT_STRUCT(
         (std::string, base_name)
         (std::vector<emel::ast::node>, exprs)
         (std::vector<emel::ast::method>, methods)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::param,
         (std::string, name)
         (bool, by_ref)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::method,
         (std::string, name)
         (std::vector<emel::ast::param>, params)
         (std::vector<emel::ast::node>, exprs)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::try_,
         (std::string, var_name)
         (std::vector<emel::ast::node>, exprs)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::case_,
         (std::vector<emel::ast::node>, match_values)
         (std::vector<emel::ast::node>, exprs)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::switch_,
         (emel::ast::node, cond)
         (std::vector<emel::ast::node>, blocks)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::if_,
         (emel::ast::node, cond)
         (std::vector<emel::ast::node>, then_exprs)
         (std::vector<emel::ast::node>, else_exprs)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::for_,
@@ -74,18 +74,18 @@ BOOST_FUSION_ADAPT_STRUCT(
         (emel::ast::node, cond)
         (emel::ast::node, step)
         (std::vector<emel::ast::node>, exprs)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::while_,
         (emel::ast::node, cond)
         (std::vector<emel::ast::node>, exprs)
-    );
+    )
 
 BOOST_FUSION_ADAPT_STRUCT(
         emel::ast::return_,
         (emel::ast::node, e)
-    );
+    )
 
 namespace emel { namespace spirit_frontend {
 

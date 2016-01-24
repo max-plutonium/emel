@@ -50,6 +50,7 @@ set(HEADERS
     runtime/interp.h
     runtime/object.h
     runtime/object-data.h
+    runtime/string.h
     opcodes.h
     parser.h
     plugins.h
@@ -69,6 +70,7 @@ set(SOURCES
     runtime/interp.cc
     runtime/object.cc
     runtime/object-data.cc
+    runtime/string.cc
     opcodes.cc
     parser.cc
     plugins.cc

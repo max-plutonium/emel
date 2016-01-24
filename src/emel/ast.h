@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <memory>
+
 #include <boost/variant/recursive_variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 #include <boost/variant/get.hpp>

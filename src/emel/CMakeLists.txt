@@ -44,9 +44,12 @@ set(HEADERS
     compiler/compiler.h
     compiler/const-pool-manager.h
     compiler/symbol_table.h
+    memory/gc.h
+    memory/pool.h
     runtime/array.h
     runtime/interp.h
     runtime/object.h
+    runtime/object-data.h
     opcodes.h
     parser.h
     plugins.h
@@ -60,9 +63,12 @@ set(SOURCES
     compiler/codegen.cc
     compiler/compiler.cc
     compiler/const-pool-manager.cc
+    memory/gc.cc
+    memory/pool.cc
     runtime/array.cc
     runtime/interp.cc
     runtime/object.cc
+    runtime/object-data.cc
     opcodes.cc
     parser.cc
     plugins.cc
@@ -73,7 +79,7 @@ set(SOURCES
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION "${VERSION}" SOVERSION "0")
-target_link_libraries(${PROJECT_NAME} pthread stdc++ dl ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} stdc++ dl gcmt-dll ${Boost_LIBRARIES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "-debug")
 

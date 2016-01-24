@@ -33,7 +33,7 @@ struct frame : public object {
     const std::vector<value_type> &const_pool;
     insn_array::const_iterator pc;
     const insn_array::const_iterator start_pc, end_pc;
-    std::vector<object, boost::pool_allocator<object>> locals, stack;
+    std::vector<object> locals, stack;
     std::shared_ptr<frame> super_frame, caller_frame;
 
     frame(const std::vector<value_type> &const_pool,

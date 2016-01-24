@@ -21,16 +21,6 @@
 
 namespace emel { namespace runtime {
 
-void *object::data::operator new(std::size_t size)
-{
-	return memory::alloc<data>(size);
-}
-
-void object::data::operator delete(void *ptr)
-{
-	memory::gc::deallocate(ptr);
-}
-
 } // namespace runtime
 
 } // namespace emel

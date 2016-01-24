@@ -17,44 +17,28 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef ARRAY_H
-#define ARRAY_H
+#pragma once
 
-#include <utility>
-#include <vector>
+#include "object.h"
 
 namespace emel EMEL_EXPORT { namespace runtime EMEL_EXPORT {
 
-class object;
-
-class array
+class array : public object
 {
-    std::pair<object *, object *> ptrs;
+protected:
+	class data;
+	friend class object;
 
 public:
+	array();
     array(object *ptr, std::size_t len);
     array(const std::vector<object> &vec);
     array(std::vector<object> &&vec);
-    array(const array &other);
-    array &operator =(const array &other);
-    array(array &&other);
-    array &operator =(array &&other);
-    ~array();
-
-    void swap(array &other);
-
-    std::size_t size() const;
-    bool empty() const;
 
     std::vector<object> to_vector() const &;
     std::vector<object> to_vector() &&;
-
-    object &operator[](std::size_t);
-    const object &operator[](std::size_t) const;
 };
 
 } // namespace runtime
 
 } // namespace emel
-
-#endif // ARRAY_H

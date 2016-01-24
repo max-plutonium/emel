@@ -22,10 +22,16 @@ cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
 add_definitions("-DEMEL_EXPORT=__attribute__((visibility (\"default\")))")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -fstack-check")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra -Wpedantic -fstack-check")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -march=native")
 
 include_directories(src/boost-dll/include)
+
+include_directories(src/gc/include)
+
+set(enable_threads YES)
+set(enable_cplusplus YES)
+add_subdirectory(src/gc)
 
 add_subdirectory(src/emel)
 add_subdirectory(src/frontend-spirit)

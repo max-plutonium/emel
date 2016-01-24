@@ -19,7 +19,26 @@
 */
 #include "pool.h"
 
+#include <mutex>
+#include <boost/pool/pool_alloc.hpp>
+#include <ext/pool_allocator.h>
+#include <ext/bitmap_allocator.h>
+#include <ext/mt_allocator.h>
+
 namespace emel { namespace memory {
+
+template <typename Tp>
+using boost_pool_allocator = boost::fast_pool_allocator<Tp,
+		boost::default_user_allocator_new_delete, std::mutex, 1024>;
+
+template <typename Tp>
+using gnu_pool_allocator = __gnu_cxx::__pool_alloc<Tp>;
+
+template <typename Tp>
+using bitmap_allocator = __gnu_cxx::bitmap_allocator<Tp>;
+
+template <typename Tp>
+using mt_allocator = __gnu_cxx::__mt_alloc<Tp>;
 
 /*static*/ std::experimental::pmr::memory_resource *pool::get_source()
 {

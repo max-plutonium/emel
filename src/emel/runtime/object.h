@@ -21,8 +21,6 @@
 
 #include "../opcodes.h"
 
-#include <memory>
-
 #include <boost/optional.hpp>
 
 namespace emel EMEL_EXPORT { namespace runtime EMEL_EXPORT {
@@ -43,8 +41,8 @@ public:
 
 protected:
 	class data;
-	std::shared_ptr<data> d;
-    explicit object(std::shared_ptr<data> d);
+	data *d;
+    explicit object(data *d);
 	friend struct value_data;
 
 public:

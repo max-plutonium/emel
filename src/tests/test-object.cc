@@ -1628,6 +1628,7 @@ TEST(Object, MultString)
     runtime::object number1(1.23);
     runtime::object number2(3.2300);
     runtime::object number3(0.0);
+    runtime::object number4(-56.15);
 
     runtime::object true_(true);
     runtime::object false_(false);
@@ -1644,6 +1645,7 @@ TEST(Object, MultString)
     EXPECT_EQ(runtime::object("string"), string1 * number1);
     EXPECT_EQ(runtime::object("stringstringstring"), string1 * number2);
     EXPECT_EQ(runtime::object(""), string1 * number3);
+    EXPECT_EQ(runtime::object("string"), string1 * number4);
     EXPECT_EQ(runtime::object("string"), string1 * true_);
     EXPECT_EQ(runtime::object("string"), string1 * false_);
 

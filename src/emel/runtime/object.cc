@@ -31,13 +31,12 @@ void object::operator delete(void *ptr)
 	memory::gc::deallocate(ptr);
 }
 
-object::object(std::shared_ptr<data> d) : d(std::move(d))
+object::object(data *d) : d(d)
 {
 	assert(this->d);
 }
 
-object::object()
-	: object(std::allocate_shared<data>(build_rt_alloc_for<data>()))
+object::object() : object(new data)
 {
 }
 
@@ -46,50 +45,42 @@ object::object(empty_value_type) : object()
 }
 
 object::object(object *ptr, std::size_t len)
-	: object(std::allocate_shared<array::data>(
-		build_rt_alloc_for<array::data>(), ptr, len))
+	: object(new array::data(ptr, len))
 {
 }
 
 object:: object(const std::vector<object> &vec)
-	: object(std::allocate_shared<array::data>(
-		build_rt_alloc_for<array::data>(), vec))
+	: object(new array::data(vec))
 {
 }
 
 object::object(std::vector<object> &&vec)
-	: object(std::allocate_shared<array::data>(
-		build_rt_alloc_for<array::data>(), std::move(vec)))
+	: object(new array::data(std::move(vec)))
 {
 }
 
 object::object(const std::string &s)
-	: object(std::allocate_shared<string::data>(
-		build_rt_alloc_for<string::data>(), s))
+	: object(new string::data(s))
 {
 }
 
 object::object(const char *s)
-	: object(std::allocate_shared<string::data>(
-		build_rt_alloc_for<string::data>(), s))
+	: object(new string::data(s))
 {
 }
 
 object::object(double num)
-	: object(std::allocate_shared<value_data>(
-		build_rt_alloc_for<value_data>(), num))
+	: object(new value_data(num))
 {
 }
 
 object::object(bool b)
-	: object(std::allocate_shared<value_data>(
-		build_rt_alloc_for<value_data>(), b))
+	: object(new value_data(b))
 {
 }
 
 object::object(reference ref)
-	: object(std::allocate_shared<value_data>(
-		build_rt_alloc_for<value_data>(), ref))
+	: object(new value_data(ref))
 {
 }
 
@@ -199,7 +190,7 @@ void object::detach()
 {
 	assert(d);
 
-	if(!d.unique())
+	if(!d->unique())
 		d = d->clone();
 }
 
@@ -452,10 +443,10 @@ object object::operator *(const object &other) const
 			if(other.get_type() != is_num)
 				return str;
 			int i = static_cast<int>(static_cast<double>(other));
-			if(i < 1000) {
+			if(i >= 0 && i < 1000) {
 				std::string new_str;
 				new_str.reserve(str.size() * i);
-				while(i-- > 0) // TODO test for i == 1
+				while(i-- > 0)
 					new_str.append(str);
 				return new_str;
 			}

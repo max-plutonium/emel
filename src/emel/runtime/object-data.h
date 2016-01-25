@@ -26,6 +26,7 @@
 #include "string.h"
 #include "array.h"
 
+#include <gc_cpp.h>
 #include <codecvt>
 #include <locale>
 
@@ -37,13 +38,7 @@ struct boost::cnv::by_default : boost::cnv::spirit { };
 
 namespace emel { namespace runtime {
 
-template <typename Tp>
-inline memory::rt_allocator<Tp> build_rt_alloc_for()
-{
-	return memory::rt_allocator<Tp>(memory::pool::get_source());
-}
-
-struct object::data
+struct object::data : boehmgc::gc_cleanup
 {
 	virtual ~data() = default;
 
@@ -79,11 +74,20 @@ struct object::data
 	std::uint32_t pc : 1;
 	std::uint32_t esa : 2;
 
-	data(std::uint32_t us = is_unique, std::uint32_t cm = is_const,
-		 std::uint32_t vr = is_value, std::uint32_t pc = is_primitive,
-		 std::uint32_t esa = is_empty)
-		: us(us), cm(cm), vr(vr), pc(pc), esa(esa)
+	data(std::uint32_t cm = is_const, std::uint32_t vr = is_value,
+		 std::uint32_t pc = is_primitive, std::uint32_t esa = is_empty)
+		: us(is_unique), cm(cm), vr(vr), pc(pc), esa(esa)
 	{
+	}
+
+	data(const data &other)
+		: us(us), cm(other.cm), vr(other.vr), pc(other.pc), esa(other.esa)
+	{
+	}
+
+	bool unique() const
+	{
+		return is_unique == us;
 	}
 
 	virtual object::type get_type() const
@@ -91,9 +95,9 @@ struct object::data
 		return object::is_empty;
 	}
 
-	virtual std::shared_ptr<data> clone() const
+	virtual data *clone() const
 	{
-		return std::allocate_shared<data>(build_rt_alloc_for<data>(), *this);
+		return new data(*this);
 	}
 
 	virtual bool get_bool() const
@@ -149,36 +153,26 @@ struct value_data : object::data
 	};
 
 	value_data()
-		: object::data(is_unique, is_const, is_value,
-			is_primitive, is_single)
-		, bn(is_num)
-		, n(0.0)
+		: object::data(is_const, is_value, is_primitive, is_single)
+		, bn(is_num), n(0.0)
 	{
-		auto sz = sizeof(*this);
-		return;
 	}
 
 	explicit value_data(bool b)
-		: object::data(is_unique, is_const, is_value,
-			is_primitive, is_single)
-		, bn(is_bool)
-		, b(b)
+		: object::data(is_const, is_value, is_primitive, is_single)
+		, bn(is_bool), b(b)
 	{
 	}
 
 	explicit value_data(double num)
-		: object::data(is_unique, is_const, is_value,
-			is_primitive, is_single)
-		, bn(is_num)
-		, n(num)
+		: object::data(is_const, is_value, is_primitive, is_single)
+		, bn(is_num), n(num)
 	{
 	}
 
 	explicit value_data(reference o)
-		: object::data(is_unique, is_const, is_value,
-			is_primitive, is_single)
-		, bn(is_ref)
-		, o(o)
+		: object::data(is_const, is_value, is_primitive, is_single)
+		, bn(is_ref), o(o)
 	{
 	}
 
@@ -194,9 +188,9 @@ struct value_data : object::data
 		return object::data::get_type();
 	}
 
-	virtual std::shared_ptr<object::data> clone() const override
+	virtual object::data *clone() const override
 	{
-		return std::allocate_shared<value_data>(build_rt_alloc_for<value_data>(), *this);
+		return new value_data(*this);
 	}
 
 	virtual bool get_bool() const override
@@ -235,6 +229,13 @@ struct value_data : object::data
 		return object::data::get_str();
 	}
 
+	virtual reference get_ref() const override
+	{
+		if(is_ref == bn)
+			return o;
+		return nullptr;
+	}
+
 	virtual bool empty() const override
 	{
 		if(is_ref == bn)
@@ -271,36 +272,34 @@ struct string::data : object::data
 	string_type u;
 
 	data()
-		: object::data(is_unique, is_const, is_value,
-			is_composite, is_single)
+		: object::data(is_const, is_value, is_composite, is_single)
+		, u(memory::gc::get_source())
 	{
 	}
 
 	explicit data(character::type c)
-		: object::data(is_unique, is_const, is_value,
-			is_composite, is_single)
-		, u(1, c)
+		: object::data(is_const, is_value, is_composite, is_single)
+		, u(1, c, memory::gc::get_source())
 	{
 	}
 
 	explicit data(const char *str)
-		: object::data(is_unique, is_const, is_value,
-			is_composite, is_single)
+		: object::data(is_const, is_value, is_composite, is_single)
+		, u(memory::gc::get_source())
 	{
 		set(str);
 	}
 
 	explicit data(const std::string &str)
-		: object::data(is_unique, is_const, is_value,
-			is_composite, is_single)
+		: object::data(is_const, is_value, is_composite, is_single)
+		, u(memory::gc::get_source())
 	{
 		set(str);
 	}
 
 	explicit data(const string_type &str)
-		: object::data(is_unique, is_const, is_value,
-			is_composite, is_single)
-		, u(str)
+		: object::data(is_const, is_value, is_composite, is_single)
+		, u(str, memory::gc::get_source())
 	{
 	}
 
@@ -309,9 +308,9 @@ struct string::data : object::data
 		return object::is_str;
 	}
 
-	virtual std::shared_ptr<object::data> clone() const override
+	virtual object::data *clone() const override
 	{
-		return std::allocate_shared<data>(build_rt_alloc_for<data>(), *this);
+		return new data(*this);
 	}
 
 	virtual bool get_bool() const override
@@ -368,30 +367,26 @@ struct array::data : object::data
 	std::deque<object, memory::rt_allocator<object>> a;
 
 	data()
-		: object::data(is_unique, is_const, is_value,
-			is_composite, is_array)
+		: object::data(is_const, is_value, is_composite, is_array)
+		, a(memory::gc::get_source())
 	{
-		auto sz = sizeof(*this);
-		return;
 	}
 
 	data(object *ptr, std::size_t len)
-		: object::data(is_unique, is_const, is_value,
-			is_composite, is_array)
-		, a(ptr, ptr + len)
+		: object::data(is_const, is_value, is_composite, is_array)
+		, a(ptr, ptr + len, memory::gc::get_source())
 	{
 	}
 
 	explicit data(const std::vector<object> &vec)
-		: object::data(is_unique, is_const, is_value,
-			is_composite, is_array)
-		, a(vec.begin(), vec.end())
+		: object::data(is_const, is_value, is_composite, is_array)
+		, a(vec.begin(), vec.end(), memory::gc::get_source())
 	{
 	}
 
 	explicit data(std::vector<object> &&vec)
-		: object::data(is_unique, is_const, is_value,
-			is_composite, is_array)
+		: object::data(is_const, is_value, is_composite, is_array)
+		, a(memory::gc::get_source())
 	{
 		for(auto &v : vec)
 			a.push_back(std::move(v));
@@ -402,9 +397,9 @@ struct array::data : object::data
 		return object::is_array;
 	}
 
-	virtual std::shared_ptr<object::data> clone() const override
+	virtual object::data *clone() const override
 	{
-		return std::allocate_shared<data>(build_rt_alloc_for<data>(), *this);
+		return new data(*this);
 	}
 
 	virtual bool get_bool() const override

@@ -22,6 +22,7 @@ cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
 add_definitions("-DEMEL_EXPORT=__attribute__((visibility (\"default\")))")
+add_definitions("-DGC_DEBUG -DGC_NAMESPACE")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra -Wpedantic -fstack-check")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -march=native")
 

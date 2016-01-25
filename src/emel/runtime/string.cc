@@ -55,7 +55,7 @@ std::string character::to_string() const
 }
 
 string::string()
-	: object(std::allocate_shared<data>(build_rt_alloc_for<data>()))
+	: object(new data())
 {
 }
 

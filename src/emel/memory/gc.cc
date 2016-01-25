@@ -22,7 +22,7 @@
 #include <cassert>
 
 #define GC_THREADS
-#include <gc_allocator.h>
+#include <gc.h>
 #include <javaxfc.h>
 
 namespace emel { namespace memory {
@@ -140,7 +140,6 @@ void gc::deallocate(void *ptr)
 /*static*/ std::experimental::pmr::memory_resource *gc::get_source()
 {
 	static gc_memory_resource instance;
-	//static std::experimental::pmr::resource_adaptor<gc_allocator<char>> instance;
 	return &instance;
 }
 

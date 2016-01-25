@@ -22,22 +22,22 @@
 namespace emel { namespace runtime {
 
 array::array()
-	: object(std::allocate_shared<data>(build_rt_alloc_for<data>()))
+	: object(new data())
 {
 }
 
 array::array(object *ptr, std::size_t len)
-	: object(std::allocate_shared<data>(build_rt_alloc_for<data>(), ptr, len))
+	: object(new data(ptr, len))
 {
 }
 
 array::array(const std::vector<object> &vec)
-	: object(std::allocate_shared<data>(build_rt_alloc_for<data>(), vec))
+	: object(new data(vec))
 {
 }
 
 array::array(std::vector<object> &&vec)
-	: object(std::allocate_shared<data>(build_rt_alloc_for<data>(), std::move(vec)))
+	: object(new data(std::move(vec)))
 {
 }
 

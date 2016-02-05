@@ -20,8 +20,6 @@
 #include <cstdio>
 #include <gmock/gmock.h>
 
-#include "../emel/memory/gc.h"
-
 int main(int argc, const char **argv)
 {
     testing::InitGoogleMock(&argc, const_cast<char **>(argv));
@@ -38,8 +36,6 @@ int main(int argc, const char **argv)
 
     setenv("EMEL_HOME", test_src_dir.append("/../../test-data").c_str(), 1);
     setenv("LD_LIBRARY_PATH", pwd.append("/../frontend-spirit").c_str(), 1);
-
-	emel::memory::gc::init();
 
     return RUN_ALL_TESTS();
 }

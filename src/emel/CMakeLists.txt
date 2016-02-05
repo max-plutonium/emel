@@ -25,13 +25,14 @@ add_definitions("-DEMEL_VERSION=${VERSION}")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} \
     -fvisibility=hidden -fvisibility-inlines-hidden")
 
-find_package(Boost 1.59.0 REQUIRED system thread filesystem locale)
+find_package(Boost 1.60.0 REQUIRED system container thread filesystem locale)
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 set(PUBLIC_HEADERS
     ast.h
     compiler/compiler.h
+    memory/memory.h
     runtime/array.h
     runtime/object.h
     parser.h
@@ -45,7 +46,7 @@ set(HEADERS
     compiler/const-pool-manager.h
     compiler/symbol_table.h
     memory/gc.h
-    memory/pool.h
+    memory/memory.h
     runtime/array.h
     runtime/interp.h
     runtime/object.h
@@ -65,7 +66,7 @@ set(SOURCES
     compiler/compiler.cc
     compiler/const-pool-manager.cc
     memory/gc.cc
-    memory/pool.cc
+    memory/memory.cc
     runtime/array.cc
     runtime/interp.cc
     runtime/object.cc

@@ -25,7 +25,7 @@ add_definitions("-DEMEL_FRONTEND_VERSION=\"${VERSION}\"")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -fvisibility=hidden -fvisibility-inlines-hidden")
 
-find_package(Boost 1.59.0 REQUIRED system)
+find_package(Boost 1.60.0 REQUIRED system)
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 

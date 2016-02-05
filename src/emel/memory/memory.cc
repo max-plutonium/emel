@@ -17,9 +17,10 @@
 * License along with the EMEL library. If not, see
 * <http://www.gnu.org/licenses/>.
 */
-#include "pool.h"
+#include "memory.h"
 
 #include <mutex>
+#include <boost/container/pmr/resource_adaptor.hpp>
 #include <boost/pool/pool_alloc.hpp>
 #include <ext/pool_allocator.h>
 #include <ext/bitmap_allocator.h>
@@ -40,10 +41,61 @@ using bitmap_allocator = __gnu_cxx::bitmap_allocator<Tp>;
 template <typename Tp>
 using mt_allocator = __gnu_cxx::__mt_alloc<Tp>;
 
-/*static*/ std::experimental::pmr::memory_resource *pool::get_source()
+static std::once_flag s_flag;
+
+static void once_init(mt_allocator<char> &a)
 {
-	static std::experimental::pmr::resource_adaptor<mt_allocator<char>> instance;
+	auto opt = a._M_get_options();
+	opt._M_align = 16;
+	opt._M_chunk_size = 8192 - 4 * sizeof(void *);
+	opt._M_max_bytes = opt._M_chunk_size;
+	a._M_set_options(opt);
+}
+
+/*static*/ boost::container::pmr::memory_resource *memory::get_source()
+{
+	static boost::container::pmr::resource_adaptor<mt_allocator<char>> instance;
+	std::call_once(s_flag, once_init, std::ref(instance.get_allocator()));
 	return &instance;
+}
+
+bool atomic_counted::acquire() noexcept
+{
+	auto count = use_count();
+	do {
+		if(count <= 0)
+			return false;
+	} while(refs.compare_exchange_weak(count, count + 1,
+			std::memory_order_acq_rel, std::memory_order_relaxed));
+
+	return true;
+}
+
+void atomic_counted::release() noexcept
+{
+	if(1 == refs.fetch_sub(1, std::memory_order_release))
+		destroy();
+}
+
+bool atomic_counted::unique() const noexcept
+{
+	return 1 == refs.load(std::memory_order_relaxed);
+}
+
+std::int32_t atomic_counted::use_count() const noexcept
+{
+	return refs.load(std::memory_order_relaxed);
+}
+
+void intrusive_ptr_add_ref(atomic_counted *ac)
+{
+	const auto res = ac->acquire();
+	assert(res);
+}
+
+void intrusive_ptr_release(atomic_counted *ac)
+{
+	ac->release();
 }
 
 } // namespace memory

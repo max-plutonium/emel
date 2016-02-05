@@ -19,9 +19,9 @@
  */
 #pragma once
 
-#include <experimental/memory_resource>
+#include <boost/container/pmr/memory_resource.hpp>
 
-namespace emel EMEL_EXPORT { namespace memory EMEL_EXPORT {
+namespace emel { namespace memory {
 
 class gc
 {
@@ -44,8 +44,7 @@ public:
 	static void set_max_heap_size(std::size_t size);
 	static std::size_t set_free_space_divisor(std::size_t div);
 
-	static void init();
-	static std::experimental::pmr::memory_resource *get_source();
+	static boost::container::pmr::memory_resource *get_source();
 	static void enable_gc();
 	static void disable_gc();
 	static bool gc_enabled();

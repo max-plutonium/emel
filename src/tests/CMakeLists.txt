@@ -34,6 +34,7 @@ set(SOURCES
     test-compiler.cc
     test-interp.cc
     test-object.cc
+    test-memory.cc
     test-opcodes.cc
     test-parser.cc
     test-string.cc

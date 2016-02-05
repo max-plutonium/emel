@@ -20,19 +20,20 @@
 #include "gc.h"
 
 #include <cassert>
+#include <mutex>
+#include <typeinfo>
 
-#define GC_THREADS
 #include <gc.h>
 #include <javaxfc.h>
 
 namespace emel { namespace memory {
 
-class gc_memory_resource : public std::experimental::pmr::memory_resource
+class gc_memory_resource : public boost::container::pmr::memory_resource
 {
 protected:
 	virtual void *do_allocate(size_t bytes, size_t alignment) override;
 	virtual void do_deallocate(void *ptr, size_t bytes, size_t alignment) override;
-	virtual bool do_is_equal(const std::experimental::pmr::memory_resource &other) const noexcept override;
+	virtual bool do_is_equal(const boost::container::pmr::memory_resource &other) const noexcept override;
 };
 
 void *gc_memory_resource::do_allocate(size_t bytes, size_t /*alignment*/)
@@ -47,7 +48,7 @@ void gc_memory_resource::do_deallocate(
 }
 
 bool gc_memory_resource::do_is_equal(
-	const std::experimental::pmr::memory_resource &other) const noexcept
+	const boost::container::pmr::memory_resource &other) const noexcept
 {
 	return (typeid(other) == typeid(gc_memory_resource)
 		&& this == &other);
@@ -68,7 +69,7 @@ bool gc_memory_resource::do_is_equal(
 	return GC_MALLOC(size);
 }
 
-void gc::deallocate(void *ptr)
+/*static*/ void gc::deallocate(void *ptr)
 {
 	GC_FREE(ptr);
 }
@@ -129,7 +130,9 @@ void gc::deallocate(void *ptr)
 	return prev_divisor;
 }
 
-/*static*/ void gc::init()
+static std::once_flag s_flag;
+
+static void once_init()
 {
 	GC_set_all_interior_pointers(true);
 	GC_set_java_finalization(true);
@@ -137,9 +140,10 @@ void gc::deallocate(void *ptr)
 	GC_allow_register_threads();
 }
 
-/*static*/ std::experimental::pmr::memory_resource *gc::get_source()
+/*static*/ boost::container::pmr::memory_resource *gc::get_source()
 {
 	static gc_memory_resource instance;
+	std::call_once(s_flag, once_init);
 	return &instance;
 }
 

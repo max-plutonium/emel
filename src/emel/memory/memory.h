@@ -72,7 +72,7 @@ class atomic_counted
 public:
 	atomic_counted() noexcept : refs(1) { }
 	virtual ~atomic_counted() noexcept = default;
-	virtual atomic_counted *clone() = 0;
+	virtual atomic_counted *clone() const = 0;
 
   template <typename Tp>
   	Tp *get() const noexcept { return static_cast<Tp *>(raw_ptr()); }
@@ -103,14 +103,14 @@ class atomic_counted_inplace : public atomic_counted
 		using base = details::ebo_helper<0UL, Alloc>;
 
 		explicit storage(Alloc a) noexcept : base(a) { }
-		Alloc &get_alloc() noexcept { return base::get(*this); }
+
+		Alloc &get_alloc() const noexcept {
+			return base::get(const_cast<storage &>(*this));
+		}
 
 		typename std::aligned_storage<sizeof(Tp),
 			std::alignment_of<Tp>::value>::type buffer;
 	};
-
-  //template <typename Up>
-	//using rebind = typename Alloc::template rebind<Up>::other;
 
 public:
 	using alloc_type = rt_allocator<atomic_counted_inplace>;
@@ -119,12 +119,12 @@ public:
 	atomic_counted_inplace(Alloc a, Args &&...args);
 
 	virtual ~atomic_counted_inplace() noexcept override = default;
-	virtual atomic_counted *clone() override;
+	virtual atomic_counted *clone() const override;
 	virtual void destroy() noexcept override;
 
 private:
 	virtual void *raw_ptr() const noexcept final override {
-		return static_cast<Tp *>(const_cast<void *>(reinterpret_cast<const void *>(&s.buffer)));
+		return const_cast<void *>(reinterpret_cast<const void *>(&s.buffer));
 	}
 
 	storage s;
@@ -162,7 +162,7 @@ atomic_counted_inplace(Alloc a, Args &&...args) : s(a)
 
 template <typename Tp, typename Alloc>
 atomic_counted *
-atomic_counted_inplace<Tp, Alloc>::clone()
+atomic_counted_inplace<Tp, Alloc>::clone() const
 {
 	return allocate_counted<Tp>(s.get_alloc(), *get<Tp>());
 }

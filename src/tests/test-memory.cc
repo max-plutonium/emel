@@ -29,10 +29,10 @@ class mock_atomic_counted
 {
 public:
 	mock_atomic_counted() = default;
-	mock_atomic_counted(mock_atomic_counted &o) { o.copy(); }
+	mock_atomic_counted(const mock_atomic_counted &o) { o.copy(); }
 	~mock_atomic_counted() { dtor(); }
 	MOCK_METHOD0(dtor, void ());
-	MOCK_METHOD0(copy, void ());
+	MOCK_CONST_METHOD0(copy, void ());
 };
 
 TEST(Memory, AcquireRelease)

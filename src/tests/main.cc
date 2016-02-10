@@ -19,10 +19,12 @@
  */
 #include <cstdio>
 #include <gmock/gmock.h>
+#include <benchmark/benchmark.h>
 
 int main(int argc, const char **argv)
 {
     testing::InitGoogleMock(&argc, const_cast<char **>(argv));
+    benchmark::Initialize(&argc, const_cast<char **>(argv));
 
     std::string test_src_dir(TESTS_SRC_DIR);
 
@@ -37,5 +39,7 @@ int main(int argc, const char **argv)
     setenv("EMEL_HOME", test_src_dir.append("/../../test-data").c_str(), 1);
     setenv("LD_LIBRARY_PATH", pwd.append("/../frontend-spirit").c_str(), 1);
 
-    return RUN_ALL_TESTS();
+    const auto result = RUN_ALL_TESTS();
+    benchmark::RunSpecifiedBenchmarks();
+    return result;
 }

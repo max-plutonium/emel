@@ -22,8 +22,9 @@ set(VERSION 0.0.0)
 cmake_minimum_required(VERSION 3.0)
 
 add_definitions("-DEMEL_FRONTEND_VERSION=\"${VERSION}\"")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-    -fvisibility=hidden -fvisibility-inlines-hidden")
+
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 find_package(Boost 1.60.0 REQUIRED system)
 

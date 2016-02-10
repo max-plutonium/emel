@@ -7,3 +7,6 @@
 [submodule "src/gc"]
 	path = src/gc
 	url = https://github.com/ivmai/bdwgc.git
+[submodule "src/google-benchmark"]
+	path = src/google-benchmark
+	url = https://github.com/google/benchmark.git

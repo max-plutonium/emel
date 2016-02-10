@@ -22,8 +22,11 @@ set(VERSION 0.0.0)
 cmake_minimum_required(VERSION 3.0)
 
 add_definitions("-DEMEL_VERSION=${VERSION}")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} \
-    -fvisibility=hidden -fvisibility-inlines-hidden")
+
+IF(RELEASE)
+    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+    set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+ENDIF()
 
 find_package(Boost 1.60.0 REQUIRED system container thread filesystem locale)
 

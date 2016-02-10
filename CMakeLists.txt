@@ -35,5 +35,6 @@ add_subdirectory(src/gc)
 
 add_subdirectory(src/emel)
 add_subdirectory(src/frontend-spirit)
+add_subdirectory(src/google-benchmark)
 add_subdirectory(src/googletest/googlemock)
 add_subdirectory(src/tests)

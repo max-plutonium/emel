@@ -22,7 +22,6 @@ cmake_minimum_required(VERSION 3.0)
 
 add_definitions("-DTESTS_SRC_DIR=\"${emel-tests_SOURCE_DIR}\"")
 
-include_directories(SYSTEM ../google-benchmark/include)
 include_directories(SYSTEM ../googletest/googlemock/include)
 include_directories(SYSTEM ../googletest/googletest/include)
 
@@ -42,7 +41,7 @@ set(SOURCES
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} emel benchmark gmock)
+target_link_libraries(${PROJECT_NAME} emel gmock)
 add_dependencies(${PROJECT_NAME} emel-frontend-spirit)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "-debug")

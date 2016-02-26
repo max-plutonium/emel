@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 3.0)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
 add_definitions("-DEMEL_EXPORT=__attribute__((visibility (\"default\")))")
 add_definitions("-DGC_NAMESPACE -DGC_THREADS")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra -Wpedantic -fstack-check -DGC_DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra -Wpedantic -Wstrict-aliasing -fstack-check -DGC_DEBUG -DDEBUG_THREADS")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -march=native")
 
 include_directories(SYSTEM src/boost-dll/include)
@@ -31,6 +31,7 @@ include_directories(SYSTEM src/gc/include)
 
 set(enable_threads YES)
 set(enable_cplusplus YES)
+set(enable_parallel_mark YES)
 add_subdirectory(src/gc)
 
 add_subdirectory(src/emel)

@@ -21,7 +21,7 @@
 
 #include "../emel/memory/memory.h"
 
-using namespace emel::memory;
+using namespace emel;
 
 using testing::InSequence;
 

@@ -115,8 +115,11 @@ void memory::register_finalizer(atomic_counted *obj)
 	GC_register_finalizer_no_order(base, [](void *obj, void *offset) {
 		atomic_counted *const ptr = reinterpret_cast<atomic_counted *>(
 			reinterpret_cast<char *>(obj) + reinterpret_cast<std::ptrdiff_t>(offset));
-		ptr->release();
 
+		if(ptr->use_count())
+			ptr->release();
+
+		assert(1 == ptr->weak_count());
 		GC_register_finalizer_unreachable(ptr, [](void *obj, void *) {
 			reinterpret_cast<atomic_counted *>(obj)->weak_release();
 		}, nullptr, nullptr, nullptr);
@@ -236,12 +239,6 @@ std::size_t memory::get_collectable_size(void *obj)
 }
 
 /*static*/
-bool memory::is_same_collectable_object(void *first, void *second)
-{
-	return nullptr != GC_same_obj(first, second);
-}
-
-/*static*/
 void memory::attach_thread()
 {
 	GC_stack_base sb;
@@ -280,7 +277,8 @@ bool memory::atomic_counted::acquire() noexcept
 
 void memory::atomic_counted::release() noexcept
 {
-	if(1 == refs.fetch_sub(1, std::memory_order_relaxed)) {
+	if(1 == refs.fetch_sub(1, std::memory_order_relaxed))
+	{
 		dispose();
 
 		// to ensure that the effects of dispose() are observed
@@ -306,7 +304,10 @@ bool memory::atomic_counted::weak_acquire() noexcept
 
 void memory::atomic_counted::weak_release() noexcept
 {
-	if(1 == weak_refs.fetch_sub(1, std::memory_order_relaxed)) {
+	if(1 == weak_refs.fetch_sub(1, std::memory_order_relaxed))
+	{
+		assert(0 >= use_count());
+
 		// destroy() must observe the effects of dispose().
 		std::atomic_thread_fence(std::memory_order_acq_rel);
 		destroy();

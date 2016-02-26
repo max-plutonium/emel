@@ -48,7 +48,6 @@ set(HEADERS
     compiler/compiler.h
     compiler/const-pool-manager.h
     compiler/symbol_table.h
-    memory/gc.h
     memory/memory.h
     runtime/array.h
     runtime/interp.h
@@ -68,7 +67,6 @@ set(SOURCES
     compiler/codegen.cc
     compiler/compiler.cc
     compiler/const-pool-manager.cc
-    memory/gc.cc
     memory/memory.cc
     runtime/array.cc
     runtime/interp.cc

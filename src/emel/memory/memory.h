@@ -94,7 +94,6 @@ public:
 	static void *get_base_address(void *obj);
 	static bool is_collectable(void *obj);
 	static std::size_t get_collectable_size(void *obj);
-	static bool is_same_collectable_object(void *first, void *second);
 
 	static void attach_thread();
 	static void detach_thread();
@@ -121,11 +120,13 @@ public:
 
 		bool acquire() noexcept;
 		void release() noexcept;
-		bool weak_acquire() noexcept;
-		void weak_release() noexcept;
 		bool unique() const noexcept;
 		std::int32_t use_count() const noexcept;
 		std::int32_t weak_count() const noexcept;
+
+	protected:
+		bool weak_acquire() noexcept;
+		void weak_release() noexcept;
 
 	private:
 		virtual void dispose() noexcept = 0;
@@ -133,6 +134,7 @@ public:
 		virtual void *get_raw(boost::typeindex::type_index) const noexcept = 0;
 		atomic_counted(const atomic_counted &) = delete;
 		atomic_counted &operator=(const atomic_counted &) = delete;
+		friend class memory;
 
 		std::atomic_int_least32_t refs, weak_refs;
 	};
@@ -233,8 +235,14 @@ memory::atomic_counted_inplace<Tp, Alloc, TypeInfo>::clone() const
 {
 	assert(use_count());
 	assert(weak_count());
-	return allocate_counted<Tp>(use_type_info(), s.get_alloc(), s.get_info(),
+
+	const auto &alloc = s.get_alloc();
+	auto *const ptr = allocate_counted<Tp>(use_type_info(), alloc, s.get_info(),
 		*reinterpret_cast<const Tp *>(&s.buffer));
+
+	if(rt_allocator<Tp>(get_source(collectable_pool)) == alloc)
+		register_finalizer(ptr);
+	return ptr;
 }
 
 template <typename Tp, typename Alloc, typename TypeInfo>

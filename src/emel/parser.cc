@@ -25,12 +25,12 @@
 
 namespace emel {
 
-static std::once_flag once_flag;
+static std::once_flag s_flag;
 
 /*static*/
 parser *parser::instance(const std::string &name)
 {
-    std::call_once(once_flag, &plugin::load_dir, &frontend, "");
+    std::call_once(s_flag, &plugin::load_dir, &frontend, "");
 
     if(name.empty()) {
         auto versions = frontend.versions();

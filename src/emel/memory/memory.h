@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -332,7 +332,7 @@ template <typename Tp, typename... Args>
 /*static*/ memory::atomic_counted *memory::make_collectable(Args &&...args)
 {
 	auto *const ptr = allocate_counted<Tp>(rt_allocator<Tp>(get_source(collectable_pool)),
-			std::forward<Args>(args)...);
+		std::forward<Args>(args)...);
 
 	register_finalizer(ptr);
 	return ptr;
@@ -340,5 +340,19 @@ template <typename Tp, typename... Args>
 
 void intrusive_ptr_add_ref(memory::atomic_counted *ac);
 void intrusive_ptr_release(memory::atomic_counted *ac);
+
+template <typename Tp>
+struct memory_ptr : public memory::counted_ptr
+{
+	using memory::counted_ptr::counted_ptr;
+
+	Tp &operator *() const {
+		return *memory::counted_ptr::operator*().template get<Tp>();
+	}
+
+	Tp *operator ->() const {
+		return memory::counted_ptr::operator->()->template get<Tp>();
+	}
+};
 
 } // namespace emel

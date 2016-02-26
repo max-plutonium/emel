@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+* Copyright (C) 2016 Max Plutonium <plutonium.max@gmail.com>
 *
 * This file is part of the EMEL library.
 *
@@ -21,9 +21,10 @@
 
 #include <boost/container/pmr/resource_adaptor.hpp>
 #include <boost/pool/pool_alloc.hpp>
+
 #include <ext/bitmap_allocator.h>
-#include <ext/pool_allocator.h>
 #include <ext/mt_allocator.h>
+#include <ext/pool_allocator.h>
 
 #include <gc.h>
 #include <javaxfc.h>

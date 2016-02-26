@@ -36,7 +36,6 @@ set(PUBLIC_HEADERS
     ast.h
     compiler/compiler.h
     memory/memory.h
-    runtime/array.h
     runtime/object.h
     parser.h
     plugins.h
@@ -49,11 +48,8 @@ set(HEADERS
     compiler/const-pool-manager.h
     compiler/symbol_table.h
     memory/memory.h
-    runtime/array.h
     runtime/interp.h
     runtime/object.h
-    runtime/object-data.h
-    runtime/string.h
     opcodes.h
     parser.h
     plugins.h
@@ -68,11 +64,8 @@ set(SOURCES
     compiler/compiler.cc
     compiler/const-pool-manager.cc
     memory/memory.cc
-    runtime/array.cc
     runtime/interp.cc
     runtime/object.cc
-    runtime/object-data.cc
-    runtime/string.cc
     opcodes.cc
     parser.cc
     plugins.cc

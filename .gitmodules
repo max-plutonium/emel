@@ -1,12 +1,20 @@
-[submodule "src/boost-dll"]
-	path = src/boost-dll
-	url = https://github.com/apolukhin/Boost.DLL.git
-[submodule "src/googletest"]
-	path = src/googletest
-	url = https://github.com/google/googletest.git
-[submodule "src/gc"]
-	path = src/gc
+[submodule "src/deps/bdwgc"]
+	path = src/deps/bdwgc
 	url = https://github.com/ivmai/bdwgc.git
-[submodule "src/google-benchmark"]
-	path = src/google-benchmark
+
+[submodule "src/deps/boost-dll"]
+	path = src/deps/boost-dll
+	url = https://github.com/boostorg/dll.git
+
+[submodule "src/deps/google-benchmark"]
+	path = src/deps/google-benchmark
 	url = https://github.com/google/benchmark.git
+
+[submodule "src/deps/google-sparsehash"]
+	path = src/deps/google-sparsehash
+	url = https://github.com/sparsehash/sparsehash.git
+
+[submodule "src/deps/google-test"]
+	path = src/deps/google-test
+	url = https://github.com/google/googletest.git
+

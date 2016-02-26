@@ -29,7 +29,4 @@
 
 # Other
 *~
-*.qbs.user
-*.cpp.orig
-Makefile*
-bin/
+

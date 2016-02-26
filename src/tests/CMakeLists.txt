@@ -22,19 +22,12 @@ cmake_minimum_required(VERSION 3.0)
 
 add_definitions("-DTESTS_SRC_DIR=\"${emel-tests_SOURCE_DIR}\"")
 
-include_directories(SYSTEM ../googletest/googlemock/include)
-include_directories(SYSTEM ../googletest/googletest/include)
-
-find_package(Boost 1.59.0 REQUIRED)
-
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-
 set(SOURCES
     main.cc
     test-compiler.cc
     test-interp.cc
-    test-object.cc
     test-memory.cc
+#    test-object.cc
     test-opcodes.cc
     test-parser.cc
     test-string.cc

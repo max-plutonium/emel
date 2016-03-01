@@ -24,7 +24,6 @@
 #include <boost/container/pmr/memory_resource.hpp>
 #include <boost/container/pmr/polymorphic_allocator.hpp>
 #include <boost/intrusive_ptr.hpp>
-#include <boost/type_index.hpp>
 
 namespace emel EMEL_EXPORT {
 
@@ -114,9 +113,7 @@ public:
 		virtual atomic_counted *clone() const = 0;
 
 	  template <typename Tp>
-		Tp *get() const noexcept { return static_cast<Tp *>(
-			get_raw(boost::typeindex::type_id<Tp>()));
-		}
+		Tp *get() const noexcept { return static_cast<Tp *>(get_raw()); }
 
 		bool acquire() noexcept;
 		void release() noexcept;
@@ -131,7 +128,7 @@ public:
 	private:
 		virtual void dispose() noexcept = 0;
 		virtual void destroy() noexcept = 0;
-		virtual void *get_raw(boost::typeindex::type_index) const noexcept = 0;
+		virtual void *get_raw() const noexcept = 0;
 		atomic_counted(const atomic_counted &) = delete;
 		atomic_counted &operator=(const atomic_counted &) = delete;
 		friend class memory;
@@ -142,25 +139,18 @@ public:
 	using counted_ptr = boost::intrusive_ptr<atomic_counted>;
 
 private:
-	struct null_type_info { };
 
-  template <typename Tp, typename Alloc, typename TypeInfo = null_type_info>
+  template <typename Tp, typename Alloc>
 	class atomic_counted_inplace final : public atomic_counted
 	{
 		struct storage : details::ebo_helper<0, Alloc>
-				, details::ebo_helper<1, TypeInfo>
 		{
 			using base0 = details::ebo_helper<0, Alloc>;
-			using base1 = details::ebo_helper<1, TypeInfo>;
 
-			explicit storage(Alloc a, TypeInfo t) noexcept : base0(a), base1(t) { }
+			explicit storage(Alloc a) noexcept : base0(a) { }
 
 			Alloc &get_alloc() const noexcept {
 				return base0::get(const_cast<storage &>(*this));
-			}
-
-			TypeInfo &get_info() const noexcept {
-				return base1::get(const_cast<storage &>(*this));
 			}
 
 			typename std::aligned_storage<sizeof(Tp),
@@ -171,14 +161,14 @@ private:
 		using alloc_type = rt_allocator<atomic_counted_inplace>;
 
 	  template <typename... Args>
-		atomic_counted_inplace(Alloc a, TypeInfo info, Args &&...args);
+		atomic_counted_inplace(Alloc a, Args &&...args);
 
 	private:
 		virtual ~atomic_counted_inplace() noexcept override;
 		virtual atomic_counted *clone() const override;
 		virtual void dispose() noexcept override;
 		virtual void destroy() noexcept override;
-		virtual void *get_raw(boost::typeindex::type_index ti) const noexcept override;
+		virtual void *get_raw() const noexcept override;
 
 		storage s;
 	};
@@ -188,151 +178,106 @@ private:
 public:
 	struct use_type_info { };
 
-  template <typename Tp, typename Alloc, typename TypeInfo, typename... Args>
-	static atomic_counted *
-	allocate_counted(use_type_info, Alloc a, TypeInfo info, Args &&...args);
-
-  template <typename Tp, typename TypeInfo, typename... Args>
-	static atomic_counted *
-	make_counted(use_type_info, TypeInfo info, Args &&...args);
-
-  template <typename Tp, typename TypeInfo, typename... Args>
-	static atomic_counted *
-	make_collectable(use_type_info, TypeInfo info, Args &&...args);
-
   template <typename Tp, typename Alloc, typename... Args>
-	static atomic_counted *allocate_counted(Alloc a, Args &&...args);
+	static atomic_counted *
+	allocate_counted(Alloc a, Args &&...args);
 
   template <typename Tp, typename... Args>
-	static atomic_counted *make_counted(Args &&...args);
+	static atomic_counted *
+	make_counted(Args &&...args);
 
   template <typename Tp, typename... Args>
-	static atomic_counted *make_collectable(Args &&...args);
+	static atomic_counted *
+	make_collectable(Args &&...args);
 
 }; // class memory
 
-template <typename Tp, typename Alloc, typename TypeInfo>
+template <typename Tp, typename Alloc>
     template <typename... Args>
-memory::atomic_counted_inplace<Tp, Alloc, TypeInfo>::
-atomic_counted_inplace(Alloc a, TypeInfo info, Args &&...args)
-	: s(a, std::move(info))
+memory::atomic_counted_inplace<Tp, Alloc>::
+atomic_counted_inplace(Alloc a, Args &&...args) : s(a)
 {
 	std::allocator_traits<Alloc>::construct(a,
 		reinterpret_cast<Tp *>(&s.buffer), std::forward<Args>(args)...);
 }
 
-template <typename Tp, typename Alloc, typename TypeInfo>
-memory::atomic_counted_inplace<Tp, Alloc, TypeInfo>::
+template <typename Tp, typename Alloc>
+memory::atomic_counted_inplace<Tp, Alloc>::
 ~atomic_counted_inplace() noexcept
 {
 	assert(0 >= use_count());
 	assert(0 == weak_count());
 }
 
-template <typename Tp, typename Alloc, typename TypeInfo>
+template <typename Tp, typename Alloc>
 memory::atomic_counted *
-memory::atomic_counted_inplace<Tp, Alloc, TypeInfo>::clone() const
+memory::atomic_counted_inplace<Tp, Alloc>::clone() const
 {
 	assert(use_count());
 	assert(weak_count());
 
 	const auto &alloc = s.get_alloc();
-	auto *const ptr = allocate_counted<Tp>(use_type_info(), alloc, s.get_info(),
-		*reinterpret_cast<const Tp *>(&s.buffer));
+	auto *const ptr = allocate_counted<Tp>(alloc, *reinterpret_cast<const Tp *>(&s.buffer));
 
 	if(rt_allocator<Tp>(get_source(collectable_pool)) == alloc)
 		register_finalizer(ptr);
 	return ptr;
 }
 
-template <typename Tp, typename Alloc, typename TypeInfo>
+template <typename Tp, typename Alloc>
 void
-memory::atomic_counted_inplace<Tp, Alloc, TypeInfo>::dispose() noexcept
+memory::atomic_counted_inplace<Tp, Alloc>::dispose() noexcept
 {
 	std::allocator_traits<Alloc>::destroy(s.get_alloc(),
 		const_cast<Tp *>(reinterpret_cast<const Tp *>(&s.buffer)));
 }
 
-template <typename Tp, typename Alloc, typename TypeInfo>
+template <typename Tp, typename Alloc>
 void
-memory::atomic_counted_inplace<Tp, Alloc, TypeInfo>::destroy() noexcept
+memory::atomic_counted_inplace<Tp, Alloc>::destroy() noexcept
 {
 	alloc_type a(s.get_alloc());
 	std::__allocated_ptr<alloc_type> guard { a, this };
 	this->~atomic_counted_inplace();
 }
 
-template <typename Tp, typename Alloc, typename TypeInfo>
+template <typename Tp, typename Alloc>
 void *
-memory::atomic_counted_inplace<Tp, Alloc, TypeInfo>::
-get_raw(boost::typeindex::type_index ti) const noexcept
+memory::atomic_counted_inplace<Tp, Alloc>::get_raw() const noexcept
 {
-	if(ti.equal(boost::typeindex::type_id<Tp>()))
-		if(use_count())
-			return const_cast<void *>(reinterpret_cast<const void *>(&s.buffer));
-		else
-			return nullptr;
-	else if(ti.equal(boost::typeindex::type_id<TypeInfo>()))
-		return reinterpret_cast<void *>(std::addressof(s.get_info()));
-	else if(ti.equal(boost::typeindex::type_id<Alloc>()))
-		return reinterpret_cast<void *>(std::addressof(s.get_alloc()));
-	else
-		return nullptr;
-}
-
-template <typename Tp, typename Alloc, typename TypeInfo, typename... Args>
-/*static*/ memory::atomic_counted *
-memory::allocate_counted(use_type_info, Alloc a, TypeInfo info, Args &&...args)
-{
-	using ac_type = atomic_counted_inplace<Tp, Alloc, TypeInfo>;
-	typename ac_type::alloc_type a2(a);
-	auto guard = std::__allocate_guarded(a2);
-	ac_type *const ptr = guard.get();
-	new (ptr) ac_type(std::move(a), std::move(info), std::forward<Args>(args)...);
-	guard = nullptr;
-	return ptr;
-}
-
-template <typename Tp, typename TypeInfo, typename... Args>
-/*static*/ memory::atomic_counted *
-memory::make_counted(use_type_info, TypeInfo info, Args &&...args)
-{
-	return allocate_counted<Tp>(use_type_info(), rt_allocator<Tp>(get_source()),
-		std::move(info), std::forward<Args>(args)...);
-}
-
-template <typename Tp, typename TypeInfo, typename... Args>
-/*static*/ memory::atomic_counted *
-memory::make_collectable(use_type_info, TypeInfo info, Args &&...args)
-{
-	auto *const ptr = allocate_counted<Tp>(use_type_info(),
-        rt_allocator<Tp>(get_source(collectable_pool)),
-            std::move(info), std::forward<Args>(args)...);
-
-	register_finalizer(ptr);
-	return ptr;
+	if(use_count() > 0)
+		return const_cast<void *>(reinterpret_cast<const void *>(&s.buffer));
+	return nullptr;
 }
 
 template <typename Tp, typename Alloc, typename... Args>
 /*static*/ memory::atomic_counted *
 memory::allocate_counted(Alloc a, Args &&...args)
 {
-	return allocate_counted<Tp>(use_type_info(), std::move(a),
-		null_type_info(), std::forward<Args>(args)...);
+	using ac_type = atomic_counted_inplace<Tp, Alloc>;
+	typename ac_type::alloc_type a2(a);
+	auto guard = std::__allocate_guarded(a2);
+	ac_type *const ptr = guard.get();
+	new (ptr) ac_type(std::move(a), std::forward<Args>(args)...);
+	guard = nullptr;
+	return ptr;
 }
 
 template <typename Tp, typename... Args>
-/*static*/ memory::atomic_counted *memory::make_counted(Args &&...args)
+/*static*/ memory::atomic_counted *
+memory::make_counted(Args &&...args)
 {
-	return allocate_counted<Tp>(rt_allocator<Tp>(memory::get_source()),
+	return allocate_counted<Tp>(rt_allocator<Tp>(get_source()),
 		std::forward<Args>(args)...);
 }
 
 template <typename Tp, typename... Args>
-/*static*/ memory::atomic_counted *memory::make_collectable(Args &&...args)
+/*static*/ memory::atomic_counted *
+memory::make_collectable(Args &&...args)
 {
-	auto *const ptr = allocate_counted<Tp>(rt_allocator<Tp>(get_source(collectable_pool)),
-		std::forward<Args>(args)...);
+	auto *const ptr = allocate_counted<Tp>(
+		rt_allocator<Tp>(get_source(collectable_pool)),
+			std::forward<Args>(args)...);
 
 	register_finalizer(ptr);
 	return ptr;

@@ -22,6 +22,8 @@ cmake_minimum_required(VERSION 3.0)
 
 add_definitions("-DTESTS_SRC_DIR=\"${emel-tests_SOURCE_DIR}\"")
 
+include_directories(..)
+
 set(SOURCES
     main.cc
     test-compiler.cc

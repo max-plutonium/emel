@@ -19,7 +19,7 @@
  */
 #include <gmock/gmock.h>
 
-#include "../emel/runtime/interp.h"
+#include <emel/runtime/interp.h>
 
 using namespace emel;
 using namespace std::literals;

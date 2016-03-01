@@ -19,7 +19,7 @@
  */
 #include <gmock/gmock.h>
 
-#include "../emel/parser.h"
+#include <emel/parser.h>
 
 using namespace emel;
 

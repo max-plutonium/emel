@@ -19,7 +19,7 @@
  */
 #include <gmock/gmock.h>
 
-#include "../emel/compiler/compiler.h"
+#include <emel/compiler/compiler.h>
 
 using namespace emel;
 using namespace std::literals;

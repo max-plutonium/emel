@@ -19,7 +19,8 @@
  */
 #include <gmock/gmock.h>
 
-#include "../emel/runtime/object.h"
+#include <emel/runtime/object.h>
+#include <emel/opcodes.h>
 
 using namespace emel;
 

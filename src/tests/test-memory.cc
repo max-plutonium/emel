@@ -19,7 +19,7 @@
  */
 #include <gmock/gmock.h>
 
-#include "../emel/memory/memory.h"
+#include <emel/memory/memory.h>
 
 using namespace emel;
 

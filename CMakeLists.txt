@@ -38,9 +38,13 @@ set(enable_cplusplus YES)
 set(enable_parallel_mark YES)
 add_subdirectory(src/deps/bdwgc)
 
+set(BENCHMARK_ENABLE_LTO YES)
+set(BENCHMARK_ENABLE_TESTING NO)
 add_subdirectory(src/deps/google-benchmark)
+
 add_subdirectory(src/deps/google-test/googlemock)
 
 add_subdirectory(src/emel)
 add_subdirectory(src/frontend-spirit)
 add_subdirectory(src/tests)
+add_subdirectory(src/benchmarks)

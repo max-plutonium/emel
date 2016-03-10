@@ -1,7 +1,7 @@
 #
-# Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
+# Copyright (C) 2016 Max Plutonium <plutonium.max@gmail.com>
 #
-# This file is part of the test suite of the EMEL library.
+# This file is part of the benchmark suite of the EMEL library.
 #
 # The EMEL library is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License
@@ -17,25 +17,19 @@
 # License along with the EMEL library. If not, see
 # <http://www.gnu.org/licenses/>.
 #
-project(emel-tests)
+project(emel-benchmarks)
 cmake_minimum_required(VERSION 3.0)
 
-add_definitions("-DTESTS_SRC_DIR=\"${emel-tests_SOURCE_DIR}\"")
+add_definitions("-DBENCHMARKS_SRC_DIR=\"${emel-benchmarks_SOURCE_DIR}\"")
 
 include_directories(..)
 
 set(SOURCES
     main.cc
-    test-compiler.cc
-    test-interp.cc
-    test-memory.cc
-#    test-object.cc
-    test-opcodes.cc
-    test-parser.cc
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} emel gmock)
+target_link_libraries(${PROJECT_NAME} emel benchmark)
 add_dependencies(${PROJECT_NAME} emel-frontend-spirit)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "-debug")

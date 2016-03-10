@@ -32,6 +32,7 @@ set(SOURCES
 #    test-object.cc
     test-opcodes.cc
     test-parser.cc
+    type-system/test-context.cc
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

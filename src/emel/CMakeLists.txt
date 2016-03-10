@@ -50,6 +50,7 @@ set(HEADERS
     memory/memory.h
     runtime/interp.h
     runtime/object.h
+    type-system/context.h
     opcodes.h
     parser.h
     plugins.h
@@ -66,6 +67,7 @@ set(SOURCES
     memory/memory.cc
     runtime/interp.cc
     #runtime/object.cc
+    type-system/context.cc
     opcodes.cc
     parser.cc
     plugins.cc

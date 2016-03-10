@@ -23,7 +23,8 @@ cmake_minimum_required(VERSION 3.0)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
 add_definitions("-DEMEL_EXPORT=__attribute__((visibility (\"default\")))")
 add_definitions("-DGC_NAMESPACE -DGC_THREADS -DGC_ATOMIC_UNCOLLECTABLE")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra -Wstrict-aliasing -fstack-check -DGC_DEBUG -DDEBUG_THREADS")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra -Wstrict-aliasing \
+    -pedantic -fstack-check -DGC_DEBUG -DDEBUG_THREADS")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -march=native")
 
 include_directories(SYSTEM src/deps/bdwgc/include)

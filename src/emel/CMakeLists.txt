@@ -65,7 +65,7 @@ set(SOURCES
     compiler/const-pool-manager.cc
     memory/memory.cc
     runtime/interp.cc
-    runtime/object.cc
+    #runtime/object.cc
     opcodes.cc
     parser.cc
     plugins.cc

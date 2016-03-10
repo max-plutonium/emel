@@ -35,7 +35,7 @@ include_directories(SYSTEM src/deps/google-test/googletest/include)
 
 set(enable_threads YES)
 set(enable_cplusplus YES)
-set(enable_parallel_mark YES)
+set(enable_parallel_mark On)
 add_subdirectory(src/deps/bdwgc)
 
 set(BENCHMARK_ENABLE_LTO YES)

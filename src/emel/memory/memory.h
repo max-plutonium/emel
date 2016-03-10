@@ -283,8 +283,8 @@ memory::make_collectable(Args &&...args)
 	return ptr;
 }
 
-void intrusive_ptr_add_ref(memory::atomic_counted *ac);
-void intrusive_ptr_release(memory::atomic_counted *ac);
+EMEL_EXPORT void intrusive_ptr_add_ref(memory::atomic_counted *ac);
+EMEL_EXPORT void intrusive_ptr_release(memory::atomic_counted *ac);
 
 template <typename Tp>
 struct memory_ptr : public memory::counted_ptr

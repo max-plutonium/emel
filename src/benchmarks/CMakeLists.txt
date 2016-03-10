@@ -26,6 +26,7 @@ include_directories(..)
 
 set(SOURCES
     main.cc
+    bench-memory.cc
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

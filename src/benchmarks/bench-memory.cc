@@ -52,11 +52,17 @@ static void Memory_MakeOneObject(benchmark::State &state)
 	const auto st = static_cast<memory::source_type>(state.range_x());
 	auto *source = memory::get_source(st);
 
+	if(memory::collectable_pool == st)
+		memory::attach_thread();
+
 	while (state.KeepRunning()) {
 		benchmark::DoNotOptimize(memory::counted_ptr(
 			memory::allocate_counted<allocated_type>(rt_allocator<allocated_type>(source), allocated_type()),
 				false));
 	}
+
+	if(memory::collectable_pool == st)
+		memory::detach_thread();
 
 	state.SetLabel(source_name(st));
 	state.SetItemsProcessed(state.iterations());
@@ -68,13 +74,22 @@ static void Memory_MakeManyObjects(benchmark::State &state)
 	const auto st = static_cast<memory::source_type>(state.range_x());
 	auto *source = memory::get_source(st);
 
-	std::vector<memory::counted_ptr> ptrs;
-	ptrs.reserve(std::size_t(state.range_y()));
+	if(memory::collectable_pool == st)
+		memory::attach_thread();
+
+	const bool need_gc = memory::collectable_pool == st;
 
 	while (state.KeepRunning()) {
-		ptrs.emplace_back(memory::allocate_counted<allocated_type>(
-			rt_allocator<allocated_type>(source), allocated_type()), false);
+		std::vector<memory::counted_ptr, rt_allocator<memory::counted_ptr>>
+			ptrs(std::size_t(state.range_y()), rt_allocator<memory::counted_ptr>(source));
+
+		for(auto i = 0; i < state.range_y(); ++i)
+			ptrs.emplace_back(memory::allocate_counted<allocated_type>(
+				rt_allocator<allocated_type>(source), allocated_type()), need_gc);
 	}
+
+	if(memory::collectable_pool == st)
+		memory::detach_thread();
 
 	state.SetLabel(source_name(st));
 	state.SetItemsProcessed(state.iterations() * state.range_y());
@@ -90,9 +105,7 @@ static void set_objects_count(benchmark::internal::Benchmark *bench) {
 BENCHMARK(Memory_GetSource);
 
 BENCHMARK(Memory_MakeOneObject)->DenseRange(memory::default_pool, memory::collectable_pool);
-BENCHMARK(Memory_MakeOneObject)->DenseRange(memory::default_pool, memory::collectable_pool)->ThreadPerCpu();
 BENCHMARK(Memory_MakeOneObject)->DenseRange(memory::default_pool, memory::collectable_pool)->ThreadRange(2, 32);
 
 BENCHMARK(Memory_MakeManyObjects)->Apply(set_objects_count);
-BENCHMARK(Memory_MakeManyObjects)->Apply(set_objects_count)->ThreadPerCpu();
 BENCHMARK(Memory_MakeManyObjects)->Apply(set_objects_count)->ThreadRange(2, 32);

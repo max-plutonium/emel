@@ -94,7 +94,7 @@ public:
 	static bool is_collectable(void *obj);
 	static std::size_t get_collectable_size(void *obj);
 
-	static void attach_thread();
+	static bool attach_thread();
 	static void detach_thread();
 
 	enum source_type {

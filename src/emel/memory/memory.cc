@@ -240,21 +240,17 @@ std::size_t memory::get_collectable_size(void *obj)
 }
 
 /*static*/
-void memory::attach_thread()
+bool memory::attach_thread()
 {
 	GC_stack_base sb;
-	auto res = GC_get_stack_base(&sb);
-	assert(GC_UNIMPLEMENTED != res);
-
-	res = GC_register_my_thread(&sb);
-	assert(GC_DUPLICATE != res);
+	GC_get_stack_base(&sb);
+	return GC_DUPLICATE != GC_register_my_thread(&sb);
 }
 
 /*static*/
 void memory::detach_thread()
 {
-	const auto res = GC_unregister_my_thread();
-	assert(GC_SUCCESS == res);
+	GC_unregister_my_thread();
 }
 
 /*static*/

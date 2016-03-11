@@ -31,11 +31,14 @@ static constexpr auto item_size = sizeof(memory::atomic_counted)
 static const char *source_name(memory::source_type type)
 {
 	switch (type) {
-		case memory::default_pool: return "default pool";
-		case memory::fast_pool: return "fast pool";
-		case memory::gnu_pool: return "gnu pool";
 		case memory::bitmap_pool: return "bitmap pool";
-		case memory::collectable_pool: return "collectable pool";
+		case memory::gnu_pool: return "gnu pool";
+		case memory::mt_pool: return "mt pool";
+		case memory::boost_pool: return "boost pool";
+		case memory::collectable_gc_pool: return "coll pool";
+		case memory::atomic_gc_pool: return "atomic pool";
+		case memory::uncollectable_gc_pool: return "uncoll pool";
+		case memory::atomic_uncollectable_gc_pool: return "atomic uncoll pool";
 	}
 
 	return "";
@@ -52,7 +55,7 @@ static void Memory_MakeOneObject(benchmark::State &state)
 	const auto st = static_cast<memory::source_type>(state.range_x());
 	auto *source = memory::get_source(st);
 
-	if(memory::collectable_pool == st)
+	if(memory::collectable_gc_pool <= st)
 		memory::attach_thread();
 
 	while (state.KeepRunning()) {
@@ -61,7 +64,7 @@ static void Memory_MakeOneObject(benchmark::State &state)
 				false));
 	}
 
-	if(memory::collectable_pool == st)
+	if(memory::collectable_gc_pool <= st)
 		memory::detach_thread();
 
 	state.SetLabel(source_name(st));
@@ -74,10 +77,10 @@ static void Memory_MakeManyObjects(benchmark::State &state)
 	const auto st = static_cast<memory::source_type>(state.range_x());
 	auto *source = memory::get_source(st);
 
-	if(memory::collectable_pool == st)
+	if(memory::collectable_gc_pool <= st)
 		memory::attach_thread();
 
-	const bool need_gc = memory::collectable_pool == st;
+	const bool need_gc = memory::collectable_gc_pool == st;
 
 	while (state.KeepRunning()) {
 		std::vector<memory::counted_ptr, rt_allocator<memory::counted_ptr>>
@@ -88,7 +91,7 @@ static void Memory_MakeManyObjects(benchmark::State &state)
 				rt_allocator<allocated_type>(source), allocated_type()), need_gc);
 	}
 
-	if(memory::collectable_pool == st)
+	if(memory::collectable_gc_pool <= st)
 		memory::detach_thread();
 
 	state.SetLabel(source_name(st));
@@ -97,15 +100,17 @@ static void Memory_MakeManyObjects(benchmark::State &state)
 }
 
 static void set_objects_count(benchmark::internal::Benchmark *bench) {
-	for (int i = memory::default_pool; i <= memory::collectable_pool; ++i)
+	for (int i = memory::bitmap_pool; i < memory::last_source_type; ++i)
 		for (int j = 10; j <= 1000000; j *= 10)
 			bench->ArgPair(i, j);
 }
 
 BENCHMARK(Memory_GetSource);
 
-BENCHMARK(Memory_MakeOneObject)->DenseRange(memory::default_pool, memory::collectable_pool);
-BENCHMARK(Memory_MakeOneObject)->DenseRange(memory::default_pool, memory::collectable_pool)->ThreadRange(2, 32);
+BENCHMARK(Memory_MakeOneObject)->DenseRange(memory::bitmap_pool,
+	memory::atomic_uncollectable_gc_pool);
+BENCHMARK(Memory_MakeOneObject)->DenseRange(memory::bitmap_pool,
+	memory::atomic_uncollectable_gc_pool)->ThreadRange(2, 32);
 
 BENCHMARK(Memory_MakeManyObjects)->Apply(set_objects_count);
 BENCHMARK(Memory_MakeManyObjects)->Apply(set_objects_count)->ThreadRange(2, 32);

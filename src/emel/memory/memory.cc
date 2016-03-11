@@ -30,7 +30,6 @@
 #include <javaxfc.h>
 
 #include <mutex>
-#include <typeinfo>
 
 namespace emel {
 
@@ -47,33 +46,46 @@ using bitmap_allocator = __gnu_cxx::bitmap_allocator<Tp>;
 template <typename Tp>
 using mt_allocator = __gnu_cxx::__mt_alloc<Tp>;
 
-class gc_memory_resource : public boost::container::pmr::memory_resource
+class gc_memory_resource final : public boost::container::pmr::memory_resource
 {
 protected:
 	virtual void *do_allocate(size_t bytes, size_t alignment) override;
 	virtual void do_deallocate(void *ptr, size_t bytes, size_t alignment) override;
 	virtual bool do_is_equal(const memory::resource_type &other) const noexcept override;
+
+public:
+	enum memory_kind {
+		collectable, atomic, uncollectable, atomic_uncollectable
+	};
+
+	explicit gc_memory_resource(memory_kind k);
+
+private:
+	const memory_kind k;
 };
 
 template <typename Tp>
 using pmr_adaptor = boost::container::pmr::resource_adaptor<Tp>;
 
 static std::once_flag s_flag;
-static std::array<boost::container::pmr::memory_resource *, 5> s_sources;
+static std::array<boost::container::pmr::memory_resource *, 8> s_sources;
 
 static void once_init()
 {
-	static pmr_adaptor<mt_allocator<char>> default_pool_instance;
-	static pmr_adaptor<boost_pool_allocator<char>> fast_pool_instance;
-	static pmr_adaptor<gnu_pool_allocator<char>> gnu_pool_instance;
 	static pmr_adaptor<bitmap_allocator<char>> bitmap_pool_instance;
-	static gc_memory_resource gc_instance;
+	static pmr_adaptor<gnu_pool_allocator<char>> gnu_pool_instance;
+	static pmr_adaptor<mt_allocator<char>> mt_pool_instance;
+	static pmr_adaptor<boost_pool_allocator<char>> boost_pool_instance;
+	static gc_memory_resource collectable_gc_instance(gc_memory_resource::collectable);
+	static gc_memory_resource atomic_gc_instance(gc_memory_resource::atomic);
+	static gc_memory_resource uncollectable_gc_instance(gc_memory_resource::uncollectable);
+	static gc_memory_resource atomic_uncollectable_gc_instance(gc_memory_resource::atomic_uncollectable);
 
-	auto opt = default_pool_instance.get_allocator()._M_get_options();
+	auto opt = mt_pool_instance.get_allocator()._M_get_options();
 	opt._M_align = 16; // FIXME 8-byte ptr alignment
 	opt._M_chunk_size = 8192 - 4 * sizeof(void *);
 	opt._M_max_bytes = opt._M_chunk_size;
-	default_pool_instance.get_allocator()._M_set_options(opt);
+	mt_pool_instance.get_allocator()._M_set_options(opt);
 
 	GC_set_all_interior_pointers(true);
 	GC_set_java_finalization(true);
@@ -81,15 +93,23 @@ static void once_init()
 	GC_allow_register_threads();
 
 	s_sources = {
-		&default_pool_instance,
-		&fast_pool_instance, &gnu_pool_instance,
-		&bitmap_pool_instance, &gc_instance
+		&bitmap_pool_instance, &gnu_pool_instance,
+		&bitmap_pool_instance/*mt_pool_instance - TODO fix crash */, &boost_pool_instance,
+		&collectable_gc_instance, &atomic_gc_instance,
+		&uncollectable_gc_instance, &atomic_uncollectable_gc_instance
 	};
 }
 
 void *gc_memory_resource::do_allocate(size_t bytes, size_t /*alignment*/)
 {
-	return GC_MALLOC(bytes);
+	switch (k) {
+		case collectable: return GC_MALLOC(bytes);
+		case atomic: return GC_MALLOC_ATOMIC(bytes);
+		case uncollectable: return GC_MALLOC_UNCOLLECTABLE(bytes);
+		case atomic_uncollectable: return GC_MALLOC_ATOMIC_UNCOLLECTABLE(bytes);
+	}
+
+	return nullptr;
 }
 
 void gc_memory_resource::do_deallocate(void *ptr, size_t /*bytes*/, size_t /*alignment*/)
@@ -100,6 +120,10 @@ void gc_memory_resource::do_deallocate(void *ptr, size_t /*bytes*/, size_t /*ali
 bool gc_memory_resource::do_is_equal(const memory::resource_type &other) const noexcept
 {
 	return (typeid(other) == typeid(gc_memory_resource) && this == &other);
+}
+
+gc_memory_resource::gc_memory_resource(gc_memory_resource::memory_kind k) : k(k)
+{
 }
 
 /*static*/

@@ -136,8 +136,8 @@ TEST(Memory, GC)
 	memory::enable_gc();
 	EXPECT_TRUE(memory::gc_enabled());
 
-	auto p1 = memory::get_source(memory::collectable_pool)->allocate(12, 16);
-	auto p2 = memory::get_source(memory::collectable_pool)->allocate(12, 16);
+	auto p1 = memory::get_source(memory::collectable_gc_pool)->allocate(12, 16);
+	auto p2 = memory::get_source(memory::collectable_gc_pool)->allocate(12, 16);
 
 	auto stat2 = memory::get_collectable_memory_usage();
 	auto hs2 = memory::get_collectable_heap_size();

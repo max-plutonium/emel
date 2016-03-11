@@ -98,12 +98,13 @@ public:
 	static void detach_thread();
 
 	enum source_type {
-		default_pool, fast_pool, gnu_pool, bitmap_pool,
-		collectable_pool
+		bitmap_pool, gnu_pool, mt_pool, boost_pool,
+		collectable_gc_pool, atomic_gc_pool, uncollectable_gc_pool,
+		atomic_uncollectable_gc_pool, last_source_type
 	};
 
 	using resource_type = boost::container::pmr::memory_resource;
-	static resource_type *get_source(source_type = default_pool);
+	static resource_type *get_source(source_type = bitmap_pool);
 
 	class atomic_counted
 	{
@@ -219,7 +220,7 @@ memory::atomic_counted_inplace<Tp, Alloc>::clone() const
 	const auto &alloc = s.get_alloc();
 	auto *const ptr = allocate_counted<Tp>(alloc, *reinterpret_cast<const Tp *>(&s.buffer));
 
-	if(rt_allocator<Tp>(get_source(collectable_pool)) == alloc)
+	if(rt_allocator<Tp>(get_source(collectable_gc_pool)) == alloc)
 		register_finalizer(ptr);
 	return ptr;
 }
@@ -276,7 +277,7 @@ template <typename Tp, typename... Args>
 memory::make_collectable(Args &&...args)
 {
 	auto *const ptr = allocate_counted<Tp>(
-		rt_allocator<Tp>(get_source(collectable_pool)),
+		rt_allocator<Tp>(get_source(collectable_gc_pool)),
 			std::forward<Args>(args)...);
 
 	register_finalizer(ptr);

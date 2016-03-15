@@ -31,6 +31,7 @@ static constexpr auto item_size = sizeof(memory::atomic_counted)
 static const char *source_name(memory::source_type type)
 {
 	switch (type) {
+		case memory::default_pool: return "default pool";
 		case memory::bitmap_pool: return "bitmap pool";
 		case memory::gnu_pool: return "gnu pool";
 		case memory::mt_pool: return "mt pool";
@@ -80,7 +81,7 @@ static void Memory_MakeManyObjects(benchmark::State &state)
 	if(memory::collectable_gc_pool <= st)
 		memory::attach_thread();
 
-	const bool need_gc = memory::collectable_gc_pool == st;
+	const bool need_gc = (memory::collectable_gc_pool == st) || (memory::atomic_gc_pool == st);
 
 	while (state.KeepRunning()) {
 		std::vector<memory::counted_ptr, rt_allocator<memory::counted_ptr>>
@@ -100,16 +101,16 @@ static void Memory_MakeManyObjects(benchmark::State &state)
 }
 
 static void set_objects_count(benchmark::internal::Benchmark *bench) {
-	for (int i = memory::bitmap_pool; i < memory::last_source_type; ++i)
+	for (int i = memory::default_pool; i < memory::last_source_type; ++i)
 		for (int j = 10; j <= 1000000; j *= 10)
 			bench->ArgPair(i, j);
 }
 
 BENCHMARK(Memory_GetSource);
 
-BENCHMARK(Memory_MakeOneObject)->DenseRange(memory::bitmap_pool,
+BENCHMARK(Memory_MakeOneObject)->DenseRange(memory::default_pool,
 	memory::atomic_uncollectable_gc_pool);
-BENCHMARK(Memory_MakeOneObject)->DenseRange(memory::bitmap_pool,
+BENCHMARK(Memory_MakeOneObject)->DenseRange(memory::default_pool,
 	memory::atomic_uncollectable_gc_pool)->ThreadRange(2, 32);
 
 BENCHMARK(Memory_MakeManyObjects)->Apply(set_objects_count);

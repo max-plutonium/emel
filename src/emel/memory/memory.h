@@ -98,13 +98,13 @@ public:
 	static void detach_thread();
 
 	enum source_type {
-		bitmap_pool, gnu_pool, mt_pool, boost_pool,
+		default_pool, bitmap_pool, gnu_pool, mt_pool, boost_pool,
 		collectable_gc_pool, atomic_gc_pool, uncollectable_gc_pool,
 		atomic_uncollectable_gc_pool, last_source_type
 	};
 
 	using resource_type = boost::container::pmr::memory_resource;
-	static resource_type *get_source(source_type = bitmap_pool);
+	static resource_type *get_source(source_type = default_pool);
 
 	class atomic_counted
 	{

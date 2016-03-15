@@ -19,8 +19,8 @@
 */
 #include "memory.h"
 
+#include <boost/container/pmr/synchronized_pool_resource.hpp>
 #include <boost/container/pmr/resource_adaptor.hpp>
-#include <boost/pool/pool_alloc.hpp>
 
 #include <ext/bitmap_allocator.h>
 #include <ext/mt_allocator.h>
@@ -32,10 +32,6 @@
 #include <mutex>
 
 namespace emel {
-
-template <typename Tp>
-using boost_pool_allocator = boost::fast_pool_allocator<Tp,
-		boost::default_user_allocator_new_delete, std::mutex, 1024>;
 
 template <typename Tp>
 using gnu_pool_allocator = __gnu_cxx::__pool_alloc<Tp>;
@@ -68,14 +64,14 @@ template <typename Tp>
 using pmr_adaptor = boost::container::pmr::resource_adaptor<Tp>;
 
 static std::once_flag s_flag;
-static std::array<boost::container::pmr::memory_resource *, 8> s_sources;
+static std::array<boost::container::pmr::memory_resource *, memory::last_source_type> s_sources;
 
 static void once_init()
 {
 	static pmr_adaptor<bitmap_allocator<char>> bitmap_pool_instance;
 	static pmr_adaptor<gnu_pool_allocator<char>> gnu_pool_instance;
 	static pmr_adaptor<mt_allocator<char>> mt_pool_instance;
-	static pmr_adaptor<boost_pool_allocator<char>> boost_pool_instance;
+	static boost::container::pmr::synchronized_pool_resource boost_pool_instance;
 	static gc_memory_resource collectable_gc_instance(gc_memory_resource::collectable);
 	static gc_memory_resource atomic_gc_instance(gc_memory_resource::atomic);
 	static gc_memory_resource uncollectable_gc_instance(gc_memory_resource::uncollectable);
@@ -83,7 +79,7 @@ static void once_init()
 
 	auto opt = mt_pool_instance.get_allocator()._M_get_options();
 	opt._M_align = 16; // FIXME 8-byte ptr alignment
-	opt._M_chunk_size = 8192 - 4 * sizeof(void *);
+	opt._M_chunk_size = 65536 - 4 * sizeof(void *);
 	opt._M_max_bytes = opt._M_chunk_size;
 	mt_pool_instance.get_allocator()._M_set_options(opt);
 
@@ -93,8 +89,9 @@ static void once_init()
 	GC_allow_register_threads();
 
 	s_sources = {
+		boost::container::pmr::new_delete_resource(),
 		&bitmap_pool_instance, &gnu_pool_instance,
-		&bitmap_pool_instance/*mt_pool_instance - TODO fix crash */, &boost_pool_instance,
+		&mt_pool_instance, &boost_pool_instance,
 		&collectable_gc_instance, &atomic_gc_instance,
 		&uncollectable_gc_instance, &atomic_uncollectable_gc_instance
 	};
@@ -114,7 +111,8 @@ void *gc_memory_resource::do_allocate(size_t bytes, size_t /*alignment*/)
 
 void gc_memory_resource::do_deallocate(void *ptr, size_t /*bytes*/, size_t /*alignment*/)
 {
-	GC_FREE(ptr);
+	if(__builtin_expect(nullptr != GC_base(ptr), true))
+		GC_FREE(ptr);
 }
 
 bool gc_memory_resource::do_is_equal(const memory::resource_type &other) const noexcept

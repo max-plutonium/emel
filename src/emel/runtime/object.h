@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include "../opcodes.h"
+#include "../type-system/type.h"
 
 #include <boost/optional.hpp>
 
@@ -31,29 +31,18 @@ using const_reference = const object *;
 
 class object
 {
-public:
-    void *operator new(std::size_t size);
-    void operator delete(void *ptr);
-
-	enum type {
-		is_empty = 0, is_bool, is_num, is_str, is_array, is_ref
-	};
-
 protected:
-	class data;
-	data *d;
-    explicit object(data *d);
-	friend struct value_data;
+	type::rep d;
+    explicit object(type::rep d);
 
 public:
     object();
-    object(empty_value_type);
-    object(object *ptr, std::size_t len);
     object(const std::vector<object> &vec);
     object(std::vector<object> &&vec);
     object(const std::string &s);
     object(const char *s);
     object(double num);
+    object(std::int64_t i);
     object(bool b);
     object(reference ref);
 
@@ -64,23 +53,21 @@ public:
     object(object &&other);
     object &operator =(object &&other);
 
-    void swap(object &other);
+    void swap(object &other) noexcept;
+	void detach();
 
-    object &operator =(empty_value_type);
     object &operator =(const std::string &s);
     object &operator =(const char *s);
     object &operator =(double num);
     object &operator =(bool b);
     object &operator =(reference ref);
 
-    type get_type() const;
+	type::kind get_type() const;
     bool empty() const;
     std::size_t size() const;
 
-    virtual object clone();
-	void detach();
-
     virtual operator bool() const;
+    virtual operator std::int64_t() const;
     virtual operator double() const;
     virtual operator std::string() const;
     virtual operator reference() const;

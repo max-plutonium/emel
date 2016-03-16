@@ -29,7 +29,7 @@ using testing::Eq;
 TEST(Object, Creation)
 {
     runtime::object obj1;
-    runtime::object obj2(empty_value);
+    runtime::object obj2();
     runtime::object obj3("string");
     runtime::object obj4(1.23);
     runtime::object obj5(true);
@@ -1924,7 +1924,6 @@ TEST(Object, Arrays)
 {
     std::vector<runtime::object> vec {
         runtime::object(),
-        runtime::object(empty_value),
         runtime::object("string"),
         runtime::object(1.23),
         runtime::object(true),

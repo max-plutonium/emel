@@ -77,7 +77,7 @@ context_info_storage context_info_storage::create()
 {
 	context_info_storage ret;
 	ret.impl.reset(memory::allocate_counted<context_info_table>(
-		rt_allocator<char>(memory::get_source(memory::fast_pool))), false);
+		rt_allocator<char>(memory::get_source(memory::bitmap_pool))), false);
 	return ret;
 }
 
@@ -125,7 +125,7 @@ context_info_storage::register_module(const std::string &name)
 		return std::make_pair(nullptr, false);
 
 	auto pair = table.emplace(memory::allocate_counted<module_info>(
-		rt_allocator<char>(memory::get_source(memory::fast_pool)),
+		rt_allocator<char>(memory::get_source(memory::bitmap_pool)),
 			std::move(str), context_ptr), false);
 
 	return std::make_pair(*pair.first, pair.second);
@@ -154,7 +154,7 @@ context_info_storage::register_ti(type::kind k, const std::string &name)
 		return std::make_pair(nullptr, false);
 
 	auto pair = table.emplace(memory::allocate_counted<type_info>(
-		rt_allocator<char>(memory::get_source(memory::fast_pool)),
+		rt_allocator<char>(memory::get_source(memory::bitmap_pool)),
 			k, std::move(str), context_ptr), false);
 
 	return std::make_pair(*pair.first, pair.second);

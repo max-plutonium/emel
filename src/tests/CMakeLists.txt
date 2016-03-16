@@ -27,12 +27,13 @@ include_directories(..)
 set(SOURCES
     main.cc
     test-compiler.cc
-    test-interp.cc
+#    test-interp.cc
     test-memory.cc
 #    test-object.cc
     test-opcodes.cc
     test-parser.cc
     type-system/test-context.cc
+    type-system/test-type-rep.cc
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

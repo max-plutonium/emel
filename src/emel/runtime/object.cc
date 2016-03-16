@@ -17,80 +17,68 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "object-data.h"
+#include "object.h"
+#include "../type-system/context.h"
+
+#include <cstring>
 
 namespace emel { namespace runtime {
 
-void *object::operator new(std::size_t size)
-{
-	return memory::alloc<object>(size);
-}
-
-void object::operator delete(void *ptr)
-{
-	memory::gc::deallocate(ptr);
-}
-
-object::object(data *d) : d(d)
-{
-	assert(this->d);
-}
-
-object::object() : object(new data)
+object::object(type::rep d) : d(d)
 {
 }
 
-object::object(empty_value_type) : object()
+object::object()
 {
 }
 
-object::object(object *ptr, std::size_t len)
-	: object(new array::data(ptr, len))
+object::object(const std::vector<object> &vec) : d()
+{
+	std::vector<type::rep> reps;
+	reps.reserve(vec.size());
+	std::transform(vec.cbegin(), vec.cend(), std::back_inserter(reps),
+		[](const object &o) { return o.d; });
+	d.set(std::move(reps));
+}
+
+object::object(std::vector<object> &&vec) : d()
+{
+	std::vector<type::rep> reps;
+	reps.reserve(vec.size());
+	std::transform(vec.begin(), vec.end(), std::back_inserter(reps),
+		[](object &o) { return std::move(o.d); });
+	d.set(std::move(reps));
+}
+
+object::object(const std::string &s) : d(s)
 {
 }
 
-object:: object(const std::vector<object> &vec)
-	: object(new array::data(vec))
+object::object(const char *s) : d(s, std::strlen(s))
 {
 }
 
-object::object(std::vector<object> &&vec)
-	: object(new array::data(std::move(vec)))
+object::object(double num) : d(num)
 {
 }
 
-object::object(const std::string &s)
-	: object(new string::data(s))
+object::object(std::int64_t i) : d(i)
 {
 }
 
-object::object(const char *s)
-	: object(new string::data(s))
+object::object(bool b) : d(b)
 {
 }
 
-object::object(double num)
-	: object(new value_data(num))
-{
-}
-
-object::object(bool b)
-	: object(new value_data(b))
-{
-}
-
-object::object(reference ref)
-	: object(new value_data(ref))
+object::object(reference ref) : d(ref)
 {
 }
 
 object::~object()
 {
-    d = nullptr;
 }
 
-object::object(const object &other)
-	: object(other.d)
+object::object(const object &other) : object(other.d)
 {
 }
 
@@ -101,10 +89,8 @@ object &object::operator =(const object &other)
     return *this;
 }
 
-object::object(object &&other)
-	: object()
+object::object(object &&other) : object()
 {
-	assert(other.d);
 	std::swap(d, other.d);
 }
 
@@ -115,133 +101,136 @@ object &object::operator =(object &&other)
     return *this;
 }
 
-void object::swap(object &other)
+void object::swap(object &other) noexcept
 {
     std::swap(d, other.d);
 }
 
-object &object::operator =(empty_value_type)
+void object::detach()
 {
-	assert(d);
-    return ((is_ref == d->get_type())
-			? *d->get_ref() : *this) = object(empty_value);
+//	if(type::local != d.get_state())
+//	{
+//		void *ptr = nullptr;
+//		const auto res = d.get(ptr);
+//		assert(res);
+//		auto *const ac = static_cast<memory::atomic_counted *>(ptr);
+//		auto *const od = static_cast<object_data *>(ac->get());
+//
+//		bool maybe_local = true;
+//		switch(d.get_kind())
+//		{
+//			case type::none: d.set(nullptr); break;
+//			case type::bool_: d.set(od->get_bool()); break;
+//			case type::int_: d.set(od->get_int()); break;
+//			case type::num: d.set(od->get_num()); break;
+//
+//			case type::str: {
+//				auto str = od->get_str();
+//				if (str.size() <= type::rep::local_bytes_count) {
+//					d.set(str);
+//					break;
+//				}
+//
+//				// fall through
+//			}
+//
+//			default: maybe_local = false; break;
+//		}
+//
+//		if(!maybe_local && !ac->unique()) {
+//			d.set(ac->clone());
+//			ac->release();
+//		}
+//	}
 }
 
 object &object::operator =(const std::string &s)
 {
-	assert(d);
-    return ((is_ref == d->get_type())
-			? *d->get_ref() : *this) = object(s);
+	d.set(s);
 }
 
 object &object::operator=(const char *s)
 {
-	assert(d);
-    return ((is_ref == d->get_type())
-			? *d->get_ref() : *this) = object(s);
+	d.set(s, std::strlen(s));
 }
 
 object &object::operator =(double num)
 {
-	assert(d);
-    return ((is_ref == d->get_type())
-			? *d->get_ref() : *this) = object(num);
+	d.set(num);
 }
 
 object &object::operator =(bool b)
 {
-	assert(d);
-    return ((is_ref == d->get_type())
-			? *d->get_ref() : *this) = object(b);
+	d.set(b);
 }
 
 object &object::operator =(reference ref)
 {
-	assert(d);
-    return ((is_ref == d->get_type())
-			? *d->get_ref() : *this) = object(ref);
+	d.set(ref);
 }
 
-object::type object::get_type() const
+type::kind object::get_type() const
 {
-	assert(d);
-	return d->get_type();
+	return d.get_type()->get_kind();
 }
 
 bool object::empty() const
 {
-	assert(d);
-	return d->empty();
+//	return d->empty();
 }
 
 std::size_t object::size() const
 {
-	assert(d);
-	return d->size();
-}
-
-object object::clone()
-{
-	assert(d);
-	return object(d);
-}
-
-void object::detach()
-{
-	assert(d);
-
-	if(!d->unique())
-		d = d->clone();
+//	return d->size();
 }
 
 object::operator bool() const
 {
-	assert(d);
-	return d->get_bool();
+//	return d->get_bool();
+}
+
+object::operator std::int64_t () const
+{
+//	return d->get_int();
 }
 
 object::operator double() const
 {
-	assert(d);
-	return d->get_num();
+//	return d->get_num();
 }
 
 object::operator std::string() const
 {
-	assert(d);
-	return d->get_str();
+//	return d->get_str();
 }
 
 object::operator reference() const
 {
-	assert(d);
-    return d->get_ref();
+//    return d->get_ref();
 }
 
 bool object::operator ==(const object &other) const
 {
-	assert(d);
-
-    switch(d->get_type())
-	{
-        case is_empty:
-			return other.get_type() == is_empty;
-
-        case is_array:
-			return false;
-
-        case is_str:
-			return d->get_str() == static_cast<std::string>(other);
-
-        case is_num:
-			return d->get_num() == static_cast<double>(other);
-
-        case is_bool:
-			return d->get_bool() == static_cast<bool>(other);
-
-        case is_ref:
-			return d->get_ref()->operator ==(other);
-    }
+//    switch(d.get_kind())
+//	{
+//        case type::none:
+//			return other.get_type() == type::none;
+//
+//        case type::arr:
+//			return false;
+//
+//        case type::str:
+//			return d->get_str() == static_cast<std::string>(other);
+//
+//        case type::num:
+//			return d->get_num() == static_cast<double>(other);
+//
+//        case type::bool_:
+//			return d->get_bool() == static_cast<bool>(other);
+//
+//        case type::ptr:
+//			return d->get_ref()->operator ==(other);
+//    }
 
     return false;
 }
@@ -253,298 +242,276 @@ bool object::operator !=(const object &other) const
 
 bool object::operator <(const object &other) const
 {
-	assert(d);
-
-    switch(d->get_type())
-	{
-        case is_empty: return false;
-        case is_array: return false;
-
-        case is_str:
-			return d->get_str().compare(static_cast<std::string>(other)) < 0;
-
-        case is_num:
-			return d->get_num() < static_cast<double>(other);
-
-        case is_bool: return false;
-
-        case is_ref:
-			return d->get_ref()->operator <(other);
-    }
+//    switch(d.get_kind())
+//	{
+//        case type::none: return false;
+//        case type::arr: return false;
+//
+//        case type::str:
+//			return d->get_str().compare(static_cast<std::string>(other)) < 0;
+//
+//        case type::num:
+//			return d->get_num() < static_cast<double>(other);
+//
+//        case type::bool_: return false;
+//
+//        case type::ptr:
+//			return d->get_ref()->operator <(other);
+//    }
 
     return false;
 }
 
 bool object::operator >(const object &other) const
 {
-	assert(d);
-
-    switch(d->get_type())
-	{
-        case is_empty: return false;
-        case is_array: return false;
-
-        case is_str:
-			return d->get_str().compare(static_cast<std::string>(other)) > 0;
-
-        case is_num:
-			return d->get_num() > static_cast<double>(other);
-
-        case is_bool: return false;
-
-        case is_ref:
-			return d->get_ref()->operator >(other);
-    }
+//    switch(d.get_kind())
+//	{
+//        case type::none: return false;
+//        case type::arr: return false;
+//
+//        case type::str:
+//			return d->get_str().compare(static_cast<std::string>(other)) > 0;
+//
+//        case type::num:
+//			return d->get_num() > static_cast<double>(other);
+//
+//        case type::bool_: return false;
+//
+//        case type::ptr:
+//			return d->get_ref()->operator >(other);
+//    }
 
     return false;
 }
 
 bool object::operator <=(const object &other) const
 {
-	assert(d);
-
-	switch(d->get_type())
-	{
-		case is_empty: return false;
-		case is_array: return false;
-
-		case is_str:
-			return d->get_str().compare(static_cast<std::string>(other)) <= 0;
-
-		case is_num:
-			return d->get_num() <= static_cast<double>(other);
-
-		case is_bool: return false;
-
-		case is_ref:
-			return d->get_ref()->operator <=(other);
-	}
+//	switch(d.get_kind())
+//	{
+//		case type::none: return false;
+//		case type::arr: return false;
+//
+//		case type::str:
+//			return d->get_str().compare(static_cast<std::string>(other)) <= 0;
+//
+//		case type::num:
+//			return d->get_num() <= static_cast<double>(other);
+//
+//		case type::bool_: return false;
+//
+//		case type::ptr:
+//			return d->get_ref()->operator <=(other);
+//	}
 
     return false;
 }
 
 bool object::operator >=(const object &other) const
 {
-	assert(d);
-
-	switch(d->get_type())
-	{
-		case is_empty: return false;
-		case is_array: return false;
-
-		case is_str:
-			return d->get_str().compare(static_cast<std::string>(other)) >= 0;
-
-		case is_num:
-			return d->get_num() >= static_cast<double>(other);
-
-		case is_bool: return false;
-
-		case is_ref:
-			return d->get_ref()->operator >=(other);
-	}
+//	switch(d.get_kind())
+//	{
+//		case type::none: return false;
+//		case type::arr: return false;
+//
+//		case type::str:
+//			return d->get_str().compare(static_cast<std::string>(other)) >= 0;
+//
+//		case type::num:
+//			return d->get_num() >= static_cast<double>(other);
+//
+//		case type::bool_: return false;
+//
+//		case type::ptr:
+//			return d->get_ref()->operator >=(other);
+//	}
 
     return false;
 }
 
 object object::operator +(const object &other) const
 {
-	assert(d);
+//    switch(d.get_kind())
+//	{
+//        case type::none:
+//			return object();
+//
+//        case type::arr: {
+//			std::vector<object> vec; // TODO = boost::get<array>(d->u).to_vector();
+//			vec.push_back(other);
+//			return object(std::move(vec));
+//		}
+//
+//        case type::str:
+//			return d->get_str() + static_cast<std::string>(other);
+//
+//        case type::num:
+//            if(other.get_type() == type::str)
+//                return static_cast<std::string>(*this)
+//                        + static_cast<std::string>(other);
+//            return d->get_num() + static_cast<double>(other);
+//
+//        case type::bool_:
+//			return d->get_bool();
+//
+//        case type::ptr:
+//			return d->get_ref()->operator +(other);
+//    }
 
-    switch(d->get_type())
-	{
-        case is_empty:
-			return empty_value;
-
-        case is_array: {
-			std::vector<object> vec; // TODO = boost::get<array>(d->u).to_vector();
-			vec.push_back(other);
-			return object(std::move(vec));
-		}
-
-        case is_str:
-			return d->get_str() + static_cast<std::string>(other);
-
-        case is_num:
-            if(other.get_type() == is_str)
-                return static_cast<std::string>(*this)
-                        + static_cast<std::string>(other);
-            return d->get_num() + static_cast<double>(other);
-
-        case is_bool:
-			return d->get_bool();
-
-        case is_ref:
-			return d->get_ref()->operator +(other);
-    }
-
-    return empty_value;
+    return object();
 }
 
 object object::operator -(const object &other) const
 {
-	assert(d);
+//    switch(d.get_kind())
+//	{
+//        case type::none:
+//			return object();
+//
+//        case type::arr: {
+//			std::vector<object> vec; // TODO = boost::get<array>(d->u).to_vector();
+//			for(auto i = vec.begin(); i != vec.end(); ++i)
+//				if(*i == other) {
+//					vec.erase(i);
+//					break;
+//				}
+//
+//			return object(std::move(vec));
+//		}
+//
+//        case type::str: {
+//			auto str = d->get_str();
+//			const auto ostr = static_cast<std::string>(other);
+//			const auto idx = str.find(ostr);
+//			if(idx != std::string::npos)
+//				return str.erase(idx, ostr.size());
+//			return str;
+//		}
+//
+//        case type::num: {
+//			const double lhs = d->get_num();
+//            const double rhs = static_cast<double>(other);
+//            return std::isnan(rhs) ? lhs : lhs - rhs;
+//        }
+//
+//        case type::bool_:
+//			return d->get_bool();
+//
+//        case type::ptr:
+//			return d->get_ref()->operator -(other);
+//    }
 
-    switch(d->get_type())
-	{
-        case is_empty:
-			return empty_value;
-
-        case is_array: {
-			std::vector<object> vec; // TODO = boost::get<array>(d->u).to_vector();
-			for(auto i = vec.begin(); i != vec.end(); ++i)
-				if(*i == other) {
-					vec.erase(i);
-					break;
-				}
-
-			return object(std::move(vec));
-		}
-
-        case is_str: {
-			auto str = d->get_str();
-			const auto ostr = static_cast<std::string>(other);
-			const auto idx = str.find(ostr);
-			if(idx != std::string::npos)
-				return str.erase(idx, ostr.size());
-			return str;
-		}
-
-        case is_num: {
-			const double lhs = d->get_num();
-            const double rhs = static_cast<double>(other);
-            return std::isnan(rhs) ? lhs : lhs - rhs;
-        }
-
-        case is_bool:
-			return d->get_bool();
-
-        case is_ref:
-			return d->get_ref()->operator -(other);
-    }
-
-    return empty_value;
+    return object();
 }
 
 object object::operator *(const object &other) const
 {
-	assert(d);
+//	switch(d.get_kind())
+//	{
+//        case type::none:
+//			return object();
+//
+//        case type::arr:
+//			return *this;
+//
+//        case type::str: {
+//			const auto str = d->get_str();
+//			if(other.get_type() != type::num)
+//				return str;
+//			int i = static_cast<int>(static_cast<double>(other));
+//			if(i >= 0 && i < 1000) {
+//				std::string new_str;
+//				new_str.reserve(str.size() * i);
+//				while(i-- > 0)
+//					new_str.append(str);
+//				return new_str;
+//			}
+//			return str;
+//		}
+//
+//        case type::num: {
+//			const double lhs = d->get_num();
+//            const double rhs = static_cast<double>(other);
+//            return std::isnan(rhs) ? lhs : lhs * rhs;
+//        }
+//
+//        case type::bool_:
+//			return d->get_bool();
+//
+//        case type::ptr:
+//			return d->get_ref()->operator *(other);
+//    }
 
-	switch(d->get_type())
-	{
-        case is_empty:
-			return empty_value;
-
-        case is_array:
-			return *this;
-
-        case is_str: {
-			const auto str = d->get_str();
-			if(other.get_type() != is_num)
-				return str;
-			int i = static_cast<int>(static_cast<double>(other));
-			if(i >= 0 && i < 1000) {
-				std::string new_str;
-				new_str.reserve(str.size() * i);
-				while(i-- > 0)
-					new_str.append(str);
-				return new_str;
-			}
-			return str;
-		}
-
-        case is_num: {
-			const double lhs = d->get_num();
-            const double rhs = static_cast<double>(other);
-            return std::isnan(rhs) ? lhs : lhs * rhs;
-        }
-
-        case is_bool:
-			return d->get_bool();
-
-        case is_ref:
-			return d->get_ref()->operator *(other);
-    }
-
-    return empty_value;
+    return object();
 }
 
 object object::operator /(const object &other) const
 {
-	assert(d);
+//    switch(d.get_kind())
+//	{
+//        case type::none:
+//			return object();
+//
+//        case type::arr:
+//			return *this;
+//
+//        case type::str:
+//			return d->get_str();
+//
+//        case type::num: {
+//			const double lhs = d->get_num();
+//            const double rhs = static_cast<double>(other);
+//            return std::isnan(rhs) ? lhs : lhs / rhs;
+//        }
+//
+//        case type::bool_:
+//			return d->get_bool();
+//
+//        case type::ptr:
+//			return d->get_ref()->operator /(other);
+//    }
 
-    switch(d->get_type())
-	{
-        case is_empty:
-			return empty_value;
-
-        case is_array:
-			return *this;
-
-        case is_str:
-			return d->get_str();
-
-        case is_num: {
-			const double lhs = d->get_num();
-            const double rhs = static_cast<double>(other);
-            return std::isnan(rhs) ? lhs : lhs / rhs;
-        }
-
-        case is_bool:
-			return d->get_bool();
-
-        case is_ref:
-			return d->get_ref()->operator /(other);
-    }
-
-    return empty_value;
+    return object();
 }
 
 object object::operator[](std::size_t i)
 {
-	assert(d);
-	return object(d->at(i));
+//	return object(d->at(i));
 }
 
 object object::operator[](std::size_t i) const
 {
-	assert(d);
-	return object(d->at(i));
+//	return object(d->at(i));
 }
 
 boost::optional<bool> object::as_bool() const
 {
-	assert(d);
     boost::optional<bool> ret;
-    if(is_bool == d->get_type())
-		ret = d->get_bool();
+//    if(type::bool_ == d.get_kind())
+//		ret = d->get_bool();
     return ret;
 }
 
 boost::optional<double> object::as_number() const
 {
-	assert(d);
     boost::optional<double> ret;
-    if(is_num == d->get_type())
-		ret = d->get_num();
+//    if(type::num == d.get_kind())
+//		ret = d->get_num();
     return ret;
 }
 
 boost::optional<std::string> object::as_string() const
 {
-	assert(d);
     boost::optional<std::string> ret;
-    if(is_str == d->get_type())
-		ret = d->get_str();
+//    if(type::str == d.get_kind())
+//		ret = d->get_str();
     return ret;
 }
 
 boost::optional<reference> object::as_ref() const
 {
-	assert(d);
     boost::optional<reference> ret;
-    if(is_ref == d->get_type())
-        ret = d->get_ref();
+//    if(type::ptr == d.get_kind())
+//        ret = d->get_ref();
     return ret;
 }
 

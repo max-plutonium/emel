@@ -167,7 +167,7 @@ struct array_data
 
 	static inline auto get_alloc() {
 		return small_vector_allocator<rt_allocator<type::rep>>(
-				memory::get_source(memory::collectable_pool));
+			memory::get_source(memory::uncollectable_gc_pool));
 	}
 
 	explicit array_data(const std::vector<type::rep> &vec);

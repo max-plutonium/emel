@@ -37,6 +37,7 @@ set(PUBLIC_HEADERS
     compiler/compiler.h
     memory/memory.h
     runtime/object.h
+    type-system/type.h
     parser.h
     plugins.h
 )
@@ -51,6 +52,8 @@ set(HEADERS
     runtime/interp.h
     runtime/object.h
     type-system/context.h
+    type-system/type-builtins.h
+    type-system/type.h
     opcodes.h
     parser.h
     plugins.h
@@ -66,8 +69,10 @@ set(SOURCES
     compiler/const-pool-manager.cc
     memory/memory.cc
     runtime/interp.cc
-    #runtime/object.cc
+    runtime/object.cc
     type-system/context.cc
+    type-system/type-builtins.cc
+    type-system/type.cc
     opcodes.cc
     parser.cc
     plugins.cc

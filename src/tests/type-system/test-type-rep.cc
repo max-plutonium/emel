@@ -133,7 +133,7 @@ TEST(TypeRep, Bool)
 	EXPECT_EQ(nullptr, ptr);
 }
 
-TEST(TypeRep, Int)
+TEST(TypeRep, DISABLED_Int)
 {
 	type::rep v(123L);
 
@@ -338,7 +338,7 @@ TEST(TypeRep, Str)
 	EXPECT_EQ(nullptr, ptr);
 }
 
-TEST(TypeRep, Arr)
+TEST(TypeRep, DISABLED_Arr)
 {
 	type::rep v(std::vector<type::rep> { 1L, 2L, 3L });
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,8 +17,7 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef SEMANTIC_H
-#define SEMANTIC_H
+#pragma once
 
 #include "opcodes.h"
 
@@ -248,5 +247,3 @@ vertex_descriptor add_vertex(std::shared_ptr<node> n, graph_type &graph);
 } // namespace semantic
 
 } // namespace emel
-
-#endif // SEMANTIC_H

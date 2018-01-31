@@ -24,6 +24,10 @@ add_definitions("-DTESTS_SRC_DIR=\"${emel-tests_SOURCE_DIR}\"")
 
 include_directories(..)
 
+find_package(Boost 1.60.0 REQUIRED)
+
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
 set(SOURCES
     main.cc
     test-compiler.cc

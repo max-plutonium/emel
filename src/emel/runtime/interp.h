@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,8 +17,7 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef INTERP_H
-#define INTERP_H
+#pragma once
 
 #include "../opcodes.h"
 #include "object.h"
@@ -277,5 +276,3 @@ public:
 } // namespace runtime
 
 } // namespace emel
-
-#endif // INTERP_H

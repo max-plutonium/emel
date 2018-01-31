@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the EMEL library.
  *
@@ -17,8 +17,7 @@
  * License along with the EMEL library. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef OPCODES_H
-#define OPCODES_H
+#pragma once
 
 #include <cstdint>
 #include <deque>
@@ -35,37 +34,41 @@ namespace emel {
 using insn_type = std::uint32_t;
 
 enum class opcode : unsigned char {
-        spec, // Специальные команды
-        pop, // Снять значение с вершины стека
-        dup, // Дублировать значение на вершине стека
-        swap, // Обменять значения на вершине стека и значение под ней
-        push, // Положить в стек целое число
- /*5*/  push_const, // Загрузить константу из пула в стек
-        push_local, // Положить в стек локальную переменную
-        push_field, // Положить в стек значение поля объекта
-        push_static, // Положить в стек значение статического поля объекта
-        load_local, // Загрузить значение из стека в локальную переменную
- /*10*/ load_field, // Загрузить значение из стека в поле объекта
-        load_static, // Загрузить значение из стека в статическое поле объекта
-        push_frame, // Создать новый кадр
-        drop_frame, // Выйти из текущего кадра
-        raise, // Бросить исключение
- /*15*/ try_, // Начало блока try
-        end_try, // Конец блока try
-        call_op, // Вызов встроенной операции
-        call, // Вызов функции по имени
-        fcall, // Вызов функции по номеру
- /*20*/ call_static, // Вызов статической функции по имени
-        fcall_static, // Вызов статической функции по номеру
-        brf, // Безусловный переход вперед
-        brb, // Безусловный переход назад
-        brf_true, // Переход вперед, если на вершине стека true
- /*25*/ brf_false, // Переход вперед, если на вершине стека false
-        brb_true, // Переход назад, если на вершине стека true
-        brb_false, // Переход назад, если на вершине стека false
-        br_table, // Создать таблицу переходов
-        ret, // Возврат значения из функции
-        max_opcode
+    spec, ///< Special commands
+    pop, ///< Pop value from the stack
+    dup, ///< Duplicate value on top of the stack
+    swap, ///< Exchange value on top of the stack and the value beneath it
+    ret, ///< Return from function
+
+    push, ///< Push integer on the stack
+    push_const, ///< Push contant value from the pool on the stack
+    push_local, ///< Push local variable on the stack
+    load_local, ///< Load value from top of the stack to the local variable
+    call_op, ///< Invoke builtin operator
+
+    push_field, ///< Push object field on the stack
+    load_field, ///< Load value from top of the stack to the object field
+    brf, ///< Unconditional forward branch
+    brb, ///< Unconditional backward branch
+    brf_true, ///< Conditional forward branch, if top of the stack is true
+
+    brf_false, ///< Conditional forward branch, if top of the stack is false
+    brb_true, ///< Conditional backward branch, if top of the stack is true
+    brb_false, ///< Conditional backward branch, if top of the stack is false
+    br_table, ///< Make branch table
+    amake, ///< Make array
+
+    astore, ///< Store value to array
+    aload, ///< Load value from array
+    push_frame, // Создать новый кадр
+    drop_frame, // Выйти из текущего кадра
+    raise, // Бросить исключение
+
+    try_, // Начало блока try
+    end_try, // Конец блока try
+    call, // Вызов функции по имени
+    fcall, // Вызов функции по номеру
+    max_opcode
 };
 
 using insn_array = std::deque<insn_type>;
@@ -90,5 +93,3 @@ EMEL_EXPORT std::ostream &operator <<(std::ostream &os, empty_value_type);
 EMEL_EXPORT std::ostream &operator <<(std::ostream &os, const insn_array &);
 
 } // namespace emel
-
-#endif // OPCODES_H

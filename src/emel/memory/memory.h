@@ -20,7 +20,7 @@
 #pragma once
 
 #include <atomic>
-#include <bits/allocated_ptr.h>
+#include <memory>
 #include <boost/container/pmr/memory_resource.hpp>
 #include <boost/container/pmr/polymorphic_allocator.hpp>
 #include <boost/intrusive_ptr.hpp>

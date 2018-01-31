@@ -19,9 +19,7 @@
  */
 #pragma once
 
-#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
-#define BOOST_MPL_LIMIT_LIST_SIZE 30
-#define BOOST_MPL_LIMIT_VECTOR_SIZE 30
+#include "opcodes.h"
 
 #include <vector>
 #include <memory>
@@ -50,11 +48,6 @@ struct bin_op;
 struct variable;
 struct un_op;
 struct call;
-
-enum class op_kind {
-    or_ = 201, xor_, and_, eq, ne, lt, gt, lte, gte, add, sub, mul, div,
-    not_ = 101, neg
-};
 
 struct position {
     std::shared_ptr<std::string> file;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Max Plutonium <plutonium.max@gmail.com>
+ * Copyright (C) 2015, 2016 Max Plutonium <plutonium.max@gmail.com>
  *
  * This file is part of the test suite of the EMEL library.
  *

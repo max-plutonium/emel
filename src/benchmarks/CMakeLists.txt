@@ -24,6 +24,10 @@ add_definitions("-DBENCHMARKS_SRC_DIR=\"${emel-benchmarks_SOURCE_DIR}\"")
 
 include_directories(..)
 
+find_package(Boost 1.59.0 REQUIRED)
+
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
 set(SOURCES
     main.cc
     bench-memory.cc

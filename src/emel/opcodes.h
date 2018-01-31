@@ -65,6 +65,7 @@ enum class opcode : unsigned char {
         brb_false, // Переход назад, если на вершине стека false
         br_table, // Создать таблицу переходов
         ret, // Возврат значения из функции
+        max_opcode
 };
 
 using insn_array = std::deque<insn_type>;

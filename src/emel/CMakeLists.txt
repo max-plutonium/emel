@@ -27,6 +27,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} \
 
 find_package(Boost 1.59.0 REQUIRED system thread filesystem locale)
 
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
 set(PUBLIC_HEADERS
     ast.h
     compiler/compiler.h

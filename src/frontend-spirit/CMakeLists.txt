@@ -27,6 +27,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
 
 find_package(Boost 1.59.0 REQUIRED system)
 
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
 set(HEADERS
     error-handler.h
     expressions.h

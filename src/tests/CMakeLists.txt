@@ -25,6 +25,10 @@ add_definitions("-DTESTS_SRC_DIR=\"${emel-tests_SOURCE_DIR}\"")
 include_directories(SYSTEM ../googletest/googletest/include)
 include_directories(SYSTEM ../googletest/googlemock/include)
 
+find_package(Boost 1.59.0 REQUIRED)
+
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
 set(SOURCES
     main.cc
     test-compiler.cc
